@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,15 +9,116 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/profile_fragment_tv"
-        android:layout_width="wrap_content"
+        android:id="@+id/fragment_profile_name_tv"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:text="Emin Kıvanç"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/fragment_profile_picture_iv"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/fragment_profile_picture_iv"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/default_profile_picture" />
+
+    <TextView
+        android:id="@+id/fragment_profile_age_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:text="23"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@+id/fragment_profile_calender_icon_iv"
+        app:layout_constraintTop_toTopOf="@+id/fragment_profile_calender_icon_iv" />
+
+    <TextView
+        android:id="@+id/fragment_profile_city_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:text="İstanbul"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/fragment_profile_location_icon_iv" />
+
+    <Button
+        android:id="@+id/fragment_profile_friends_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="Profile Fragment"
-        android:textSize="30sp"
+        android:text="Activities"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_profile_city_tv" />
+
+    <Button
+        android:id="@+id/fragment_profile_activities_btn"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Friends"
+        app:layout_constraintStart_toEndOf="@+id/fragment_profile_picture_iv"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_profile_age_tv" />
+
+    <ImageView
+        android:id="@+id/fragment_profile_calender_icon_iv"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toEndOf="@+id/fragment_profile_picture_iv"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_profile_name_tv"
+        app:srcCompat="@drawable/ic_calendar" />
+
+    <ImageView
+        android:id="@+id/fragment_profile_location_icon_iv"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_profile_city_tv"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_profile_name_tv"
+        app:srcCompat="@drawable/ic_location" />
+
+    <ImageView
+        android:id="@+id/fragment_profile_settings_or_add_iv"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_settings" />
+
+    <ListView
+        android:id="@+id/fragment_profile_lv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/fragment_profile_picture_iv" />
+
+
 </android.support.constraint.ConstraintLayout>
+
+
