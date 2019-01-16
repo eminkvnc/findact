@@ -15,9 +15,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="Emin Kıvanç"
-        android:textColor="?android:attr/textColorPrimary"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
         android:textSize="24sp"
-        android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/fragment_profile_picture_iv"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -39,8 +38,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:text="23"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="18sp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintStart_toEndOf="@+id/fragment_profile_calender_icon_iv"
         app:layout_constraintTop_toTopOf="@+id/fragment_profile_calender_icon_iv" />
 
@@ -51,8 +49,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="16dp"
         android:text="İstanbul"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="18sp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/fragment_profile_location_icon_iv" />
 

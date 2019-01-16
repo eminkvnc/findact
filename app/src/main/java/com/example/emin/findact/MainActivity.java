@@ -1,5 +1,6 @@
 package com.example.emin.findact;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,9 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.AttributeSet;
 import android.view.MenuItem;
-import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -27,8 +26,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     }
 
-    private void setFragment(Fragment fragment){
-
+    private void setMainFragment(Fragment fragment){
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -41,21 +39,20 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         switch (item.getItemId()) {
             case R.id.navigation_home:
                 HomeFragment homeFragment = new HomeFragment();
-                setFragment(homeFragment);
+                setMainFragment(homeFragment);
                 return true;
             case R.id.navigation_explore:
                 ExploreFragment exploreFragment = new ExploreFragment();
-                setFragment(exploreFragment);
+                setMainFragment(exploreFragment);
                 return true;
             case R.id.navigation_find:
-                ProfileFragment profileFragment1 = new ProfileFragment();
-                profileFragment1.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
-                setFragment(profileFragment1);
+                FindFragment findFragment = new FindFragment();
+                setMainFragment(findFragment);
                 return true;
             case R.id.navigation_profile:
                 ProfileFragment profileFragment = new ProfileFragment();
                 profileFragment.setInitMode(ProfileFragment.INIT_MODE_MY_PROFILE_PAGE);
-                setFragment(profileFragment);
+                setMainFragment(profileFragment);
                 return true;
         }
         return false;
