@@ -12,21 +12,37 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 public class FindFragment extends Fragment {
+
     private View v;
+    DisplayActivityFragment displayActivityFragment;
+
+    public FindFragment() {
+
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+
+        displayActivityFragment = new DisplayActivityFragment();
 
         v = inflater.inflate(R.layout.fragment_find,container,false);
         Button movieButton = v.findViewById(R.id.movie_btn);
         Button gameButton = v.findViewById(R.id.game_btn);
         Button groupButton = v.findViewById(R.id.group_btn);
 
+
         movieButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DisplayActivityFragment displayActivityFragment = new DisplayActivityFragment();
+
                 displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_MOVIE_ACTIVITY);
                 setFindFragment(displayActivityFragment);
             }
@@ -34,7 +50,6 @@ public class FindFragment extends Fragment {
         gameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DisplayActivityFragment displayActivityFragment = new DisplayActivityFragment();
                 displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_GAME_ACTIVITY);
                 setFindFragment(displayActivityFragment);
             }
@@ -42,7 +57,6 @@ public class FindFragment extends Fragment {
         groupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DisplayActivityFragment displayActivityFragment = new DisplayActivityFragment();
                 displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_GROUP_ACTIVITY);
                 setFindFragment(displayActivityFragment);
             }
@@ -52,21 +66,20 @@ public class FindFragment extends Fragment {
         return v;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
 
+    private void setFindFragment(final Fragment fragment){
 
-    }
-
-    private void setFindFragment(Fragment fragment){
-
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.replace(R.id.main_frame,fragment);
-        fragmentTransaction.commit();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.replace(R.id.main_frame,fragment);
+                fragmentTransaction.commit();
+            }
+        }).start();
 
     }
 

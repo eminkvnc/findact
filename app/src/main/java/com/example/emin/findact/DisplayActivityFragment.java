@@ -17,7 +17,14 @@ public class DisplayActivityFragment extends Fragment {
     private int initMode;
     private View v;
 
+    public DisplayActivityFragment() {
 
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Nullable
     @Override
@@ -36,7 +43,6 @@ public class DisplayActivityFragment extends Fragment {
             default:
                 v = null;
         }
-
 
         return v;
     }

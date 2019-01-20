@@ -11,6 +11,15 @@ import android.view.ViewGroup;
 public class ExploreFragment extends Fragment {
     private View v;
 
+    public ExploreFragment() {
+
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

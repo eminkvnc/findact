@@ -18,6 +18,14 @@ public class ProfileFragment extends Fragment {
     private int initMode;
     private View v;
 
+    public ProfileFragment() {
+
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Nullable
     @Override
@@ -25,6 +33,8 @@ public class ProfileFragment extends Fragment {
 
         v = inflater.inflate(R.layout.fragment_profile,container,false);
         ImageView settingsIconImageView = v.findViewById(R.id.fragment_profile_settings_or_add_iv);
+        ImageView profilePicture = v.findViewById(R.id.fragment_profile_picture_iv);
+
         switch (initMode){
             case INIT_MODE_MY_PROFILE_PAGE:
                 settingsIconImageView.setImageResource(R.drawable.ic_settings);
