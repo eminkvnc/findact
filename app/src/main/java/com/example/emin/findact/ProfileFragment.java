@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,9 @@ public class ProfileFragment extends Fragment {
 
     private int initMode;
     private View v;
+
+    private SettingsFragment settingsFragment;
+
 
     public ProfileFragment() {
 
@@ -35,9 +40,27 @@ public class ProfileFragment extends Fragment {
         ImageView settingsIconImageView = v.findViewById(R.id.fragment_profile_settings_or_add_iv);
         ImageView profilePicture = v.findViewById(R.id.fragment_profile_picture_iv);
 
+
+        settingsFragment = new SettingsFragment();
+
         switch (initMode){
             case INIT_MODE_MY_PROFILE_PAGE:
                 settingsIconImageView.setImageResource(R.drawable.ic_settings);
+                settingsIconImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                                fragmentTransaction.addToBackStack(null);
+                                fragmentTransaction.replace(R.id.main_frame,settingsFragment);
+                                fragmentTransaction.commit();
+                            }
+                        }).start();
+                    }
+                });
                 break;
             case INIT_MODE_FRIEND_PROFILE_PAGE:
                 settingsIconImageView.setImageResource(R.drawable.ic_add_friend);
