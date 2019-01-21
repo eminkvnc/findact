@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             public void run() {
                 progressDialog.dismiss();
             }
-        },1700);
+        },800);
 
 
     }

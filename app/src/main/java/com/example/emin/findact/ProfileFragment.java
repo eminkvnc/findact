@@ -38,7 +38,7 @@ public class ProfileFragment extends Fragment {
 
         v = inflater.inflate(R.layout.fragment_profile,container,false);
         ImageView settingsIconImageView = v.findViewById(R.id.fragment_profile_settings_or_add_iv);
-        ImageView profilePicture = v.findViewById(R.id.fragment_profile_picture_iv);
+        ImageView profilePicture = v.findViewById(R.id.fragment_settings_picture_iv);
 
 
         settingsFragment = new SettingsFragment();

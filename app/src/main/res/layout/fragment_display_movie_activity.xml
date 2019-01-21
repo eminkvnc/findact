@@ -9,7 +9,7 @@
     <ImageView
         android:id="@+id/fragment_display_movie_poster_iv"
         android:layout_width="160dp"
-        android:layout_height="240dp"
+        android:layout_height="160dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,30 +76,30 @@
 
     <ImageView
         android:id="@+id/fragment_display_movie_like_iv"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/ic_like" />
 
     <ImageView
         android:id="@+id/fragment_display_movie_dislike_iv"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/fragment_display_movie_like_iv"
         app:srcCompat="@drawable/ic_dislike" />
 
     <ImageView
         android:id="@+id/fragment_display_movie_share_iv"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_share" />
