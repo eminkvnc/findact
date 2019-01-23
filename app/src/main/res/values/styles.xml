@@ -31,8 +31,6 @@
         <item name="android:colorForeground">#42353131</item>
 
     </style>
-      
-   
         
     <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="colorAccent">@color/colorPrimary</item>

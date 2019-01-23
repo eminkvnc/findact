@@ -48,7 +48,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
     private String[] gameGenresList = {"FPS","MOBA","SINGLE PLAYER","MULTIPLAYER","BATTLEROYAL","VR"};
     //private String[] movieGenresList = {"ACTION","ADVENTURE","SCI-FI","HORROR","COMEDY","WAR","FANTASTIC","CRIME"};
-    private String[] movieGenresList = {"ACTION","ADVENTURE","COMEDY","BIOGRAPHY"};
+    private String[] movieGenresList = {"ACTION","FANTASY","COMEDY","BIOGRAPHY"};
     HashMap<String,Integer> hashMap;
 
     private ArrayList<String> gameData = null;
@@ -159,15 +159,17 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         city = cityET.getText().toString();
         birthday = birthdayET.getText().toString();
 
-
-        gameGenres = selectedGameGenres.get(0);
-        for (int i = 1; i < selectedGameGenres.size(); i++){
-            gameGenres = gameGenres + "," + selectedGameGenres.get(i);
+        if(!selectedGameGenres.isEmpty()) {
+            gameGenres = selectedGameGenres.get(0);
+            for (int i = 1; i < selectedGameGenres.size(); i++) {
+                gameGenres = gameGenres + "," + selectedGameGenres.get(i);
+            }
         }
-
-        movieGenres = selectedMovieGenres.get(0);
-        for (int i = 1; i < selectedMovieGenres.size(); i++){
-            movieGenres = movieGenres + "," + selectedMovieGenres.get(i);
+        if(!selectedMovieGenres.isEmpty()) {
+            movieGenres = selectedMovieGenres.get(0);
+            for (int i = 1; i < selectedMovieGenres.size(); i++) {
+                movieGenres = movieGenres + "," + selectedMovieGenres.get(i);
+            }
         }
 
         firebaseAuth = FirebaseAuth.getInstance();
