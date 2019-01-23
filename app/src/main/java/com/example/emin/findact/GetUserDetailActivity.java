@@ -1,9 +1,15 @@
 package com.example.emin.findact;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -11,25 +17,35 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserModel;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class GetUserDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -41,15 +57,28 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     FirebaseDBHelper firebaseDBHelper;
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
+    StorageReference storageReference;
 
-    EditText nameET, surnameET, cityET, birthdayET;
+    EditText nameET, surnameET, birthdayET;
+    Spinner citySpinner;
     ListView gameListView, movieListView;
+    ImageView profilePicture;
     String name, surname, city, birthday, movieGenres, gameGenres;
+    Uri selectedImage;
 
     private String[] gameGenresList = {"FPS","MOBA","SINGLE PLAYER","MULTIPLAYER","BATTLEROYAL","VR"};
     //private String[] movieGenresList = {"ACTION","ADVENTURE","SCI-FI","HORROR","COMEDY","WAR","FANTASTIC","CRIME"};
     private String[] movieGenresList = {"ACTION","FANTASY","COMEDY","BIOGRAPHY"};
     HashMap<String,Integer> hashMap;
+
+
+    private ArrayAdapter<String> cityAdapter;
+    private String[] citiesList = { "Select City","Adana", "Adıyaman","Afyon","Ağrı","Amasya","Ankara","Antalya","Artvin","Aydın","Balıkesir","Bilecik",
+            "Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli","Diyarbakır","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir",
+            "Gaziantep","Giresun","Gümüşhane","Hakkari","Hatay","Isparta","İçel (Mersin)","İstanbul","İzmir","Kars","Kastamonu","Kayseri","Kırklareli","Kırşehir",
+            "Kocaeli","Konya","Kütahya","Malatya","Manisa","Kahramanmaraş","Mardin","Muğla","Muş","Nevşehir","Niğde","Ordu","Rize","Sakarya","Samsun","Siirt","Sinop",
+            "Sivas","Tekirdağ","Tokat","Trabzon","Tunceli","Şanlıurfa","Uşak","Van","Yozgat","Zonguldak","Aksaray","Bayburt","Karaman","Kırıkkale","Batman",
+            "Şırnak","Bartın","Ardahan","Iğdır","Yalova","Karabük","Kilis","Osmaniye","Düzce"};
 
     private ArrayList<String> gameData = null;
     private ArrayList<String> movieData = null;
@@ -113,7 +142,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         nameET = findViewById(R.id.get_user_detail_userName);
         surnameET = findViewById(R.id.get_user_detail_userSurname);
-        cityET = findViewById(R.id.get_user_detail_city);
+        citySpinner = findViewById(R.id.get_user_detail_city);
         birthdayET = findViewById(R.id.get_user_detail_birthday);
 
         birthdayET.setFocusable(false);
@@ -123,8 +152,51 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         setDateTimeField();
 
+        cityAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, citiesList );
+        cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        citySpinner.setAdapter(cityAdapter);
+
+        profilePicture = findViewById(R.id.get_user_detail_user_image);
+
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1){
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent,2);
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 2 && resultCode == RESULT_OK && data != null){
+            selectedImage = data.getData();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),selectedImage);
+                profilePicture.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void selectProfileImage(View view){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+            } else{
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent,2);
+            }
+        }
+    }
 
     // Doğum tarihi almak için kullanıldı.
 
@@ -156,8 +228,10 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         name = nameET.getText().toString();
         surname = surnameET.getText().toString();
-        city = cityET.getText().toString();
+        city = citySpinner.getSelectedItem().toString();
         birthday = birthdayET.getText().toString();
+        UUID uuidImage = UUID.randomUUID();
+        String imageName = "images/" + uuidImage +".jpg";
 
         if(!selectedGameGenres.isEmpty()) {
             gameGenres = selectedGameGenres.get(0);
@@ -174,21 +248,39 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
+        storageReference = FirebaseStorage.getInstance().getReference();
 
         String userEmail = firebaseUser.getEmail();
-        String [] userEmailSplit = userEmail.split("@");
+        final String [] userEmailSplit = userEmail.split("@");
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference();
-
-        UserModel.ActivitiesModel ActivityGenres = new UserModel.ActivitiesModel(gameGenres,movieGenres);
-
-
-        UserModel userModel = new UserModel(name, surname, city, birthday, ActivityGenres);
-        databaseReference.child("USERS").child(userEmailSplit[0]).setValue(userModel);
-
-        Log.d("Save_Detail", "SaveDetail: "+ userModel.getName() + "  email: " + userEmailSplit[0]);
         firebaseDBHelper = FirebaseDBHelper.getInstance();
-        //firebaseDBHelper.addUserDetail(userModel,userEmailSplit[0]);  // NULL OBJECT REFERENCE HATASI VERİYOR
+
+        // NULL OBJECT REFERENCE HATASI VERİYOR
+        //firebaseDBHelper.addUserDetail(userModel,userEmailSplit[0]);
+
+        final StorageReference mStorageReference = storageReference.child(userEmailSplit[0]).child(imageName);
+        mStorageReference.putFile(selectedImage).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                mStorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        String downloadUrl = uri.toString();
+                        UserModel.ActivitiesModel ActivityGenres = new UserModel.ActivitiesModel(gameGenres,movieGenres);
+                        UserModel userModel = new UserModel(name, surname, city, birthday, downloadUrl, ActivityGenres);
+                        databaseReference.child("USERS").child(userEmailSplit[0]).setValue(userModel);
+                        Log.d("onSuccess", "onSuccess: "+ downloadUrl);
+                    }
+                });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(GetUserDetailActivity.this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
@@ -309,7 +401,4 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
             return view;
         }
     }
-
-
-
 }
