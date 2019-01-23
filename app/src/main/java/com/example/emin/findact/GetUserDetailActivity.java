@@ -2,8 +2,12 @@ package com.example.emin.findact;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -24,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 
 public class GetUserDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -41,7 +47,9 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     String name, surname, city, birthday, movieGenres, gameGenres;
 
     private String[] gameGenresList = {"FPS","MOBA","SINGLE PLAYER","MULTIPLAYER","BATTLEROYAL","VR"};
-    private String[] movieGenresList = {"ACTION","ADVENTURE","SCI-FI","HORROR","COMEDY","WAR","FANTASTIC","CRIME"};
+    //private String[] movieGenresList = {"ACTION","ADVENTURE","SCI-FI","HORROR","COMEDY","WAR","FANTASTIC","CRIME"};
+    private String[] movieGenresList = {"ACTION","ADVENTURE","COMEDY","BIOGRAPHY"};
+    HashMap<String,Integer> hashMap;
 
     private ArrayList<String> gameData = null;
     private ArrayList<String> movieData = null;
@@ -77,6 +85,13 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         movieData.add("HORROR");
         movieData.add("SCI-FI");
         movieData.add("WAR");
+
+        hashMap = new HashMap<>();
+        hashMap.put(movieGenresList[0],R.drawable.ic_action);
+        hashMap.put(movieGenresList[1],R.drawable.ic_fantasy);
+        hashMap.put(movieGenresList[2],R.drawable.ic_comedy);
+        hashMap.put(movieGenresList[3],R.drawable.ic_biography);
+
 
         gameListView = findViewById(R.id.get_user_detail_game_genres);
         movieListView = findViewById(R.id.get_user_detail_movie_genres);
@@ -205,37 +220,32 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
             View view = View.inflate(getApplicationContext(),R.layout.custom_checkbox_list ,null );
 
-            final TextView textView = view.findViewById(R.id.custom_checkbox_list_textview);
-            textView.setText(gameGenresList[position]);
-            CheckBox checkBox = view.findViewById(R.id.custom_checkbox_list_checkBox);
-
-            checkBox.setOnClickListener(new View.OnClickListener() {
+            ImageView imageView = view.findViewById(R.id.imageView3);
+            imageView.setImageResource(R.drawable.ic_action);
+            final CardView cardView = view.findViewById(R.id.custom_checkbox_list_cv);
+            cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (gameInfoData.get(position).isClicked){
                         gameInfoData.get(position).isClicked = false;
+                        cardView.setCardBackgroundColor(Color.TRANSPARENT);
+                        selectedGameGenres.remove(gameGenresList[position]);
+
                     } else {
                         gameInfoData.get(position).isClicked = true;
-                    }
-
-                    for(int i=0;i<gameInfoData.size();i++)
-                    {
-                        if (gameInfoData.get(i).isClicked)
-                        {
-                            if (!selectedGameGenres.contains(gameGenresList[i])){
-                                selectedGameGenres.add(gameGenresList[i]);
-                            }
-                        } else {
-                            selectedGameGenres.remove(gameGenresList[i]);
+                        cardView.setCardBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                        if (!selectedGameGenres.contains(gameGenresList[position])){
+                            selectedGameGenres.add(gameGenresList[position]);
                         }
                     }
+
                 }
             });
             if (gameInfoData.get(position).isClicked) {
-                checkBox.setChecked(true);
+                cardView.setCardBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
             }
             else {
-                checkBox.setChecked(false);
+                cardView.setCardBackgroundColor(Color.TRANSPARENT);
             }
             return view;
         }
@@ -267,41 +277,37 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
             View view = View.inflate(getApplicationContext(),R.layout.custom_checkbox_list ,null );
 
-            final TextView textView = view.findViewById(R.id.custom_checkbox_list_textview);
-            textView.setText(movieGenresList[position]);
-            CheckBox checkBox = view.findViewById(R.id.custom_checkbox_list_checkBox);
-
-            checkBox.setOnClickListener(new View.OnClickListener() {
+            ImageView imageView = view.findViewById(R.id.imageView3);
+            imageView.setImageResource(hashMap.get(movieGenresList[position]));
+            final CardView cardView = view.findViewById(R.id.custom_checkbox_list_cv);
+            cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (movieInfoData.get(position).isClicked){
                         movieInfoData.get(position).isClicked = false;
+                        cardView.setCardBackgroundColor(Color.TRANSPARENT);
+                        selectedMovieGenres.remove(movieGenresList[position]);
 
                     } else {
                         movieInfoData.get(position).isClicked = true;
-                    }
-
-                    for(int i=0;i<movieInfoData.size();i++)
-                    {
-                        if (movieInfoData.get(i).isClicked)
-                        {
-                            if (!selectedMovieGenres.contains(movieGenresList[i])){
-                                selectedMovieGenres.add(movieGenresList[i]);
-                            }
-                        } else {
-                            selectedMovieGenres.remove(movieGenresList[i]);
+                        cardView.setCardBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                        if (!selectedMovieGenres.contains(movieGenresList[position])){
+                            selectedMovieGenres.add(movieGenresList[position]);
                         }
                     }
                 }
             });
 
             if (movieInfoData.get(position).isClicked) {
-                checkBox.setChecked(true);
+                cardView.setCardBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
             }
             else {
-                checkBox.setChecked(false);
+                cardView.setCardBackgroundColor(Color.TRANSPARENT);
             }
             return view;
         }
     }
+
+
+
 }
