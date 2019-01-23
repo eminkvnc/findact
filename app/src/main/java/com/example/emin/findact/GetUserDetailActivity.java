@@ -36,7 +36,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
 
-    EditText nameET, surnameET, cityET, birthdayET, movieGenreET, gameGenreET;
+    EditText nameET, surnameET, cityET, birthdayET;
     ListView gameListView, movieListView;
     String name, surname, city, birthday, movieGenres, gameGenres;
 
