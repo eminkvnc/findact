@@ -18,6 +18,8 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,13 +28,14 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private final String TAG = "LoginActivity";
+    private final String TAG = "Login_Activity";
     private GoogleSignInClient googleSignInClient;
     private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_login);
 
         SignInButton signInButton = findViewById(R.id.activity_login_sign_in_with_google_btn);
@@ -114,7 +117,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser firebaseUser){
         Toast.makeText(this, "Welcome: "+firebaseUser.getEmail(), Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this,MainActivity.class);
+        Intent intent = new Intent(this,GetUserDetailActivity.class);
         startActivity(intent);
     }
 }

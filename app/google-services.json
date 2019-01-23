@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "759606393898-ta0gfbuv54df1ougv8hnq40ai5062bbk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.emin.findact",
+            "certificate_hash": "2d92cc8d3917a26a5cf2c4871436c2b2866ebed4"
+          }
+        },
+        {
           "client_id": "759606393898-jq6a656f4uhvgloklpk3h5rdqtkchps4.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -48,7 +56,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "759606393898-jq6a656f4uhvgloklpk3h5rdqtkchps4.apps.googleusercontent.com",
+              "client_id": "759606393898-780fc9dduipijr2l9g3cag7mqe6t01im.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

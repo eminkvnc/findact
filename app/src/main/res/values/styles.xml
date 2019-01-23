@@ -29,6 +29,10 @@
 
         <!-- inactive track color (30% transparency) -->
         <item name="android:colorForeground">#42353131</item>
+      
+    <style name="DialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/colorPrimary</item>
+
     </style>
 
 </resources>
