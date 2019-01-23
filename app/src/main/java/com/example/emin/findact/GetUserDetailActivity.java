@@ -51,9 +51,6 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     FirebaseUser firebaseUser;
 
     FirebaseDBHelper firebaseDBHelper;
-    FirebaseDatabase firebaseDatabase;
-    DatabaseReference databaseReference;
-    StorageReference storageReference;
 
     EditText nameET, surnameET, birthdayET;
     Spinner citySpinner;
@@ -213,13 +210,12 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
     public void SaveDetail(View view){
 
+        firebaseDBHelper = new FirebaseDBHelper();
+
         name = nameET.getText().toString();
         surname = surnameET.getText().toString();
         city = citySpinner.getSelectedItem().toString();
         birthday = birthdayET.getText().toString();
-
-        UUID uuidImage = UUID.randomUUID();
-        String imageName = "images/" + uuidImage +".jpg";
 
         gameGenres = selectedGameGenres.get(0);
         for (int i = 1; i < selectedGameGenres.size(); i++){
@@ -233,39 +229,17 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        storageReference = FirebaseStorage.getInstance().getReference();
 
         String userEmail = firebaseUser.getEmail();
         final String [] userEmailSplit = userEmail.split("@");
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        databaseReference = firebaseDatabase.getReference();
+
         firebaseDBHelper = FirebaseDBHelper.getInstance();
 
-        // NULL OBJECT REFERENCE HATASI VERİYOR
-        //firebaseDBHelper.addUserDetail(userModel,userEmailSplit[0]);
+        UserModel.ActivitiesModel ActivityGenres = new UserModel.ActivitiesModel(gameGenres,movieGenres);
+        UserModel userModel = new UserModel(name, surname, city, birthday, ActivityGenres);
 
-        final StorageReference mStorageReference = storageReference.child(userEmailSplit[0]).child(imageName);
-        mStorageReference.putFile(selectedImage).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                mStorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        String downloadUrl = uri.toString();
-                        UserModel.ActivitiesModel ActivityGenres = new UserModel.ActivitiesModel(gameGenres,movieGenres);
-                        UserModel userModel = new UserModel(name, surname, city, birthday, downloadUrl, ActivityGenres);
-                        databaseReference.child("USERS").child(userEmailSplit[0]).setValue(userModel);
-                        Log.d("onSuccess", "onSuccess: "+ downloadUrl);
-                    }
-                });
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(GetUserDetailActivity.this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        Log.d("Save_detail", "SaveDetail: "+ selectedImage);
+        firebaseDBHelper.addUserDetail(userModel, userEmailSplit[0], selectedImage);
 
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
