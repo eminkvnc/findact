@@ -13,32 +13,22 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
-import com.example.emin.findact.Firebase.UserModel;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.emin.findact.Firebase.InitialLog;
+import com.example.emin.findact.Firebase.UserData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -229,8 +219,6 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         surname = surnameET.getText().toString();
         city = citySpinner.getSelectedItem().toString();
         birthday = birthdayET.getText().toString();
-        UUID uuidImage = UUID.randomUUID();
-        String imageName = "images/" + uuidImage +".jpg";
 
         if(!selectedGameGenres.isEmpty()) {
             gameGenres = selectedGameGenres.get(0);
@@ -249,15 +237,16 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         firebaseUser = firebaseAuth.getCurrentUser();
 
         String userEmail = firebaseUser.getEmail();
-        final String [] userEmailSplit = userEmail.split("@");
+        String [] userEmailSplit = userEmail.split("@");
 
         firebaseDBHelper = FirebaseDBHelper.getInstance();
 
-        UserModel.ActivitiesModel ActivityGenres = new UserModel.ActivitiesModel(gameGenres,movieGenres);
-        UserModel userModel = new UserModel(name, surname, city, birthday, ActivityGenres);
+        InitialLog initialLog = new InitialLog(gameGenres,movieGenres, Calendar.getInstance().getTime().toString(),"status");
+        UserData userData = new UserData(name, surname, city, birthday, selectedImage);
 
         Log.d("Save_detail", "SaveDetail: "+ selectedImage);
-        firebaseDBHelper.addUserDetail(userModel, userEmailSplit[0], selectedImage);
+        firebaseDBHelper.setUserData(userData, userEmailSplit[0]);
+        firebaseDBHelper.addUserLog(initialLog,userEmailSplit[0]);
 
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
