@@ -16,8 +16,8 @@
         android:hint="Name"
         android:backgroundTint="@color/colorPrimary"
         android:inputType="textPersonName"
-        app:layout_constraintStart_toStartOf="@+id/get_user_detail_user_image"
-        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_user_image" />
+        app:layout_constraintStart_toStartOf="@+id/get_user_detail_cardview"
+        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_cardview" />
 
     <EditText
         android:id="@+id/get_user_detail_userSurname"
@@ -60,13 +60,11 @@
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="244dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="10dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/get_user_detail_city">
@@ -124,40 +122,52 @@
     </LinearLayout>
 
 
-    <ImageView
-        android:id="@+id/get_user_detail_user_image"
-        android:layout_width="84dp"
-        android:layout_height="71dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:onClick="selectProfileImage"
+    <android.support.v7.widget.CardView
+        android:id="@+id/get_user_detail_cardview"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:shape="ring"
+        android:thicknessRatio="1.9"
+        app:cardCornerRadius="50dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/default_profile_picture" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/get_user_detail_user_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:onClick="selectProfileImage"
+            app:srcCompat="@drawable/default_profile_picture" />
+
+    </android.support.v7.widget.CardView>
+
+
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="151dp"
         android:layout_height="50dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
         android:gravity="center"
         android:text="Select Your Profile Picture"
         android:textColor="@color/colorPrimary"
         android:textSize="18sp"
-        app:layout_constraintStart_toEndOf="@+id/get_user_detail_user_image"
+        app:layout_constraintStart_toEndOf="@+id/get_user_detail_cardview"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/imageView2"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="16dp"
         android:onClick="SaveDetail"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_sign_out" />
+        app:srcCompat="@drawable/ic_share" />
 
 
 </android.support.constraint.ConstraintLayout>
