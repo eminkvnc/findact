@@ -5,14 +5,16 @@ import android.net.Uri;
 public class UserData {
 
     String name, surname, city, birthDate;
+    String notification;
     Uri profilePicture;
 
-    public UserData(String name, String surname, String city, String birthday, Uri profilePicture) {
+    public UserData(String name, String surname, String city, String birthdate, Uri profilePicture, String notification) {
         this.name = name;
         this.surname = surname;
         this.city = city;
-        this.birthDate = birthday;
+        this.birthDate = birthdate;
         this.profilePicture = profilePicture;
+        this.notification = notification;
     }
 
     public String getName() {
@@ -33,5 +35,9 @@ public class UserData {
 
     public Uri getProfilePicture() {
         return profilePicture;
+    }
+
+    public String getNotification() {
+        return notification;
     }
 }

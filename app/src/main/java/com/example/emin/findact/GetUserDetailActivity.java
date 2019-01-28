@@ -5,9 +5,10 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -162,16 +163,28 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == 2 && resultCode == RESULT_OK && data != null){
             selectedImage = data.getData();
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),selectedImage);
-                profilePicture.setImageBitmap(bitmap);
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+                float scaleWidth = ((float) 100) / width;
+                float scaleHeight = ((float) 100) / height;
+
+                Matrix matrix = new Matrix();
+
+                matrix.postScale(scaleWidth, scaleHeight);
+
+                Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+
+                profilePicture.setImageBitmap(resizedBitmap);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     public void selectProfileImage(View view){
@@ -233,20 +246,15 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
             }
         }
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
-
-        String userEmail = firebaseUser.getEmail();
-        String [] userEmailSplit = userEmail.split("@");
-
         firebaseDBHelper = FirebaseDBHelper.getInstance();
 
-        InitialLog initialLog = new InitialLog(gameGenres,movieGenres, Calendar.getInstance().getTime().toString(),"status");
-        UserData userData = new UserData(name, surname, city, birthday, selectedImage);
+        UserData userData = new UserData(name, surname, city, birthday, selectedImage,"true");
+        InitialLog initialLog = new InitialLog(gameGenres,movieGenres ,Calendar.getInstance().getTime().toString() ,"status" );
 
-        Log.d("Save_detail", "SaveDetail: "+ selectedImage);
-        firebaseDBHelper.setUserData(userData, userEmailSplit[0]);
-        firebaseDBHelper.addUserLog(initialLog,userEmailSplit[0]);
+
+        Log.d("Save_detail", "SaveDetail: "+ firebaseDBHelper.getCurrentUser());
+        firebaseDBHelper.addUserDetail(userData,firebaseDBHelper.getCurrentUser());
+        firebaseDBHelper.addUserLog(initialLog, firebaseDBHelper.getCurrentUser());
 
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);

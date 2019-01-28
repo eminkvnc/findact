@@ -1,95 +1,187 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/fragment_settings_sign_out_iv"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_sign_out" />
-
-    <EditText
-        android:id="@+id/fragment_settings_name_tv"
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/fragment_settings_toolbar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Emin Kıvanç"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title"
-        android:textSize="24sp"
-        app:layout_constraintStart_toEndOf="@+id/fragment_settings_picture_iv"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/fragment_settings_picture_iv"
-        android:layout_width="100dp"
-        android:layout_height="120dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/default_profile_picture"
-        android:visibility="visible"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:backgroundTint="@color/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <EditText
-        android:id="@+id/fragment_settings_age_tv"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="23"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toEndOf="@+id/fragment_settings_calender_icon_iv"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_settings_name_tv" />
+    </android.support.v7.widget.Toolbar>
 
-    <EditText
-        android:id="@+id/fragment_settings_city_tv"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="İstanbul"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_settings_name_tv" />
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="260dp"
+        android:layout_height="450dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_settings_toolbar"
+        app:layout_constraintVertical_bias="0.105">
 
-    <ImageView
-        android:id="@+id/fragment_settings_calender_icon_iv"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/ic_calendar"
-        app:layout_constraintStart_toEndOf="@+id/fragment_settings_picture_iv"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_settings_name_tv" />
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="243dp"
+            android:layout_height="158dp"
+            android:layout_marginBottom="15dp">
 
-    <ImageView
-        android:id="@+id/fragment_settings_location_icon_iv"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/ic_location"
-        app:layout_constraintEnd_toStartOf="@+id/fragment_settings_city_tv"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_settings_name_tv" />
+            <android.support.v7.widget.CardView
+                android:id="@+id/fragment_settings_cardview"
+                android:layout_width="125dp"
+                android:layout_height="125dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginStart="64dp"
+                android:elevation="12dp"
+                android:shape="ring"
+                android:thicknessRatio="1.9"
+                app:cardCornerRadius="62.5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-    <android.support.v7.widget.SwitchCompat
-        android:id="@+id/switch1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="16dp"
-        android:checked="true"
-        android:text="Send Notifications"
-        android:textSize="14sp"
-        android:theme="@style/SwitchTheme"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_settings_city_tv" />
+                <ImageView
+                    android:id="@+id/fragment_settings_picture_iv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitXY"
+                    android:foregroundGravity="center"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </android.support.v7.widget.CardView>
+
+            <ImageView
+                android:id="@+id/fragment_settings_picture_change_picture"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="95dp"
+                android:layout_marginTop="103dp"
+                android:background="@android:drawable/ic_input_add"
+                app:layout_constraintStart_toStartOf="@+id/fragment_settings_cardview"
+                app:layout_constraintTop_toTopOf="@+id/fragment_settings_cardview" />
+        </android.support.constraint.ConstraintLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/default_profile_picture" />
+
+
+            <EditText
+                android:id="@+id/fragment_settings_name_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textSize="24sp"
+                tools:layout_editor_absoluteX="108dp"
+                tools:layout_editor_absoluteY="248dp" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/fragment_settings_calender_icon_iv"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/ic_calendar"
+                tools:layout_editor_absoluteX="78dp"
+                tools:layout_editor_absoluteY="377dp" />
+
+
+            <EditText
+                android:id="@+id/fragment_settings_age_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                tools:layout_editor_absoluteX="126dp"
+                tools:layout_editor_absoluteY="362dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+
+            <ImageView
+                android:id="@+id/fragment_settings_location_icon_iv"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/ic_location"
+                tools:layout_editor_absoluteX="78dp"
+                tools:layout_editor_absoluteY="308dp" />
+
+            <Spinner
+                android:id="@+id/fragment_settings_city_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                tools:layout_editor_absoluteX="116dp"
+                tools:layout_editor_absoluteY="308dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/notification_icon" />
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switch1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:backgroundTint="@color/colorPrimary"
+                android:checked="true"
+                android:text="Send Notifications"
+                android:textSize="14sp"
+                android:theme="@style/SwitchTheme"
+                tools:layout_editor_absoluteX="92dp"
+                tools:layout_editor_absoluteY="480dp" />
+        </LinearLayout>
+
+
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

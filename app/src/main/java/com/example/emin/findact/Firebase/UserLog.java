@@ -1,7 +1,7 @@
 package com.example.emin.findact.Firebase;
 
 public class UserLog {
-    
+
     private String date;
     private String status;
 
