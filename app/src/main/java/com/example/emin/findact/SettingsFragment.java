@@ -1,15 +1,18 @@
 package com.example.emin.findact;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -30,23 +33,26 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
+import com.example.emin.findact.RoomDatabase.User;
+import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.Objects;
 
-import static android.app.Activity.RESULT_OK;
+//import com.example.emin.findact.RoomDatabase.UserViewModel;
 
 public class SettingsFragment extends Fragment{
 
@@ -57,12 +63,12 @@ public class SettingsFragment extends Fragment{
     static EditText birthdate;
     Spinner city;
     SwitchCompat switchCompat;
-    Uri selectedImage;
+    Uri selectedImage, controlUri;
     FirebaseDBHelper firebaseDBHelper;
     UserData userData;
 
     private ArrayAdapter<String> cityAdapter;
-    private String[] citiesList = {"Adana", "Adıyaman", "Afyon", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik",
+    private static String[] citiesList = {"Adana", "Adıyaman", "Afyon", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik",
             "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir",
             "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "İçel (Mersin)", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir",
             "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop",
@@ -70,9 +76,12 @@ public class SettingsFragment extends Fragment{
             "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"};
 
 
-    String defaultImage, user_name, user_surname;
+    String  user_name, user_surname, surnameString,cityString;
     Toolbar toolbar;
-    String switchData;
+    String switchData, defaultName;
+    Bitmap bitmap;
+
+    static SimpleDateFormat simpleDateFormat;
 
     public static SettingsFragment newInstance() {
         return new SettingsFragment();
@@ -91,13 +100,11 @@ public class SettingsFragment extends Fragment{
 
         v = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        toolbar = v.findViewById(R.id.fragment_settings_toolbar);
-        toolbar.setTitle("Settings");
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+//        toolbar = v.findViewById(R.id.fragment_settings_toolbar);
+//        toolbar.setTitle("Settings");
+//        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
 
         firebaseDBHelper = new FirebaseDBHelper();
-
-        getUserData();
 
         profilePic = v.findViewById(R.id.fragment_settings_picture_iv);
         changePP = v.findViewById(R.id.fragment_settings_picture_change_picture);
@@ -135,110 +142,129 @@ public class SettingsFragment extends Fragment{
         changePP.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (getContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
-                    } else{
-                        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(intent,2);
-                    }
-                }
+                checkAndroidVersion();
             }
         });
+
+        simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        Log.d("getUserData", "getUserData: " + surnameString);
+
+        String ns = defaultName + " " + surnameString;
+
+        Log.d("getUserData", "getUserData: " + ns);
+
+
+        User user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
+
+        name.setText(user.getName() +" "+user.getSurname());
+        birthdate.setText(user.getBirthday());
+        // Load image
+        try{
+            File file = new File("/data/user/0/com.example.emin.findact/app_imageDir","profile.jpg" );
+            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
+            profilePic.setImageBitmap(b);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        cityString = user.getCity();
+
+        int pos = cityAdapter.getPosition(cityString);
+        city.setSelection(pos);
+
+        selectedImage = Uri.parse( user.getPictureUri());
+        controlUri = selectedImage;
+        switchData = user.getNotification();
+        boolean b = Boolean.valueOf(switchData);
+        Log.d("onCreateView", "onCreateView: "+b);
+        switchCompat.setChecked(b);
 
         return v;
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.actionbar, menu);
+        inflater.inflate(R.menu.actionbar_for_settings, menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == R.id.actionbar_save){
-            String nameET = name.getText().toString();
-            String[] nameSplit = nameET.split(" ");
-            if (selectedImage == null){
-                Uri uri = Uri.parse(defaultImage);
-                int i = nameSplit.length;
-                user_name = nameSplit[0];
-                for (int j = 1; j < i; j++){
-                    if (j == i-1){
-                        user_surname = nameSplit[j];
-                    } else {
-                        user_name = user_name +" "+ nameSplit[j];
-                    }
-                }
-                userData = new UserData(user_name
-                        ,user_surname
-                        ,city.getSelectedItem().toString()
-                        ,birthdate.getText().toString()
-                        ,uri,switchData);
-                firebaseDBHelper.addUserDetail(userData, firebaseDBHelper.getCurrentUser());
-            } else {
-                userData = new UserData(nameSplit[nameSplit.length-(nameSplit.length - 1)]
-                        ,nameSplit[nameSplit.length-1]
-                        ,city.getSelectedItem().toString()
-                        ,birthdate.getText().toString()
-                        ,selectedImage,switchData);
-                firebaseDBHelper.addUserDetail(userData, firebaseDBHelper.getCurrentUser());
-            }
-
+            updateDetail();
             Intent intent = new Intent(getContext(),MainActivity.class);
             startActivity(intent);
-
         } else if (item.getItemId() == R.id.actionbar_logout){
             signOut();
         }
         return super.onOptionsItemSelected(item);
     }
 
+    public void checkAndroidVersion(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            try{
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},
+                        555);
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        } else {
+            pickImage();
+        }
+    }
+
+    public void pickImage() {
+        CropImage.startPickImageActivity(getActivity(),SettingsFragment.this);
+
+        Log.d("pickImage", "pickImage: "+ getActivity());
+    }
+
+    private void croprequest(Uri imageUri) {
+        Log.d("croprequest", "croprequest: "+ imageUri);
+        CropImage.activity(imageUri)
+                .setGuidelines(CropImageView.Guidelines.OFF)
+                .setMultiTouchEnabled(true)
+                .start(Objects.requireNonNull(getActivity()), SettingsFragment.this);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == 1){
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent,2);
-            }
+        if (requestCode == 555 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            pickImage();
+        } else {
+            checkAndroidVersion();
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d("onActivityResult", "onActivityResult: "+ requestCode);
+        //RESULT FROM SELECTED IMAGE
+        if (resultCode == getActivity().RESULT_OK){
+            if (requestCode == CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+                selectedImage = CropImage.getPickImageResultUri(Objects.requireNonNull(getContext()), data);
+                Log.d("onActivityResult", "onActivityResult: "+ selectedImage);
+                croprequest(selectedImage);
+            }
 
-        if (requestCode == 2 && resultCode == RESULT_OK && data != null){
-            selectedImage = data.getData();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(),selectedImage);
-                profilePic.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
+            //RESULT FROM CROPING ACTIVITY
+            if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+                CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                try {
+                    Uri resultUri = result.getUri();
+                    InputStream is = getActivity().getContentResolver().openInputStream(resultUri);
+                    //bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), result.getUri());
+                    bitmap = BitmapFactory.decodeStream(is);
+                    profilePic.setImageBitmap(bitmap);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
-
-
-//    public Bitmap getResizeBitmap(Bitmap bitmap, int newHeight, int newWidth) {
-//
-//        int width = bitmap.getWidth();
-//        int height = bitmap.getHeight();
-//        float scaleWidth = ((float) newWidth) / width;
-//        float scaleHeight = ((float) newHeight) / height;
-//
-//        Matrix matrix = new Matrix();
-//
-//        matrix.postScale(scaleWidth, scaleHeight);
-//
-//        Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-//        return resizedBitmap;
-//
-//    }
 
     private void signOut() {
 
@@ -247,36 +273,69 @@ public class SettingsFragment extends Fragment{
         startActivity(intent);
     }
 
-    public void getUserData() {
+    private void updateDetail(){
 
-        DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Users").child(firebaseDBHelper.getCurrentUser()).child("Data");
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        String nameET = name.getText().toString();
+        String[] nameSplit = nameET.split(" ");
+        int i = nameSplit.length;
+        user_name = nameSplit[0];
 
-                HashMap<String, String> hashMap = (HashMap<String, String>) dataSnapshot.getValue();
+        Log.d("updateDetail", "updateDetail: "+ selectedImage);
 
-                name.setText(hashMap.get("name")+" "+ hashMap.get("surname"));
-
-                String cityName = (hashMap.get("city"));
-                int pos = cityAdapter.getPosition(cityName);
-                city.setSelection(pos);
-
-                birthdate.setText(hashMap.get("birth-date"));
-                defaultImage = hashMap.get("profile-picture");
-                String b = hashMap.get("notification");
-                boolean b1 = Boolean.valueOf(b);
-                Log.d("onDataChange", "onDataChange: "+b);
-                switchCompat.setChecked(b1);
-                Picasso.get().load(defaultImage).fit().into(profilePic);
-
+        for (int j = 1; j < i; j++){
+            if (j == i-1){
+                user_surname = nameSplit[j];
+            } else {
+                user_name = user_name +" "+ nameSplit[j];
             }
+        }
+        if(controlUri == selectedImage){
+            userData = new UserData(user_name
+                    ,user_surname
+                    ,city.getSelectedItem().toString()
+                    ,birthdate.getText().toString()
+                    ,Uri.parse(""),switchData);
+            firebaseDBHelper.updateUserDetailWithoutPicture(userData);
+        } else {
+            userData = new UserData(user_name
+                    ,user_surname
+                    ,city.getSelectedItem().toString()
+                    ,birthdate.getText().toString()
+                    ,selectedImage,switchData);
+            firebaseDBHelper.addUserDetail(userData, firebaseDBHelper.getCurrentUser());
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getContext(), databaseError.getMessage(), Toast.LENGTH_LONG).show();
+            if (bitmap != null){
+                updateInternalStorage(bitmap);
             }
-        });
+        }
+
+        final User user = new User(1,user_name,user_surname ,city.getSelectedItem().toString() ,
+                birthdate.getText().toString(), selectedImage.toString(), switchData);
+
+        UserDatabase.getInstance(getContext()).getUserDao().update(user);
+
+
+    }
+
+    public void updateInternalStorage(Bitmap bm){
+        ContextWrapper cw = new ContextWrapper(getContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File myPath = new File(directory, "profile.jpg");
+
+        FileOutputStream fos = null;
+
+        try {
+            fos = new FileOutputStream(myPath);
+            bm.compress(Bitmap.CompressFormat.JPEG, 100,fos );
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static class selectDate extends DialogFragment implements DatePickerDialog.OnDateSetListener{
@@ -292,11 +351,13 @@ public class SettingsFragment extends Fragment{
 
         @Override
         public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-            populateSetDate(year,month ,day );
+            populateSetDate(year,month,day );
         }
 
         public void populateSetDate(int year, int month, int day){
-            birthdate.setText( day+"/"+month+"/"+year);
+            Calendar newDate = Calendar.getInstance();
+            newDate.set(year,month,day );
+            birthdate.setText(simpleDateFormat.format(newDate.getTime()));
         }
 
     }

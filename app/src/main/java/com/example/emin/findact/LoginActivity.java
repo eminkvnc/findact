@@ -117,7 +117,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser firebaseUser){
         Toast.makeText(this, "Welcome: "+firebaseUser.getEmail(), Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this, GetUserDetailActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
 }

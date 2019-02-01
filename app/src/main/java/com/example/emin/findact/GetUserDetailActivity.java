@@ -1,12 +1,17 @@
 package com.example.emin.findact;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.DatePickerDialog;
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,27 +29,36 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.InitialLog;
 import com.example.emin.findact.Firebase.UserData;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.example.emin.findact.RoomDatabase.User;
+//import com.example.emin.findact.RoomDatabase.UserRepository;
+//import com.example.emin.findact.RoomDatabase.UserViewModel;
+import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.UUID;
+
+//import com.example.emin.findact.SQLite.SQLiteContentProvider;
+//import com.example.emin.findact.SQLite.SQLiteContentProvider;
 
 public class GetUserDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
     // Kayıt olduktan sonra kullanıcıdan tek sefere mahsuz belirli dataları almak için buraya yönlendirdik.
 
-    FirebaseAuth firebaseAuth;
-    FirebaseUser firebaseUser;
-
+    Bitmap bitmap;
     FirebaseDBHelper firebaseDBHelper;
 
     EditText nameET, surnameET, birthdayET;
@@ -146,54 +160,68 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         profilePicture = findViewById(R.id.get_user_detail_user_image);
 
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == 1){
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent,2);
+        profilePicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                checkAndroidVersion();
             }
-        }
+        });
+
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 2 && resultCode == RESULT_OK && data != null){
-            selectedImage = data.getData();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),selectedImage);
-                int width = bitmap.getWidth();
-                int height = bitmap.getHeight();
-                float scaleWidth = ((float) 100) / width;
-                float scaleHeight = ((float) 100) / height;
-
-                Matrix matrix = new Matrix();
-
-                matrix.postScale(scaleWidth, scaleHeight);
-
-                Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-
-                profilePicture.setImageBitmap(resizedBitmap);
-            } catch (IOException e) {
+    public void checkAndroidVersion(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            try{
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},
+                        555);
+            } catch (Exception e){
                 e.printStackTrace();
             }
+        } else {
+            pickImage();
         }
     }
 
-    public void selectProfileImage(View view){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
-            } else{
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent,2);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == 555 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            pickImage();
+        } else {
+            checkAndroidVersion();
+        }
+    }
+
+    public void pickImage() {
+        CropImage.startPickImageActivity(this);
+    }
+    private void croprequest(Uri imageUri) {
+        CropImage.activity(imageUri)
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setMultiTouchEnabled(true)
+                .start(this);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        //RESULT FROM SELECTED IMAGE
+        if (requestCode == CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            selectedImage = CropImage.getPickImageResultUri(this, data);
+            croprequest(selectedImage);
+        }
+
+        //RESULT FROM CROPING ACTIVITY
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                try {
+                    bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), result.getUri());
+
+                    profilePicture.setImageBitmap(bitmap);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -256,9 +284,43 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         firebaseDBHelper.addUserDetail(userData,firebaseDBHelper.getCurrentUser());
         firebaseDBHelper.addUserLog(initialLog, firebaseDBHelper.getCurrentUser());
 
+        saveToInternalStorage(bitmap);
+
+        final User user = new User(1,name,surname ,city ,birthday , selectedImage.toString(), "true");
+
+
+        UserDatabase.getInstance(getApplicationContext()).getUserDao().insert(user);
+
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
+
+
+    private String saveToInternalStorage(Bitmap bitmapImage){
+
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File myPath = new File(directory, "profile.jpg");
+
+        FileOutputStream fos = null;
+
+        try {
+            fos = new FileOutputStream(myPath);
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90,fos );
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        Log.d("saveToInternalStorage", "saveToInternalStorage: "+directory.getAbsolutePath());
+        return directory.getAbsolutePath();
+    }
+
 
 
     // ADAPTERLAR için farklı bir class oluşturulabilir.

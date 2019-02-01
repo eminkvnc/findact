@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/test"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".GetUserDetailActivity">
@@ -12,9 +13,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="10dp"
+        android:backgroundTint="@color/colorPrimary"
         android:ems="10"
         android:hint="Name"
-        android:backgroundTint="@color/colorPrimary"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="@+id/get_user_detail_cardview"
         app:layout_constraintTop_toBottomOf="@+id/get_user_detail_cardview" />
@@ -121,28 +122,26 @@
 
     </LinearLayout>
 
-
     <android.support.v7.widget.CardView
         android:id="@+id/get_user_detail_cardview"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
-        android:shape="ring"
-        android:thicknessRatio="1.9"
+        android:thicknessRatio="1"
         app:cardCornerRadius="50dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
 
         <ImageView
             android:id="@+id/get_user_detail_user_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:onClick="selectProfileImage"
+            android:scaleType="fitXY"
             app:srcCompat="@drawable/default_profile_picture" />
 
     </android.support.v7.widget.CardView>
-
 
 
     <TextView
