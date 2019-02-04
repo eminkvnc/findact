@@ -3,20 +3,16 @@ package com.example.emin.findact;
 import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.arch.lifecycle.ViewModelProviders;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.util.Log;
@@ -29,7 +25,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.InitialLog;
@@ -41,7 +36,6 @@ import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -61,11 +55,11 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     Bitmap bitmap;
     FirebaseDBHelper firebaseDBHelper;
 
-    EditText nameET, surnameET, birthdayET;
+    EditText nameET, surnameET, birthdayET, usernameET;
     Spinner citySpinner;
     ListView gameListView, movieListView;
     ImageView profilePicture;
-    String name, surname, city, birthday, movieGenres, gameGenres;
+    String name, surname, city, birthday, username, movieGenres, gameGenres;
     Uri selectedImage;
 
     private String[] gameGenresList = {"FPS","MOBA","SINGLE PLAYER","MULTIPLAYER","BATTLEROYAL","VR"};
@@ -78,7 +72,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     private String[] citiesList = { "Select City","Adana", "Adıyaman","Afyon","Ağrı","Amasya","Ankara","Antalya","Artvin","Aydın","Balıkesir","Bilecik",
             "Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli","Diyarbakır","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir",
             "Gaziantep","Giresun","Gümüşhane","Hakkari","Hatay","Isparta","İçel (Mersin)","İstanbul","İzmir","Kars","Kastamonu","Kayseri","Kırklareli","Kırşehir",
-            "Kocaeli","Konya","Kütahya","Malatya","Manisa","Kahramanmaraş","Mardin","Muğla","Muş","Nevşehir","Niğde","Ordu","Rize","Sakarya","Samsun","Siirt","Sinop",
+            "Kocaeli","Konya","Kütahya","Malatya","Manisa","K.maraş","Mardin","Muğla","Muş","Nevşehir","Niğde","Ordu","Rize","Sakarya","Samsun","Siirt","Sinop",
             "Sivas","Tekirdağ","Tokat","Trabzon","Tunceli","Şanlıurfa","Uşak","Van","Yozgat","Zonguldak","Aksaray","Bayburt","Karaman","Kırıkkale","Batman",
             "Şırnak","Bartın","Ardahan","Iğdır","Yalova","Karabük","Kilis","Osmaniye","Düzce"};
 
@@ -142,10 +136,11 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         movieListView.setAdapter(new MovieCheckBoxAdapter());
 
-        nameET = findViewById(R.id.get_user_detail_userName);
-        surnameET = findViewById(R.id.get_user_detail_userSurname);
+        nameET = findViewById(R.id.get_user_detail_firstname);
+        surnameET = findViewById(R.id.get_user_detail_lastname);
         citySpinner = findViewById(R.id.get_user_detail_city);
         birthdayET = findViewById(R.id.get_user_detail_birthday);
+        usernameET = findViewById(R.id.get_user_detail_username);
 
         birthdayET.setFocusable(false);
         birthdayET.setClickable(true);
@@ -194,6 +189,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     public void pickImage() {
         CropImage.startPickImageActivity(this);
     }
+
     private void croprequest(Uri imageUri) {
         CropImage.activity(imageUri)
                 .setGuidelines(CropImageView.Guidelines.ON)
@@ -260,6 +256,8 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         surname = surnameET.getText().toString();
         city = citySpinner.getSelectedItem().toString();
         birthday = birthdayET.getText().toString();
+        username = usernameET.getText().toString();
+
 
         if(!selectedGameGenres.isEmpty()) {
             gameGenres = selectedGameGenres.get(0);
@@ -276,7 +274,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         firebaseDBHelper = FirebaseDBHelper.getInstance();
 
-        UserData userData = new UserData(name, surname, city, birthday, selectedImage,"true");
+        UserData userData = new UserData(name, surname, city, birthday, username, "true", selectedImage);
         InitialLog initialLog = new InitialLog(gameGenres,movieGenres ,Calendar.getInstance().getTime().toString() ,"status" );
 
 
@@ -286,7 +284,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         saveToInternalStorage(bitmap);
 
-        final User user = new User(1,name,surname ,city ,birthday , selectedImage.toString(), "true");
+        final User user = new User(1,name,surname ,city ,birthday , selectedImage.toString(), "true", username);
 
 
         UserDatabase.getInstance(getApplicationContext()).getUserDao().insert(user);

@@ -47,22 +47,24 @@ public class FirebaseDBHelper {
 
         String imageName = "images/profilePicture.jpg";
 
-        Log.d("addUserDetail", "addUserDetail: "+ userData.getProfilePicture());
+        Log.d("addUserDetail", "addUserDetail: "+ userData.getProfilePictureUri());
         final StorageReference mStorageReference = storageReference.child(user_email).child(imageName);
 
-        mStorageReference.putFile(userData.profilePicture).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+        databaseReference.child("Users").child(user_email).child("Data").child("firstname").setValue(userData.getFirstname());
+        databaseReference.child("Users").child(user_email).child("Data").child("lastname").setValue(userData.getLastname());
+        databaseReference.child("Users").child(user_email).child("Data").child("birth-date").setValue(userData.getBirthdate());
+        databaseReference.child("Users").child(user_email).child("Data").child("city").setValue(userData.getCity());
+        databaseReference.child("Users").child(user_email).child("Data").child("username").setValue(userData.getUsername());
+        databaseReference.child("Users").child(user_email).child("Data").child("notification").setValue(userData.getNotification());
+
+        mStorageReference.putFile(userData.getProfilePictureUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 mStorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
                         String downloadUrl = uri.toString();
-                        databaseReference.child("Users").child(user_email).child("Data").child("name").setValue(userData.getName());
-                        databaseReference.child("Users").child(user_email).child("Data").child("surname").setValue(userData.getSurname());
-                        databaseReference.child("Users").child(user_email).child("Data").child("birth-date").setValue(userData.getBirthdate());
-                        databaseReference.child("Users").child(user_email).child("Data").child("city").setValue(userData.getCity());
                         databaseReference.child("Users").child(user_email).child("Data").child("profile-picture").setValue(downloadUrl);
-                        databaseReference.child("Users").child(user_email).child("Data").child("notification").setValue(userData.getNotification());
                         Log.d("onSuccess", "onSuccess: "+ downloadUrl);
                         }
                     });
@@ -77,10 +79,11 @@ public class FirebaseDBHelper {
 
     public void updateUserDetailWithoutPicture(UserData userData){
 
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("name").setValue(userData.getName());
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("surname").setValue(userData.getSurname());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("firstname").setValue(userData.getFirstname());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("lastname").setValue(userData.getLastname());
         databaseReference.child("Users").child(getCurrentUser()).child("Data").child("birth-date").setValue(userData.getBirthdate());
         databaseReference.child("Users").child(getCurrentUser()).child("Data").child("city").setValue(userData.getCity());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("username").setValue(userData.getUsername());
         databaseReference.child("Users").child(getCurrentUser()).child("Data").child("notification").setValue(userData.getNotification());
     }
 

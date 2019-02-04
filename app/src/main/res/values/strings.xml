@@ -4,4 +4,7 @@
     <string name="title_explore">Explore</string>
     <string name="title_find">Find</string>
     <string name="title_profile">Profile</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_display_activity">Activities</string>
+
 </resources>

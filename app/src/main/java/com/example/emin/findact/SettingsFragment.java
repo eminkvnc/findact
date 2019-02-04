@@ -17,6 +17,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
@@ -59,7 +62,7 @@ public class SettingsFragment extends Fragment{
     View v;
 
     ImageView profilePic, changePP;
-    EditText name;
+    EditText fullName, username;
     static EditText birthdate;
     Spinner city;
     SwitchCompat switchCompat;
@@ -71,13 +74,12 @@ public class SettingsFragment extends Fragment{
     private static String[] citiesList = {"Adana", "Adıyaman", "Afyon", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik",
             "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir",
             "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "İçel (Mersin)", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir",
-            "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop",
+            "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "K.maraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop",
             "Sivas", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman",
             "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"};
 
 
-    String  user_name, user_surname, surnameString,cityString;
-    Toolbar toolbar;
+    String  firstname, lastname,  surnameString,cityString;
     String switchData, defaultName;
     Bitmap bitmap;
 
@@ -94,24 +96,29 @@ public class SettingsFragment extends Fragment{
         setHasOptionsMenu(true);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        ActionBar actionBar = activity.getSupportActionBar();
+        actionBar.setTitle(R.string.title_settings);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         v = inflater.inflate(R.layout.fragment_settings, container, false);
 
-//        toolbar = v.findViewById(R.id.fragment_settings_toolbar);
-//        toolbar.setTitle("Settings");
-//        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
-
         firebaseDBHelper = new FirebaseDBHelper();
 
         profilePic = v.findViewById(R.id.fragment_settings_picture_iv);
         changePP = v.findViewById(R.id.fragment_settings_picture_change_picture);
-        name = v.findViewById(R.id.fragment_settings_name_tv);
+        fullName = v.findViewById(R.id.fragment_settings_fullname);
         birthdate = v.findViewById(R.id.fragment_settings_age_tv);
         city = v.findViewById(R.id.fragment_settings_city_tv);
         switchCompat = v.findViewById(R.id.switch1);
+        username = v.findViewById(R.id.fragment_settings_username);
 
         birthdate.setFocusable(false);
         birthdate.setClickable(true);
@@ -157,7 +164,8 @@ public class SettingsFragment extends Fragment{
 
         User user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
 
-        name.setText(user.getName() +" "+user.getSurname());
+        username.setText(user.getUsername());
+        fullName.setText(user.getFirstname() +" "+user.getLastname());
         birthdate.setText(user.getBirthday());
         // Load image
         try{
@@ -275,42 +283,35 @@ public class SettingsFragment extends Fragment{
 
     private void updateDetail(){
 
-        String nameET = name.getText().toString();
+        String nameET = fullName.getText().toString();
         String[] nameSplit = nameET.split(" ");
         int i = nameSplit.length;
-        user_name = nameSplit[0];
+        firstname = nameSplit[0];
 
         Log.d("updateDetail", "updateDetail: "+ selectedImage);
 
         for (int j = 1; j < i; j++){
             if (j == i-1){
-                user_surname = nameSplit[j];
+                lastname = nameSplit[j];
             } else {
-                user_name = user_name +" "+ nameSplit[j];
+                firstname = firstname +" "+ nameSplit[j];
             }
         }
         if(controlUri == selectedImage){
-            userData = new UserData(user_name
-                    ,user_surname
-                    ,city.getSelectedItem().toString()
-                    ,birthdate.getText().toString()
-                    ,Uri.parse(""),switchData);
+            userData = new UserData(firstname,lastname ,city.getSelectedItem().toString(),birthdate.getText().toString(),
+                    username.getText().toString(), switchData, Uri.parse(""));
             firebaseDBHelper.updateUserDetailWithoutPicture(userData);
         } else {
-            userData = new UserData(user_name
-                    ,user_surname
-                    ,city.getSelectedItem().toString()
-                    ,birthdate.getText().toString()
-                    ,selectedImage,switchData);
+            userData = new UserData(firstname,lastname ,city.getSelectedItem().toString(),birthdate.getText().toString(),
+                    username.getText().toString(), switchData, selectedImage);
             firebaseDBHelper.addUserDetail(userData, firebaseDBHelper.getCurrentUser());
-
             if (bitmap != null){
                 updateInternalStorage(bitmap);
             }
         }
 
-        final User user = new User(1,user_name,user_surname ,city.getSelectedItem().toString() ,
-                birthdate.getText().toString(), selectedImage.toString(), switchData);
+        final User user = new User(1,firstname,lastname ,city.getSelectedItem().toString() ,
+                birthdate.getText().toString(), selectedImage.toString(), switchData,username.getText().toString());
 
         UserDatabase.getInstance(getContext()).getUserDao().update(user);
 

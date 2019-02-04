@@ -15,11 +15,11 @@ public class User {
 
     @NonNull
     @ColumnInfo(name = "name")
-    private String name;
+    private String firstname;
 
     @NonNull
     @ColumnInfo(name = "surname")
-    private String surname;
+    private String lastname;
 
     @NonNull
     @ColumnInfo(name = "city")
@@ -38,14 +38,20 @@ public class User {
     @ColumnInfo(name = "notification")
     private String notification;
 
-    public User(int userId, @NonNull String name, @NonNull String surname, @NonNull String city, @NonNull String birthday, @NonNull String pictureUri, @NonNull String notification) {
+    @NonNull
+    @ColumnInfo(name = "username")
+    private String username;
+
+    public User(int userId, @NonNull String firstname, @NonNull String lastname, @NonNull String city,
+                @NonNull String birthday, @NonNull String pictureUri, @NonNull String notification, @NonNull String username) {
         this.userId = userId;
-        this.name = name;
-        this.surname = surname;
+        this.firstname = firstname;
+        this.lastname = lastname;
         this.city = city;
         this.birthday = birthday;
         this.pictureUri = pictureUri;
         this.notification = notification;
+        this.username = username;
     }
 
     public int getUserId() {
@@ -53,13 +59,13 @@ public class User {
     }
 
     @NonNull
-    public String getName() {
-        return name;
+    public String getFirstname() {
+        return firstname;
     }
 
     @NonNull
-    public String getSurname() {
-        return surname;
+    public String getLastname() {
+        return lastname;
     }
 
     @NonNull
@@ -81,4 +87,13 @@ public class User {
     public String getNotification() {
         return notification;
     }
+
+    @NonNull
+    public String getUsername() {
+        return username;
+    }
 }
+
+
+
+
