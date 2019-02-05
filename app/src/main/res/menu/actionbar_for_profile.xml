@@ -2,10 +2,42 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/profile_fragment_actionbar_settings"
-        android:title="Settings"
+    <item android:id="@+id/profile_fragment_actionbar_friends"
+        android:title="Friends"
         app:showAsAction="always"
-        android:icon="@drawable/ic_settings">
-    </item>
+        android:icon="@drawable/icons8_friends_filled_50"></item>
 
+    <item android:id="@+id/profile_fragment_actionbar_activities"
+        android:title="Activities"
+        app:showAsAction="always"
+        android:icon="@drawable/activity"></item>
+
+
+    <item android:id="@+id/options"
+        android:title="Options"
+        app:showAsAction="always"
+        android:icon="@drawable/menu">
+
+        <menu>
+
+            <item
+                android:id="@+id/profile_fragment_actionbar_edit_profile"
+                android:icon="@drawable/icons8_edit_50"
+                android:title="Edit Profile"
+                app:showAsAction="withText"></item>
+
+            <item android:id="@+id/profile_fragment_actionbar_settings"
+                android:title="Settings"
+                app:showAsAction="withText"
+                android:icon="@drawable/icons8_settings_50">
+            </item>
+
+            <item android:id="@+id/profile_fragment_actionbar_logout"
+                android:title="Logout"
+                app:showAsAction="withText"
+                android:icon="@drawable/icons8_shutdown_50">
+            </item>
+
+        </menu>
+    </item>
 </menu>
