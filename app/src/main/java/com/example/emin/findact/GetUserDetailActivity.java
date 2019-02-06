@@ -44,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.UUID;
 
 //import com.example.emin.findact.SQLite.SQLiteContentProvider;
 //import com.example.emin.findact.SQLite.SQLiteContentProvider;
@@ -140,7 +141,6 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         surnameET = findViewById(R.id.get_user_detail_lastname);
         citySpinner = findViewById(R.id.get_user_detail_city);
         birthdayET = findViewById(R.id.get_user_detail_birthday);
-        usernameET = findViewById(R.id.get_user_detail_username);
 
         birthdayET.setFocusable(false);
         birthdayET.setClickable(true);
@@ -256,7 +256,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         surname = surnameET.getText().toString();
         city = citySpinner.getSelectedItem().toString();
         birthday = birthdayET.getText().toString();
-        username = usernameET.getText().toString();
+        username = firebaseDBHelper.getCurrentUser();
 
 
         if(!selectedGameGenres.isEmpty()) {
@@ -274,7 +274,11 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         firebaseDBHelper = FirebaseDBHelper.getInstance();
 
-        UserData userData = new UserData(name, surname, city, birthday, username, "true", selectedImage);
+        UUID uuid = UUID.randomUUID();
+        String uuidString = uuid.toString();
+
+        //UserData userData = new UserData(name, surname, city, birthday, username, uuidString,"true", selectedImage);
+        UserData userData = new UserData(name, surname, city,birthday ,username ,uuidString ,"true" ,selectedImage );
         InitialLog initialLog = new InitialLog(gameGenres,movieGenres ,Calendar.getInstance().getTime().toString() ,"status" );
 
 
@@ -284,7 +288,8 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         saveToInternalStorage(bitmap);
 
-        final User user = new User(1,name,surname ,city ,birthday , selectedImage.toString(), "true", username);
+
+        final User user = new User(1,uuidString,name,surname ,city ,birthday , selectedImage.toString(), "true", username);
 
 
         UserDatabase.getInstance(getApplicationContext()).getUserDao().insert(user);

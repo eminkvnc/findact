@@ -2,16 +2,22 @@ package com.example.emin.findact.RoomDatabase;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
+import java.util.UUID;
 
-@Entity(tableName = "user_detail")
+
+@Entity(tableName = "user_detail", indices = @Index(value = {"uuid"}, unique = true))
 public class User {
 
-    @NonNull
     @PrimaryKey(autoGenerate = true)
     private int userId;
+
+    @NonNull
+    @ColumnInfo(name = "uuid")
+    private String uuid;
 
     @NonNull
     @ColumnInfo(name = "name")
@@ -29,7 +35,6 @@ public class User {
     @ColumnInfo(name = "birthday")
     private String birthday;
 
-
     @NonNull
     @ColumnInfo(name = "pictureUri")
     private String pictureUri;
@@ -42,9 +47,11 @@ public class User {
     @ColumnInfo(name = "username")
     private String username;
 
-    public User(int userId, @NonNull String firstname, @NonNull String lastname, @NonNull String city,
-                @NonNull String birthday, @NonNull String pictureUri, @NonNull String notification, @NonNull String username) {
+    public User(int userId, @NonNull String uuid, @NonNull String firstname,
+                @NonNull String lastname, @NonNull String city, @NonNull String birthday,
+                @NonNull String pictureUri, @NonNull String notification, @NonNull String username) {
         this.userId = userId;
+        this.uuid = uuid;
         this.firstname = firstname;
         this.lastname = lastname;
         this.city = city;
@@ -54,8 +61,14 @@ public class User {
         this.username = username;
     }
 
+
     public int getUserId() {
         return userId;
+    }
+
+    @NonNull
+    public String getUuid() {
+        return uuid;
     }
 
     @NonNull

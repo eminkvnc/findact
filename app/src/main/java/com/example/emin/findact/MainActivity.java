@@ -1,5 +1,6 @@
 package com.example.emin.findact;
 
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
-        navigation.setSelectedItemId(R.id.navigation_home);
+        navigation.setSelectedItemId(R.id.navigation_explore);
 
     }
 
@@ -70,7 +71,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         switch (item.getItemId()) {
             case R.id.navigation_home:
-                setMainFragment(homeFragment);
+                //setMainFragment(homeFragment);
+                Intent intent = new Intent(getApplicationContext(),GetUserDetailActivity.class);
+                startActivity(intent);
                 return true;
             case R.id.navigation_explore:
                 setMainFragment(exploreFragment);

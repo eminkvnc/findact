@@ -57,7 +57,7 @@ public class SettingsFragment extends Fragment{
     View v;
 
     ImageView profilePic, changePP;
-    EditText fullName, username;
+    EditText fullName;
     static EditText birthdate;
     Spinner city;
     SwitchCompat switchCompat;
@@ -74,7 +74,7 @@ public class SettingsFragment extends Fragment{
             "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"};
 
 
-    String  firstname, lastname,  surnameString,cityString;
+    String  firstname, lastname,  surnameString, cityString, uuidString;
     String switchData, defaultName;
     Bitmap bitmap;
     User  user;
@@ -113,7 +113,6 @@ public class SettingsFragment extends Fragment{
         birthdate = v.findViewById(R.id.fragment_settings_age_tv);
         city = v.findViewById(R.id.fragment_settings_city_tv);
         switchCompat = v.findViewById(R.id.switch1);
-        username = v.findViewById(R.id.fragment_settings_username);
 
         birthdate.setFocusable(false);
         birthdate.setClickable(true);
@@ -159,7 +158,6 @@ public class SettingsFragment extends Fragment{
 
         user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
 
-        username.setText(user.getUsername());
         fullName.setText(user.getFirstname() +" "+user.getLastname());
         birthdate.setText(user.getBirthday());
         // Load image
@@ -181,6 +179,8 @@ public class SettingsFragment extends Fragment{
         boolean b = Boolean.valueOf(switchData);
         Log.d("onCreateView", "onCreateView: "+b);
         switchCompat.setChecked(b);
+
+        uuidString = user.getUuid();
 
         return v;
     }
@@ -267,19 +267,14 @@ public class SettingsFragment extends Fragment{
         }
     }
 
-    private void signOut() {
-
-        FirebaseAuth.getInstance().signOut();
-        Intent intent = new Intent(getContext(), LoginActivity.class);
-        startActivity(intent);
-    }
-
     private void updateDetail(){
 
         String nameET = fullName.getText().toString();
         String[] nameSplit = nameET.split(" ");
         int i = nameSplit.length;
         firstname = nameSplit[0];
+
+        String username = firebaseDBHelper.getCurrentUser();
 
         if (i == 1){
             firstname = nameSplit[0];
@@ -296,19 +291,19 @@ public class SettingsFragment extends Fragment{
 
         if(controlUri == selectedImage){
             userData = new UserData(firstname,lastname ,city.getSelectedItem().toString(),birthdate.getText().toString(),
-                    username.getText().toString(), switchData, Uri.parse(""));
+                    username,uuidString, switchData, Uri.parse(""));
             firebaseDBHelper.updateUserDetailWithoutPicture(userData);
         } else {
             userData = new UserData(firstname,lastname ,city.getSelectedItem().toString(),birthdate.getText().toString(),
-                    username.getText().toString(), switchData, selectedImage);
+                    username,uuidString, switchData, selectedImage);
             firebaseDBHelper.addUserDetail(userData, firebaseDBHelper.getCurrentUser());
             if (bitmap != null){
                 updateInternalStorage(bitmap);
             }
         }
 
-        final User user = new User(1,firstname,lastname ,city.getSelectedItem().toString() ,
-                birthdate.getText().toString(), selectedImage.toString(), switchData,username.getText().toString());
+        final User user = new User(1,uuidString,firstname,lastname ,city.getSelectedItem().toString() ,
+                birthdate.getText().toString(), selectedImage.toString(), switchData,username);
 
         UserDatabase.getInstance(getContext()).getUserDao().update(user);
 
@@ -356,7 +351,5 @@ public class SettingsFragment extends Fragment{
             newDate.set(year,month,day );
             birthdate.setText(simpleDateFormat.format(newDate.getTime()));
         }
-
     }
-
 }

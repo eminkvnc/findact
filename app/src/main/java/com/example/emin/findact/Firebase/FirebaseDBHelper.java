@@ -39,7 +39,6 @@ public class FirebaseDBHelper {
     FirebaseAuth firebaseAuth;
     FirebaseUser firebaseUser;
     String userEmail;
-    String picUri;
     String []userEmailSplit;
     public static FirebaseDBHelper getInstance(){
         return SingletonHolder.INSTANCE;
@@ -68,6 +67,7 @@ public class FirebaseDBHelper {
         databaseReference.child("Users").child(user_email).child("Data").child("city").setValue(userData.getCity());
         databaseReference.child("Users").child(user_email).child("Data").child("username").setValue(userData.getUsername());
         databaseReference.child("Users").child(user_email).child("Data").child("notification").setValue(userData.getNotification());
+        databaseReference.child("Users").child(user_email).child("Data").child("uuid-string").setValue(userData.getUuidString());
 
         mStorageReference.putFile(userData.getProfilePictureUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -97,6 +97,7 @@ public class FirebaseDBHelper {
         databaseReference.child("Users").child(getCurrentUser()).child("Data").child("city").setValue(userData.getCity());
         databaseReference.child("Users").child(getCurrentUser()).child("Data").child("username").setValue(userData.getUsername());
         databaseReference.child("Users").child(getCurrentUser()).child("Data").child("notification").setValue(userData.getNotification());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("uuid-string").setValue(userData.getUuidString());
     }
 
     public void addUserLog(final InitialLog initialLog, final String user_email){
@@ -236,6 +237,7 @@ public class FirebaseDBHelper {
                     ds.child("Data").child("city").getValue().toString(),
                     ds.child("Data").child("birth-date").getValue().toString(),
                     ds.child("Data").child("username").getValue().toString(),
+                    ds.child("Data").child("uuid-string").getValue().toString(),
                     ds.child("Data").child("notification").getValue().toString(),
                     Uri.parse(ds.child("Data").child("profile-picture").getValue().toString()));
             return userData;
@@ -253,6 +255,7 @@ public class FirebaseDBHelper {
                                                      ds.child("Data").child("city").getValue().toString(),
                                                      ds.child("Data").child("birth-date").getValue().toString(),
                                                      ds.child("Data").child("username").getValue().toString(),
+                                                     ds.child("Data").child("uuid-string").getValue().toString(),
                                                      ds.child("Data").child("notification").getValue().toString(),
                                                      Uri.parse(ds.child("Data").child("profile-picture").getValue().toString()));
                     userDataArrayList.add(userData);

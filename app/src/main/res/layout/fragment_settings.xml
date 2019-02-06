@@ -69,25 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:background="@drawable/avatar" />
-
-
-            <EditText
-                android:id="@+id/fragment_settings_username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:backgroundTint="@color/colorPrimary"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                android:textSize="24sp"
-                tools:layout_editor_absoluteX="108dp"
-                tools:layout_editor_absoluteY="248dp" />
-        </LinearLayout>
+            android:orientation="horizontal"/>
 
         <LinearLayout
             android:layout_width="match_parent"
