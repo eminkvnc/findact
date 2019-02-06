@@ -1,5 +1,6 @@
 package com.example.emin.findact;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -20,16 +21,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Objects;
 
 public class ProfileFragment extends Fragment {
 
@@ -44,9 +41,7 @@ public class ProfileFragment extends Fragment {
     TextView name, age, city;
 
     private SettingsFragment settingsFragment;
-
-    FirebaseDBHelper firebaseDBHelper;
-
+    User user;
 
     public static ProfileFragment getInstance() {
         return new ProfileFragment();
@@ -63,7 +58,7 @@ public class ProfileFragment extends Fragment {
         super.onResume();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
-        actionBar.setTitle(R.string.title_profile);
+        actionBar.setTitle(user.getUsername());
     }
 
     @Override
@@ -74,7 +69,23 @@ public class ProfileFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (item.getItemId() == R.id.profile_fragment_actionbar_settings){
+        if (item.getItemId() == R.id.profile_fragment_actionbar_activities){
+
+            // go activities activity or fragment
+
+        } else if (item.getItemId() == R.id.profile_fragment_actionbar_friends){
+
+            // go friends activity or fragment
+
+        } else if (item.getItemId() == R.id.profile_fragment_actionbar_settings){
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.replace(R.id.main_frame,settingsFragment);
+            fragmentTransaction.commit();
+        } else if (item.getItemId() == R.id.profile_fragment_actionbar_logout){
+            signOut();
+        } else if (item.getItemId() == R.id.profile_fragment_actionbar_edit_profile){
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.addToBackStack(null);
@@ -90,6 +101,8 @@ public class ProfileFragment extends Fragment {
 
         v = inflater.inflate(R.layout.fragment_profile,container,false);
 
+        ImageView
+
 //        ImageView settingsIconImageView = v.findViewById(R.id.fragment_profile_settings_or_add_iv);
         profilePicture = v.findViewById(R.id.fragment_profile_picture_iv);
         name = v.findViewById(R.id.fragment_profile_name_tv);
@@ -98,7 +111,7 @@ public class ProfileFragment extends Fragment {
 
         settingsFragment = new SettingsFragment();
 
-        User user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
+        user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
 
         Log.d("onCreateView", "onCreateView: "+ user.getFirstname()+ user.getCity() +user.getBirthday());
 
@@ -144,6 +157,12 @@ public class ProfileFragment extends Fragment {
     }
 
 
+    private void signOut() {
+
+        FirebaseAuth.getInstance().signOut();
+        Intent intent = new Intent(getContext(), LoginActivity.class);
+        startActivity(intent);
+    }
 
     public int getInitMode() {
         return initMode;

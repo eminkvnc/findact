@@ -17,12 +17,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -55,8 +52,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Objects;
 
-//import com.example.emin.findact.RoomDatabase.UserViewModel;
-
 public class SettingsFragment extends Fragment{
 
     View v;
@@ -82,7 +77,7 @@ public class SettingsFragment extends Fragment{
     String  firstname, lastname,  surnameString,cityString;
     String switchData, defaultName;
     Bitmap bitmap;
-
+    User  user;
     static SimpleDateFormat simpleDateFormat;
 
     public static SettingsFragment newInstance() {
@@ -162,7 +157,7 @@ public class SettingsFragment extends Fragment{
         Log.d("getUserData", "getUserData: " + ns);
 
 
-        User user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
+        user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
 
         username.setText(user.getUsername());
         fullName.setText(user.getFirstname() +" "+user.getLastname());
@@ -202,8 +197,6 @@ public class SettingsFragment extends Fragment{
             updateDetail();
             Intent intent = new Intent(getContext(),MainActivity.class);
             startActivity(intent);
-        } else if (item.getItemId() == R.id.actionbar_logout){
-            signOut();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -288,15 +281,19 @@ public class SettingsFragment extends Fragment{
         int i = nameSplit.length;
         firstname = nameSplit[0];
 
-        Log.d("updateDetail", "updateDetail: "+ selectedImage);
-
-        for (int j = 1; j < i; j++){
-            if (j == i-1){
-                lastname = nameSplit[j];
-            } else {
-                firstname = firstname +" "+ nameSplit[j];
+        if (i == 1){
+            firstname = nameSplit[0];
+            lastname = "";
+        } else {
+            for (int j = 1; j < i; j++){
+                if (j == i-1){
+                    lastname = nameSplit[j];
+                } else {
+                    firstname = firstname +" "+ nameSplit[j];
+                }
             }
         }
+
         if(controlUri == selectedImage){
             userData = new UserData(firstname,lastname ,city.getSelectedItem().toString(),birthdate.getText().toString(),
                     username.getText().toString(), switchData, Uri.parse(""));
@@ -314,7 +311,6 @@ public class SettingsFragment extends Fragment{
                 birthdate.getText().toString(), selectedImage.toString(), switchData,username.getText().toString());
 
         UserDatabase.getInstance(getContext()).getUserDao().update(user);
-
 
     }
 

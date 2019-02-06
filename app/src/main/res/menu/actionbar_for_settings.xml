@@ -3,14 +3,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/actionbar_logout"
-        android:icon="@drawable/shutdown_icon"
-        app:showAsAction="always"
-        android:title="Logout" ></item>
-
-    <item android:id="@+id/actionbar_save"
+    <item
+        android:id="@+id/actionbar_save"
+        android:icon="@drawable/checkmark"
         android:title="SaveChanges"
-        android:icon="@drawable/black_tick"
+        app:showAsAction="always"></item>
+
+    <item
+        android:id="@+id/actionbar_settings_cancel"
+        android:icon="@drawable/cancel"
+        android:title="Cancel"
         app:showAsAction="always"></item>
 
 </menu>
