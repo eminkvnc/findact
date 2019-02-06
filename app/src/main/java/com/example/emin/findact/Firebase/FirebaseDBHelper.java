@@ -4,24 +4,36 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.example.emin.findact.R;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
+
+import javax.security.auth.callback.Callback;
 
 
 public class FirebaseDBHelper {
 
+    public static String FRIEND_REQUEST_STATUS_WAITING = "waiting";  // convert them to integer and use them in
+    public static String FRIEND_REQUEST_STATUS_NONE = "none";        // UserListItemAdapter , FirebaseDBHelpper
+    public static String FRIEND_REQUEST_STATUS_ACCEPTED = "accepted";// and modify Firebase Database
+    String TAG = "FirebaseDBHelper";
     DatabaseReference databaseReference;
     StorageReference storageReference;
     FirebaseAuth firebaseAuth;
@@ -97,6 +109,163 @@ public class FirebaseDBHelper {
 
         databaseReference.child("Users").child(user_email).child("Logs").child("Event").setValue(eventLog);
     }
+
+    public void searchUser(final String parameter, final ArrayList<UserData> userDataArrayList, final ArrayList<String> statusList){
+
+        userDataArrayList.clear();
+        statusList.clear();
+        final DatabaseReference reference = databaseReference.child("Users");
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()){
+                    if(ds.getKey().contains(parameter) ||
+                       ds.child("Data").child("firstname").getValue().toString().contains(parameter) ||
+                       ds.child("Data").child("lastname").getValue().toString().contains(parameter)){
+                        userDataArrayList.add(mapUserData(ds));
+                        String status;
+                        if(ds.hasChild("Friends/Requests/"+getCurrentUser())){
+                            status = ds.child("Friends").child("Requests").child(getCurrentUser()).child("status").getValue().toString();
+                        }else {
+                            status = "none";
+                        }
+                        Log.d(TAG, "onDataChange: status: "+status);
+                        statusList.add(status);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+                      /////////////////////
+                     // FRIEND REQUESTS //
+                    /////////////////////
+
+    public void sendFriendRequest(String username){
+
+        databaseReference.child("Users").child(username).child("Friends").child("Requests").child(getCurrentUser())
+                .child("status").setValue("waiting");
+        databaseReference.child("Users").child(username).child("Friends").child("Requests").child(getCurrentUser())
+                .child("date").setValue(Calendar.getInstance().getTime().toString());
+
+    }
+
+    public void undoFriendRequest(String username){
+        databaseReference.child("Users").child(username).child("Friends").child("Requests").child(getCurrentUser())
+                .child("status").setValue("none");
+        databaseReference.child("Users").child(username).child("Friends").child("Requests").child(getCurrentUser())
+                .child("date").setValue(Calendar.getInstance().getTime().toString());
+    }
+
+    public void declineFriendRequest(String username){
+        databaseReference.child("Users").child(getCurrentUser()).child("Friends").child("Requests").child(username)
+                .child("status").setValue("none");
+        databaseReference.child("Users").child(getCurrentUser()).child("Friends").child("Requests").child(username)
+                .child("date").setValue(Calendar.getInstance().getTime().toString());
+    }
+
+    public void acceptFriendRequest(String username){
+        databaseReference.child("Users").child(getCurrentUser()).child("Friends").child("Requests").child(username)
+                .child("status").setValue("accepted");
+        databaseReference.child("Users").child(getCurrentUser()).child("Friends").child("Requests").child(username)
+                .child("date").setValue(Calendar.getInstance().getTime().toString());
+        databaseReference.child("Users").child(getCurrentUser()).child("Friends").child("MyFriends").child(username).
+                child("date").setValue(Calendar.getInstance().getTime().toString());
+    }
+
+    public void removeFriend(String username){
+        databaseReference.child("Users").child(getCurrentUser()).child("Friends")
+                .child("MyFriends").child(username).removeValue();
+        databaseReference.child("Users").child(getCurrentUser()).child("Friends")
+                .child("Requests").child(username).child("status").setValue("none");
+        databaseReference.child("Users").child(getCurrentUser()).child("Friends")
+                .child("Requests").child(username).child("date").setValue(Calendar.getInstance().getTime().toString());
+    }
+
+    public void getFriendRequests(final ArrayList<UserData> userDataArrayList){
+
+        userDataArrayList.clear();
+        DatabaseReference reference = databaseReference.child("Users").child(getCurrentUser());
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild("Friends/Requests")){
+                    for(DataSnapshot ds : dataSnapshot.child("Friends").child("Requests").getChildren()){
+                        if(ds.child("status").getValue().equals("waiting")) {
+                            final String username = ds.getKey();
+                            Log.d(TAG, "onDataChange: requests: " + ds.getKey());
+                            databaseReference.child("Users").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                        if (ds.getKey().equals(username)) {
+                                            userDataArrayList.add(mapUserData(ds));
+                                        }
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+                        /////////////////////
+                       //MAPPING FUNCTIONS//
+                      /////////////////////
+
+    //maps dataSnapshot to UserData
+    private UserData mapUserData(DataSnapshot ds){
+
+            UserData userData = new UserData(ds.child("Data").child("firstname").getValue().toString(),
+                    ds.child("Data").child("lastname").getValue().toString(),
+                    ds.child("Data").child("city").getValue().toString(),
+                    ds.child("Data").child("birth-date").getValue().toString(),
+                    ds.child("Data").child("username").getValue().toString(),
+                    ds.child("Data").child("notification").getValue().toString(),
+                    Uri.parse(ds.child("Data").child("profile-picture").getValue().toString()));
+            return userData;
+    }
+
+    //maps dataSnapshot to UserData Array
+    private void mapUserData(DatabaseReference databaseReference, final ArrayList<UserData> userDataArrayList){
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    UserData userData = new UserData(ds.child("Data").child("firstname").getValue().toString(),
+                                                     ds.child("Data").child("lastname").getValue().toString(),
+                                                     ds.child("Data").child("city").getValue().toString(),
+                                                     ds.child("Data").child("birth-date").getValue().toString(),
+                                                     ds.child("Data").child("username").getValue().toString(),
+                                                     ds.child("Data").child("notification").getValue().toString(),
+                                                     Uri.parse(ds.child("Data").child("profile-picture").getValue().toString()));
+                    userDataArrayList.add(userData);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
 
     public String getCurrentUser(){
         firebaseAuth = FirebaseAuth.getInstance();

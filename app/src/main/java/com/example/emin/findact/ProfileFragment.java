@@ -19,14 +19,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.emin.findact.Adapters.UserListItemAdapter;
+import com.example.emin.findact.Firebase.FirebaseDBHelper;
+import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 
 public class ProfileFragment extends Fragment {
 
@@ -37,8 +42,12 @@ public class ProfileFragment extends Fragment {
     private int initMode;
     private View v;
 
-    ImageView profilePicture;
-    TextView name, age, city;
+    ImageView profilePictureImageView;
+    TextView nameTextView, ageTextView, cityTextView;
+    ListView friendsAndActivitiesListView;
+    ArrayList<UserData> userDataArrayList;
+    UserListItemAdapter userListItemAdapter;
+
 
     private SettingsFragment settingsFragment;
     User user;
@@ -50,6 +59,7 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        userDataArrayList = new ArrayList<>();
         setHasOptionsMenu(true);
     }
 
@@ -75,7 +85,7 @@ public class ProfileFragment extends Fragment {
 
         } else if (item.getItemId() == R.id.profile_fragment_actionbar_friends){
 
-            // go friends activity or fragment
+            userListItemAdapter.notifyDataSetChanged();
 
         } else if (item.getItemId() == R.id.profile_fragment_actionbar_settings){
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -101,13 +111,15 @@ public class ProfileFragment extends Fragment {
 
         v = inflater.inflate(R.layout.fragment_profile,container,false);
 
-        ImageView
+        profilePictureImageView = v.findViewById(R.id.fragment_profile_picture_iv);
+        nameTextView = v.findViewById(R.id.fragment_profile_name_tv);
+        ageTextView = v.findViewById(R.id.fragment_profile_age_tv);
+        cityTextView = v.findViewById(R.id.fragment_profile_city_tv);
+        friendsAndActivitiesListView = v.findViewById(R.id.fragment_profile_lv);
+        userListItemAdapter = new UserListItemAdapter(getContext(),userDataArrayList,null);
+        friendsAndActivitiesListView.setAdapter(userListItemAdapter);
 
-//        ImageView settingsIconImageView = v.findViewById(R.id.fragment_profile_settings_or_add_iv);
-        profilePicture = v.findViewById(R.id.fragment_profile_picture_iv);
-        name = v.findViewById(R.id.fragment_profile_name_tv);
-        age = v.findViewById(R.id.fragment_profile_age_tv);
-        city = v.findViewById(R.id.fragment_profile_city_tv);
+        FirebaseDBHelper.getInstance().getFriendRequests(userDataArrayList);
 
         settingsFragment = new SettingsFragment();
 
@@ -115,17 +127,17 @@ public class ProfileFragment extends Fragment {
 
         Log.d("onCreateView", "onCreateView: "+ user.getFirstname()+ user.getCity() +user.getBirthday());
 
-        name.setText(user.getFirstname()+" "+ user.getLastname());
-        city.setText(user.getCity());
+        nameTextView.setText(user.getFirstname()+" "+ user.getLastname());
+        cityTextView.setText(user.getCity());
 
         String birthday = user.getBirthday();
         String [] birthdaySplit = birthday.split("/");
-        age.setText(birthdaySplit[0]+"/"+birthdaySplit[1]);
+        ageTextView.setText(birthdaySplit[0]+"/"+birthdaySplit[1]);
 
         try{
             File file = new File("/data/user/0/com.example.emin.findact/app_imageDir","profile.jpg" );
             Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
-            profilePicture.setImageBitmap(b);
+            profilePictureImageView.setImageBitmap(b);
         } catch (Exception e){
             e.printStackTrace();
         }
