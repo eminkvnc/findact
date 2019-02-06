@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,15 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        ActionBar actionBar = activity.getSupportActionBar();
+        actionBar.setTitle(R.string.title_home);
     }
 
     @Nullable

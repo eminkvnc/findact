@@ -2,59 +2,61 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/test"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".GetUserDetailActivity">
 
     <EditText
-        android:id="@+id/get_user_detail_userName"
-        android:layout_width="wrap_content"
+        android:id="@+id/get_user_detail_firstname"
+        android:layout_width="170dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="10dp"
-        android:ems="10"
-        android:hint="Name"
+        android:layout_marginTop="8dp"
         android:backgroundTint="@color/colorPrimary"
+        android:ems="10"
+        android:hint="Firstname"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="@+id/get_user_detail_cardview"
         app:layout_constraintTop_toBottomOf="@+id/get_user_detail_cardview" />
 
     <EditText
-        android:id="@+id/get_user_detail_userSurname"
-        android:layout_width="wrap_content"
+        android:id="@+id/get_user_detail_lastname"
+        android:layout_width="170dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
         android:ems="10"
-        android:hint="Surname"
+        android:hint="Lastname"
         android:inputType="textPersonName"
-        app:layout_constraintStart_toStartOf="@+id/get_user_detail_userName"
-        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_userName" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/get_user_detail_firstname"
+        app:layout_constraintTop_toTopOf="@+id/get_user_detail_firstname" />
 
     <EditText
         android:id="@+id/get_user_detail_birthday"
-        android:layout_width="wrap_content"
+        android:layout_width="170dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Birthday"
         android:inputType="none"
-        app:layout_constraintStart_toStartOf="@+id/get_user_detail_userSurname"
-        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_userSurname" />
+        app:layout_constraintStart_toStartOf="@+id/get_user_detail_firstname"
+        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_firstname" />
 
     <Spinner
         android:id="@+id/get_user_detail_city"
-        android:layout_width="wrap_content"
+        android:layout_width="170dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
         android:backgroundTint="@color/colorPrimary"
         android:dropDownWidth="wrap_content"
         android:ems="10"
         android:gravity="left"
-        android:minWidth="215dp"
         android:minHeight="40dp"
-        app:layout_constraintEnd_toEndOf="@+id/get_user_detail_birthday"
-        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_birthday" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/get_user_detail_birthday"
+        app:layout_constraintTop_toTopOf="@+id/get_user_detail_birthday" />
 
 
     <LinearLayout
@@ -62,12 +64,12 @@
         android:layout_width="0dp"
         android:layout_height="244dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_city">
+        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_username">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -121,28 +123,26 @@
 
     </LinearLayout>
 
-
     <android.support.v7.widget.CardView
         android:id="@+id/get_user_detail_cardview"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:shape="ring"
-        android:thicknessRatio="1.9"
+        android:thicknessRatio="1"
         app:cardCornerRadius="50dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
 
         <ImageView
             android:id="@+id/get_user_detail_user_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:onClick="selectProfileImage"
+            android:scaleType="fitXY"
             app:srcCompat="@drawable/default_profile_picture" />
 
     </android.support.v7.widget.CardView>
-
 
 
     <TextView
@@ -159,7 +159,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/imageView2"
+        android:id="@+id/get_user_detail_save_icon"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginStart="28dp"
@@ -168,6 +168,17 @@
         app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_share" />
+
+    <EditText
+        android:id="@+id/get_user_detail_username"
+        android:layout_width="170dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="Username"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toStartOf="@+id/get_user_detail_birthday"
+        app:layout_constraintTop_toBottomOf="@+id/get_user_detail_birthday" />
 
 
 </android.support.constraint.ConstraintLayout>
