@@ -277,14 +277,13 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         UUID uuid = UUID.randomUUID();
         String uuidString = uuid.toString();
 
-        //UserData userData = new UserData(name, surname, city, birthday, username, uuidString,"true", selectedImage);
         UserData userData = new UserData(name, surname, city,birthday ,username ,uuidString ,"true" ,selectedImage );
         InitialLog initialLog = new InitialLog(gameGenres,movieGenres ,Calendar.getInstance().getTime().toString() ,"status" );
 
 
         Log.d("Save_detail", "SaveDetail: "+ firebaseDBHelper.getCurrentUser());
-        firebaseDBHelper.addUserDetail(userData,firebaseDBHelper.getCurrentUser());
-        firebaseDBHelper.addUserLog(initialLog, firebaseDBHelper.getCurrentUser());
+        firebaseDBHelper.addUserDetail(userData, true);
+        firebaseDBHelper.addUserLog(initialLog);
 
         saveToInternalStorage(bitmap);
 

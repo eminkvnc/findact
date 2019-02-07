@@ -46,30 +46,31 @@ public class FirebaseDBHelper {
         storageReference = FirebaseStorage.getInstance().getReference();
     }
 
-    public void addUserDetail(final UserData userData, final String user_email){
+    public void addUserDetail(final UserData userData, boolean imageAdd){
 
         String imageName = "images/profilePicture.jpg";
 
         Log.d("addUserDetail", "addUserDetail: "+ userData.getProfilePictureUri());
-        final StorageReference mStorageReference = storageReference.child(user_email).child(imageName);
+        final StorageReference mStorageReference = storageReference.child(getCurrentUser()).child(imageName);
 
-        databaseReference.child("Users").child(user_email).child("Data").child("firstname").setValue(userData.getFirstname());
-        databaseReference.child("Users").child(user_email).child("Data").child("lastname").setValue(userData.getLastname());
-        databaseReference.child("Users").child(user_email).child("Data").child("birth-date").setValue(userData.getBirthdate());
-        databaseReference.child("Users").child(user_email).child("Data").child("city").setValue(userData.getCity());
-        databaseReference.child("Users").child(user_email).child("Data").child("username").setValue(userData.getUsername());
-        databaseReference.child("Users").child(user_email).child("Data").child("notification").setValue(userData.getNotification());
-        databaseReference.child("Users").child(user_email).child("Data").child("uuid-string").setValue(userData.getUuidString());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("firstname").setValue(userData.getFirstname());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("lastname").setValue(userData.getLastname());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("birth-date").setValue(userData.getBirthdate());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("city").setValue(userData.getCity());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("username").setValue(userData.getUsername());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("notification").setValue(userData.getNotification());
+        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("uuid-string").setValue(userData.getUuidString());
 
-        mStorageReference.putFile(userData.getProfilePictureUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                mStorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        String downloadUrl = uri.toString();
-                        databaseReference.child("Users").child(user_email).child("Data").child("profile-picture").setValue(downloadUrl);
-                        Log.d("onSuccess", "onSuccess: "+ downloadUrl);
+        if (imageAdd == true){
+            mStorageReference.putFile(userData.getProfilePictureUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    mStorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String downloadUrl = uri.toString();
+                            databaseReference.child("Users").child(getCurrentUser()).child("Data").child("profile-picture").setValue(downloadUrl);
+                            Log.d("onSuccess", "onSuccess: "+ downloadUrl);
                         }
                     });
                 }
@@ -79,22 +80,12 @@ public class FirebaseDBHelper {
                     Log.d("onFailure", "onFailure: " + e);
                 }
             });
+        }
     }
 
-    public void updateUserDetailWithoutPicture(UserData userData){
+    public void addUserLog(final InitialLog initialLog){
 
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("firstname").setValue(userData.getFirstname());
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("lastname").setValue(userData.getLastname());
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("birth-date").setValue(userData.getBirthdate());
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("city").setValue(userData.getCity());
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("username").setValue(userData.getUsername());
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("notification").setValue(userData.getNotification());
-        databaseReference.child("Users").child(getCurrentUser()).child("Data").child("uuid-string").setValue(userData.getUuidString());
-    }
-
-    public void addUserLog(final InitialLog initialLog, final String user_email){
-
-        databaseReference.child("Users").child(user_email).child("Logs").child("Initial").setValue(initialLog);
+        databaseReference.child("Users").child(getCurrentUser()).child("Logs").child("Initial").setValue(initialLog);
 
     }
 

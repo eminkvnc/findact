@@ -292,11 +292,11 @@ public class SettingsFragment extends Fragment{
         if(controlUri == selectedImage){
             userData = new UserData(firstname,lastname ,city.getSelectedItem().toString(),birthdate.getText().toString(),
                     username,uuidString, switchData, Uri.parse(""));
-            firebaseDBHelper.updateUserDetailWithoutPicture(userData);
+            firebaseDBHelper.addUserDetail(userData, false);
         } else {
             userData = new UserData(firstname,lastname ,city.getSelectedItem().toString(),birthdate.getText().toString(),
                     username,uuidString, switchData, selectedImage);
-            firebaseDBHelper.addUserDetail(userData, firebaseDBHelper.getCurrentUser());
+            firebaseDBHelper.addUserDetail(userData,true);
             if (bitmap != null){
                 updateInternalStorage(bitmap);
             }
