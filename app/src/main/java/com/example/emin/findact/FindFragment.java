@@ -32,7 +32,7 @@ public class FindFragment extends Fragment {
     private View v;
     DisplayActivityFragment displayActivityFragment;
     ArrayList<UserData> userDataArrayList;
-    ArrayList<String> requestStatus;
+    ArrayList<Integer> requestStatus;
     UserListItemAdapter findAdapter;
     ProgressDialog progressDialog;
     EditText searchEditText;
@@ -73,7 +73,7 @@ public class FindFragment extends Fragment {
         searchEditText = v.findViewById(R.id.fragment_find_search_et);
         ImageView searchImageView = v.findViewById(R.id.fragment_find_search_iv);
         ListView searchListView = v.findViewById(R.id.fragment_find_lv);
-        findAdapter = new UserListItemAdapter(getContext(),userDataArrayList,requestStatus);
+        findAdapter = new UserListItemAdapter(getContext(), userDataArrayList, requestStatus);
         searchListView.setAdapter(findAdapter);
 
 

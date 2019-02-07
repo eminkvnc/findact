@@ -1,6 +1,15 @@
 package com.example.emin.findact.Adapters;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityManagerCompat;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.SupportActivity;
+import android.support.v7.widget.CardView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -9,6 +18,7 @@ import android.widget.TextView;
 
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
+import com.example.emin.findact.ProfileFragment;
 import com.example.emin.findact.R;
 import com.squareup.picasso.Picasso;
 
@@ -18,11 +28,11 @@ public class UserListItemAdapter extends BaseAdapter {
 
     FirebaseDBHelper firebaseDBHelper;
     ArrayList<UserData> userDataArrayList;
-    ArrayList<String> requestStatus;
+    ArrayList<Integer> requestStatus;
     Context context;
 
 
-    public UserListItemAdapter(Context context, ArrayList<UserData> userDataArrayList, ArrayList<String> requestStatus) {
+    public UserListItemAdapter(Context context, ArrayList<UserData> userDataArrayList, ArrayList<Integer> requestStatus) {
         this.context = context;
         this.userDataArrayList = userDataArrayList;
         this.requestStatus = requestStatus;
@@ -54,17 +64,23 @@ public class UserListItemAdapter extends BaseAdapter {
         TextView nameTextView = v.findViewById(R.id.list_item_user_name_tv);
         final ImageView addFriendImageView = v.findViewById(R.id.list_item_user_add_friend_iv);
         final ImageView acceptFriendImageView = v.findViewById(R.id.list_item_user_accept_friend_iv);
+        CardView cardView = v.findViewById(R.id.list_item_user_cv);
+
+        Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
+        nameTextView.setText(userData.getFirstname() + " " + userData.getLastname());
+
         //requests came from search list in findFragment
         if(requestStatus != null) {
+            acceptFriendImageView.setVisibility(View.GONE);
             switch (requestStatus.get(position)) {
-                case "none":
+                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
                     addFriendImageView.setImageResource(R.drawable.ic_add_friend);
                     break;
-                case "waiting":
+                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
                     addFriendImageView.setImageResource(R.drawable.edit);
                     break;
                 //already your friend you can remove your friends
-                case "accepted":
+                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                     addFriendImageView.setImageResource(R.drawable.delete);
                     break;
             }
@@ -74,22 +90,22 @@ public class UserListItemAdapter extends BaseAdapter {
 
                     switch (requestStatus.get(position)) {
                         //send a new friend request.
-                        case "none":
+                        case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
                             firebaseDBHelper.sendFriendRequest(userData.getUsername());
                             addFriendImageView.setImageResource(R.drawable.edit);
-                            requestStatus.set(position, "waiting");
+                            requestStatus.set(position, FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING);
                             break;
                         //undo non-accepted request.
-                        case "waiting":
+                        case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
                             firebaseDBHelper.undoFriendRequest(userData.getUsername());
                             addFriendImageView.setImageResource(R.drawable.ic_add_friend);
-                            requestStatus.set(position, "none");
+                            requestStatus.set(position, FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
                             break;
                         //already your friend. you can remove in your friends.
-                        case "accepted":
+                        case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                             firebaseDBHelper.removeFriend(userData.getUsername());
                             addFriendImageView.setImageResource(R.drawable.delete);
-                            requestStatus.set(position, "none");
+                            requestStatus.set(position, FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
                             break;
                     }
                     notifyDataSetChanged();
@@ -119,9 +135,21 @@ public class UserListItemAdapter extends BaseAdapter {
             });
 
         }
-        Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
-        nameTextView.setText(userData.getFirstname() + " " + userData.getLastname());
-
+        cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //profil sayfasına geç
+                ProfileFragment profileFragment = new ProfileFragment();
+                Bundle bundle = userData.UserDatatoBundle();
+                profileFragment.setArguments(bundle);
+                profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                FragmentManager fragmentManager = ((FragmentActivity)context).getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.replace(R.id.main_frame, profileFragment);
+                fragmentTransaction.commit();
+            }
+        });
         return v;
     }
 }

@@ -28,6 +28,7 @@ import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.google.firebase.auth.FirebaseAuth;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,6 +52,7 @@ public class ProfileFragment extends Fragment {
 
     private SettingsFragment settingsFragment;
     User user;
+    UserData userData;
 
     public static ProfileFragment getInstance() {
         return new ProfileFragment();
@@ -60,6 +62,9 @@ public class ProfileFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         userDataArrayList = new ArrayList<>();
+        if(initMode == INIT_MODE_FRIEND_PROFILE_PAGE) {
+            userData = new UserData(getArguments());
+        }
         setHasOptionsMenu(true);
     }
 
@@ -68,7 +73,15 @@ public class ProfileFragment extends Fragment {
         super.onResume();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
-        actionBar.setTitle(user.getUsername());
+        switch (initMode){
+            case INIT_MODE_MY_PROFILE_PAGE:
+                actionBar.setTitle(user.getUsername());
+                break;
+            case INIT_MODE_FRIEND_PROFILE_PAGE:
+                actionBar.setTitle(userData.getUsername());
+                break;
+        }
+
     }
 
     @Override
@@ -116,58 +129,40 @@ public class ProfileFragment extends Fragment {
         ageTextView = v.findViewById(R.id.fragment_profile_age_tv);
         cityTextView = v.findViewById(R.id.fragment_profile_city_tv);
         friendsAndActivitiesListView = v.findViewById(R.id.fragment_profile_lv);
-        userListItemAdapter = new UserListItemAdapter(getContext(),userDataArrayList,null);
-        friendsAndActivitiesListView.setAdapter(userListItemAdapter);
 
-        FirebaseDBHelper.getInstance().getFriendRequests(userDataArrayList);
-
-        settingsFragment = new SettingsFragment();
-
-        user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
-
-        Log.d("onCreateView", "onCreateView: "+ user.getFirstname()+ user.getCity() +user.getBirthday());
-
-        nameTextView.setText(user.getFirstname()+" "+ user.getLastname());
-        cityTextView.setText(user.getCity());
-
-        String birthday = user.getBirthday();
-        String [] birthdaySplit = birthday.split("/");
-        ageTextView.setText(birthdaySplit[0]+"/"+birthdaySplit[1]);
-
-        try{
-            File file = new File("/data/user/0/com.example.emin.findact/app_imageDir","profile.jpg" );
-            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
-            profilePictureImageView.setImageBitmap(b);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
-//        switch (initMode){
-////            case INIT_MODE_MY_PROFILE_PAGE:
-////                settingsIconImageView.setImageResource(R.drawable.ic_settings);
-////                settingsIconImageView.setOnClickListener(new View.OnClickListener() {
-////                    @Override
-////                    public void onClick(View v) {
-////                        new Thread(new Runnable() {
-////                            @Override
-////                            public void run() {
-////                                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-////                                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-////                                fragmentTransaction.addToBackStack(null);
-////                                fragmentTransaction.replace(R.id.main_frame,settingsFragment);
-////                                fragmentTransaction.commit();
-////                            }
-////                        }).start();
-////                    }
-////                });
-////                break;
-//            case INIT_MODE_FRIEND_PROFILE_PAGE:
-//                settingsIconImageView.setImageResource(R.drawable.ic_add_friend);
-//                break;
-//        }
+        switch (initMode){
+            case INIT_MODE_MY_PROFILE_PAGE:
+                setHasOptionsMenu(true);
+                userListItemAdapter = new UserListItemAdapter(getContext(),userDataArrayList,null);
+                friendsAndActivitiesListView.setAdapter(userListItemAdapter);
+                FirebaseDBHelper.getInstance().getFriendRequests(userDataArrayList);
+                settingsFragment = new SettingsFragment();
+                user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
+                Log.d("onCreateView", "onCreateView: "+ user.getFirstname()+ user.getCity() +user.getBirthday());
+                nameTextView.setText(user.getFirstname()+" "+ user.getLastname());
+                cityTextView.setText(user.getCity());
+                String birthday = user.getBirthday();
+                String [] birthdaySplit = birthday.split("/");
+                ageTextView.setText(birthdaySplit[0]+"/"+birthdaySplit[1]);
+                try{
+                    File file = new File("/data/user/0/com.example.emin.findact/app_imageDir","profile.jpg" );
+                    Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
+                    profilePictureImageView.setImageBitmap(b);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
+           case INIT_MODE_FRIEND_PROFILE_PAGE:
+               setHasOptionsMenu(false);
+               Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
+               nameTextView.setText(userData.getFirstname()+" "+userData.getLastname());
+               cityTextView.setText(userData.getCity());
+               String [] birthdaySplit1 = userData.getBirthdate().split("/");
+               ageTextView.setText(birthdaySplit1[0]+"/"+birthdaySplit1[1]);
+               break;
+       }
         return v;
     }
-
 
     private void signOut() {
 
