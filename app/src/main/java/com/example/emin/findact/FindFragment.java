@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.emin.findact.APIs.MovieModel;
+import com.example.emin.findact.APIs.TMDbAPI;
 import com.example.emin.findact.Adapters.UserListItemAdapter;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
@@ -37,6 +40,7 @@ public class FindFragment extends Fragment {
     ProgressDialog progressDialog;
     EditText searchEditText;
     FirebaseDBHelper firebaseDBHelper;
+    TMDbAPI tmDbAPI;
 
     public FindFragment() {
 
@@ -49,6 +53,7 @@ public class FindFragment extends Fragment {
         requestStatus = new ArrayList<>();
         progressDialog = new ProgressDialog(getContext());
         firebaseDBHelper = FirebaseDBHelper.getInstance();
+        tmDbAPI = new TMDbAPI();
     }
 
     @Override
@@ -85,6 +90,9 @@ public class FindFragment extends Fragment {
                     progressDialog.show();
                     userDataArrayList.clear();
                     firebaseDBHelper.searchUser(searchEditText.getText().toString(), userDataArrayList, requestStatus);
+                    tmDbAPI.searchMovie(searchEditText.getText().toString());
+
+
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override

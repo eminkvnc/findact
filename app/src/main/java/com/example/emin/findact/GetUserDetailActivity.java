@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
@@ -277,19 +278,22 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         UUID uuid = UUID.randomUUID();
         String uuidString = uuid.toString();
 
-        UserData userData = new UserData(name, surname, city,birthday ,username ,uuidString ,"true" ,selectedImage );
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File myPath = new File(directory, "profile.jpg");
+
+        Log.d("SaveDetail", "SaveDetail: "+myPath.getAbsolutePath());
+        saveToInternalStorage(bitmap,myPath);
+
+        Uri storageImageUri = Uri.fromFile(new File(myPath.getAbsolutePath()));
+
+        UserData userData = new UserData(name, surname, city, birthday ,username ,uuidString ,"true",storageImageUri);
         InitialLog initialLog = new InitialLog(gameGenres,movieGenres ,Calendar.getInstance().getTime().toString() ,"status" );
 
-
-        Log.d("Save_detail", "SaveDetail: "+ firebaseDBHelper.getCurrentUser());
         firebaseDBHelper.addUserDetail(userData, true);
         firebaseDBHelper.addUserLog(initialLog);
 
-        saveToInternalStorage(bitmap);
-
-
         final User user = new User(1,uuidString,name,surname ,city ,birthday , selectedImage.toString(), "true", username);
-
 
         UserDatabase.getInstance(getApplicationContext()).getUserDao().insert(user);
 
@@ -298,17 +302,13 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     }
 
 
-    private String saveToInternalStorage(Bitmap bitmapImage){
-
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myPath = new File(directory, "profile.jpg");
+    private void saveToInternalStorage(Bitmap bitmapImage, File myPath){
 
         FileOutputStream fos = null;
 
         try {
             fos = new FileOutputStream(myPath);
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90,fos );
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50,fos );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -318,11 +318,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
                 e.printStackTrace();
             }
         }
-
-        Log.d("saveToInternalStorage", "saveToInternalStorage: "+directory.getAbsolutePath());
-        return directory.getAbsolutePath();
     }
-
 
 
     // ADAPTERLAR için farklı bir class oluşturulabilir.

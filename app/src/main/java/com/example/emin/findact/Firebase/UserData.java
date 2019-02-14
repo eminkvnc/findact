@@ -64,6 +64,7 @@ public class UserData {
     }
 
     public Bundle UserDatatoBundle(){
+
         Bundle bundle = new Bundle();
         bundle.putString("firstname",this.firstname);
         bundle.putString("lastname",this.lastname);

@@ -4,8 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -38,7 +36,6 @@ import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
-import com.google.firebase.auth.FirebaseAuth;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -64,6 +61,7 @@ public class SettingsFragment extends Fragment{
     Uri selectedImage, controlUri;
     FirebaseDBHelper firebaseDBHelper;
     UserData userData;
+    File file;
 
     private ArrayAdapter<String> cityAdapter;
     private static String[] citiesList = {"Adana", "Adıyaman", "Afyon", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik",
@@ -162,7 +160,7 @@ public class SettingsFragment extends Fragment{
         birthdate.setText(user.getBirthday());
         // Load image
         try{
-            File file = new File("/data/user/0/com.example.emin.findact/app_imageDir","profile.jpg" );
+            file = new File("/data/user/0/com.example.emin.findact/app_imageDir","profile.jpg" );
             Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
             profilePic.setImageBitmap(b);
         } catch (FileNotFoundException e) {
@@ -294,8 +292,9 @@ public class SettingsFragment extends Fragment{
                     username,uuidString, switchData, Uri.parse(""));
             firebaseDBHelper.addUserDetail(userData, false);
         } else {
+            Uri storageImageUri = Uri.fromFile(file);
             userData = new UserData(firstname,lastname ,city.getSelectedItem().toString(),birthdate.getText().toString(),
-                    username,uuidString, switchData, selectedImage);
+                    username,uuidString, switchData, storageImageUri);
             firebaseDBHelper.addUserDetail(userData,true);
             if (bitmap != null){
                 updateInternalStorage(bitmap);
@@ -310,15 +309,16 @@ public class SettingsFragment extends Fragment{
     }
 
     public void updateInternalStorage(Bitmap bm){
-        ContextWrapper cw = new ContextWrapper(getContext());
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myPath = new File(directory, "profile.jpg");
+//        ContextWrapper cw = new ContextWrapper(getContext());
+//        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+//        File myPath = new File(directory, "profile.jpg");
+        File myPath = new File("/data/user/0/com.example.emin.findact/app_imageDir/profile.jpg");
 
         FileOutputStream fos = null;
 
         try {
             fos = new FileOutputStream(myPath);
-            bm.compress(Bitmap.CompressFormat.JPEG, 100,fos );
+            bm.compress(Bitmap.CompressFormat.JPEG, 50,fos );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {

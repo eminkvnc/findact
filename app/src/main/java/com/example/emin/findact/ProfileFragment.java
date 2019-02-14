@@ -94,8 +94,6 @@ public class ProfileFragment extends Fragment {
 
         if (item.getItemId() == R.id.profile_fragment_actionbar_activities){
 
-            // go activities activity or fragment
-
         } else if (item.getItemId() == R.id.profile_fragment_actionbar_friends){
 
             userListItemAdapter.notifyDataSetChanged();
