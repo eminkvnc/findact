@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -12,12 +13,13 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     final String TAG = "MainActivity";
 
-    ProgressDialog progressDialog;
+    public ProgressDialog progressDialog;
     HomeFragment homeFragment;
     FindFragment findFragment;
     ExploreFragment exploreFragment;
@@ -42,32 +44,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
 
-    private void setMainFragment(final Fragment fragment){
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+    private void setMainFragment(Fragment fragment){
+                getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.main_frame,fragment);
                 fragmentTransaction.commit();
-            }
-        }).start();
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                progressDialog.dismiss();
-            }
-        },800);
-
-
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-        progressDialog.show();
+        //progressDialog.show();
 
         switch (item.getItemId()) {
             case R.id.navigation_home:
@@ -87,5 +74,31 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 return true;
         }
         return false;
+    }
+
+    boolean doubleBackTab = false;
+
+    @Override
+    public void onBackPressed() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        int count = fragmentManager.getBackStackEntryCount();
+        if (count > 0)//İf user is using inner screens back button works,otherwise ask to close app.
+            super.onBackPressed();
+        else {
+            if (doubleBackTab) {
+                super.onBackPressed();
+                finishAffinity();
+            } else {
+                Toast.makeText(this, "Çıkmak için geri tuşuna iki defa basınız.", Toast.LENGTH_SHORT).show();
+                doubleBackTab = true;
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        doubleBackTab = false;
+                    }
+                }, 500);
+            }
+        }
     }
 }

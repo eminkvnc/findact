@@ -1,18 +1,18 @@
 package com.example.emin.findact.Adapters;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityManagerCompat;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.SupportActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,16 +20,18 @@ import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.ProfileFragment;
 import com.example.emin.findact.R;
+import com.example.emin.findact.UsersListDialog;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class UserListItemAdapter extends BaseAdapter {
+public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapter.UserListItemViewHolder> {
 
-    FirebaseDBHelper firebaseDBHelper;
-    ArrayList<UserData> userDataArrayList;
-    ArrayList<Integer> requestStatus;
-    Context context;
+    private String TAG = "UserListItemAdapter";
+    private FirebaseDBHelper firebaseDBHelper;
+    private ArrayList<UserData> userDataArrayList;
+    private ArrayList<Integer> requestStatus;
+    private Context context;
 
 
     public UserListItemAdapter(Context context, ArrayList<UserData> userDataArrayList, ArrayList<Integer> requestStatus) {
@@ -39,117 +41,151 @@ public class UserListItemAdapter extends BaseAdapter {
         firebaseDBHelper = FirebaseDBHelper.getInstance();
     }
 
+    @NonNull
     @Override
-    public int getCount() {
-        return userDataArrayList.size();
+    public UserListItemViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_user,viewGroup,false);
+        return new UserListItemViewHolder(v);
     }
 
     @Override
-    public Object getItem(int position) {
-        return userDataArrayList.get(position);
-    }
+    public void onBindViewHolder(@NonNull final UserListItemViewHolder userListItemViewHolder, int position) {
 
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
 
-    @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
+        UserData userData = userDataArrayList.get(position);
+        CustomListener listener = new CustomListener(userListItemViewHolder,position, userData);
+        userListItemViewHolder.addFriendImageView.setOnClickListener(listener);
+        userListItemViewHolder.acceptFriendImageView.setOnClickListener(listener);
+        userListItemViewHolder.declineFriendImageView.setOnClickListener(listener);
+        userListItemViewHolder.cardView.setOnClickListener(listener);
 
-        final UserData userData = userDataArrayList.get(position);
+        Picasso.get()
+                .load(userData.getProfilePictureUri())
+                .resize(50,50)
+                .into(userListItemViewHolder.profilePictureImageView);
 
-        View v = View.inflate(context, R.layout.list_item_user, null);
-        ImageView profilePictureImageView = v.findViewById(R.id.list_item_user_profile_iv);
-        TextView nameTextView = v.findViewById(R.id.list_item_user_name_tv);
-        final ImageView addFriendImageView = v.findViewById(R.id.list_item_user_add_friend_iv);
-        final ImageView acceptFriendImageView = v.findViewById(R.id.list_item_user_accept_friend_iv);
-        CardView cardView = v.findViewById(R.id.list_item_user_cv);
-
-        Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
-        nameTextView.setText(userData.getFirstname() + " " + userData.getLastname());
-
-        //requests came from search list in findFragment
-        if(requestStatus != null) {
-            acceptFriendImageView.setVisibility(View.GONE);
+        String name = userData.getFirstname() + " " + userData.getLastname();
+        userListItemViewHolder.nameTextView.setText(name);
+        if(!requestStatus.isEmpty()) {
+            userListItemViewHolder.acceptFriendImageView.setVisibility(View.GONE);
+            userListItemViewHolder.declineFriendImageView.setVisibility(View.GONE);
+            userListItemViewHolder.addFriendImageView.setVisibility(View.VISIBLE);
             switch (requestStatus.get(position)) {
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
-                    addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.ic_add_friend);
                     break;
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
-                    addFriendImageView.setImageResource(R.drawable.edit);
+                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.edit);
                     break;
                 //already your friend you can remove your friends
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
-                    addFriendImageView.setImageResource(R.drawable.delete);
+                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.delete);
                     break;
             }
-            addFriendImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        }
+        else{
+            Log.d(TAG, "onBindViewHolder: reuqeststatus null");
+            userListItemViewHolder.acceptFriendImageView.setVisibility(View.VISIBLE);
+            userListItemViewHolder.declineFriendImageView.setVisibility(View.VISIBLE);
+            userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
+        }
+    }
 
-                    switch (requestStatus.get(position)) {
-                        //send a new friend request.
+    @Override
+    public int getItemCount() {
+        return userDataArrayList.size();
+    }
+
+
+    class UserListItemViewHolder extends RecyclerView.ViewHolder {
+        //View are initializing
+        ImageView profilePictureImageView;
+        TextView nameTextView;
+        ImageView addFriendImageView;
+        ImageView acceptFriendImageView;
+        ImageView declineFriendImageView;
+        CardView cardView;
+        UserListItemViewHolder(View v) {
+            super(v);
+            profilePictureImageView = v.findViewById(R.id.list_item_user_profile_iv);
+            nameTextView = v.findViewById(R.id.list_item_user_name_tv);
+            addFriendImageView = v.findViewById(R.id.list_item_user_add_friend_iv);
+            acceptFriendImageView = v.findViewById(R.id.list_item_user_accept_friend_iv);
+            declineFriendImageView = v.findViewById(R.id.list_item_user_decline_friend_iv);
+            cardView = v.findViewById(R.id.list_item_user_cv);
+        }
+    }
+
+    class CustomListener implements View.OnClickListener {
+
+        private UserListItemViewHolder userListItemViewHolder;
+        private int position;
+        private UserData userData;
+
+        CustomListener(UserListItemViewHolder userListItemViewHolder, int position, UserData userData) {
+            this.userListItemViewHolder = userListItemViewHolder;
+            this.position = position;
+            this.userData = userData;
+        }
+
+        @Override
+        public void onClick(View v) {
+            switch(v.getId()) {
+                case R.id.list_item_user_add_friend_iv:
+                    switch(requestStatus.get(position)){
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
-                            firebaseDBHelper.sendFriendRequest(userData.getUsername());
-                            addFriendImageView.setImageResource(R.drawable.edit);
-                            requestStatus.set(position, FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING);
+                            firebaseDBHelper.sendFollowRequest(userData.getUsername());
+                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.edit);
+                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING);
                             break;
-                        //undo non-accepted request.
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
-                            firebaseDBHelper.undoFriendRequest(userData.getUsername());
-                            addFriendImageView.setImageResource(R.drawable.ic_add_friend);
-                            requestStatus.set(position, FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
+                            firebaseDBHelper.undoFollowRequest(userData.getUsername());
+                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
                             break;
-                        //already your friend. you can remove in your friends.
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
-                            firebaseDBHelper.removeFriend(userData.getUsername());
-                            addFriendImageView.setImageResource(R.drawable.delete);
-                            requestStatus.set(position, FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
+                            firebaseDBHelper.unfollowUser(userData.getUsername());
+                            userDataArrayList.remove(position);
+                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
+                            notifyDataSetChanged();
                             break;
                     }
                     notifyDataSetChanged();
-                }
-            });
-        }
-        //requests waiting for accept or decline in profileFragment.
-        //no need to request status because they always in waiting status.
-        else{
-            acceptFriendImageView.setVisibility(View.VISIBLE);
-            acceptFriendImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    firebaseDBHelper.acceptFriendRequest(userData.getUsername());
-                    userDataArrayList.remove(position);
-                    notifyDataSetChanged();
-                }
-            });
-            addFriendImageView.setImageResource(R.drawable.cancel);
-            addFriendImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    firebaseDBHelper.declineFriendRequest(userData.getUsername());
-                    userDataArrayList.remove(position);
-                    notifyDataSetChanged();
-                }
-            });
+                    break;
 
-        }
-        cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //profil sayfasına geç
-                ProfileFragment profileFragment = new ProfileFragment();
-                Bundle bundle = userData.UserDatatoBundle();
-                profileFragment.setArguments(bundle);
-                profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
-                FragmentManager fragmentManager = ((FragmentActivity)context).getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.replace(R.id.main_frame, profileFragment);
-                fragmentTransaction.commit();
+                case R.id.list_item_user_accept_friend_iv:
+                    firebaseDBHelper.acceptFollowRequest(userData.getUsername());
+                    userDataArrayList.remove(position);
+                    notifyDataSetChanged();
+                    break;
+
+                case R.id.list_item_user_decline_friend_iv:
+                    firebaseDBHelper.declineFollowRequest(userData.getUsername());
+                    userDataArrayList.remove(position);
+                    notifyDataSetChanged();
+
+                    break;
+                case R.id.list_item_user_cv:
+                    //profil sayfasına geç
+                    if(UsersListDialog.getInstance().isAdded()) {
+                        UsersListDialog.getInstance().dismiss();
+                    }
+                    ProfileFragment profileFragment = new ProfileFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putBundle("UserData",userData.UserDatatoBundle());
+                    bundle.putInt("RequestStatus",requestStatus.get(position));
+                    profileFragment.setArguments(bundle);
+                    profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                    FragmentManager fragmentManager = ((FragmentActivity)context).getSupportFragmentManager();
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.replace(R.id.main_frame, profileFragment);
+                    fragmentTransaction.commit();
+                    break;
+
             }
-        });
-        return v;
+        }
     }
+
 }

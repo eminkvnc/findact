@@ -17,6 +17,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
@@ -38,7 +40,6 @@ import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
-import com.google.firebase.auth.FirebaseAuth;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -195,8 +196,15 @@ public class SettingsFragment extends Fragment{
 
         if (item.getItemId() == R.id.actionbar_save){
             updateDetail();
-            Intent intent = new Intent(getContext(),MainActivity.class);
-            startActivity(intent);
+            ProfileFragment profileFragment = new ProfileFragment();
+            profileFragment.setInitMode(ProfileFragment.INIT_MODE_MY_PROFILE_PAGE);
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.replace(R.id.main_frame,profileFragment);
+            fragmentTransaction.commit();
+        }else if(item.getItemId() == R.id.actionbar_settings_cancel){
+            getActivity().onBackPressed();
         }
         return super.onOptionsItemSelected(item);
     }

@@ -34,7 +34,7 @@ public class ProgressDialog extends Dialog {
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         //It can be change size with below line.
         LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(160,160);
-        imageView=new ImageView(context);
+        imageView = new ImageView(context);
         imageView.setBackgroundResource(R.drawable.animation_progress);
         linearLayout.addView(imageView,params);
         addContentView(linearLayout,params);

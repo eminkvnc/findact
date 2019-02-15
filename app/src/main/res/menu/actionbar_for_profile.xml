@@ -2,16 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/profile_fragment_actionbar_friends"
-        android:title="Friends"
-        app:showAsAction="always"
-        android:icon="@drawable/icons8_friends_filled_50"></item>
 
-    <item android:id="@+id/profile_fragment_actionbar_activities"
-        android:title="Activities"
+    <item
+        android:id="@+id/profile_fragment_actionbar_create_activity"
+        android:title="Create Activity"
         app:showAsAction="always"
-        ></item>
-
+        android:icon="@drawable/fill_plus"/>
 
     <item android:id="@+id/options"
         android:title="Options"

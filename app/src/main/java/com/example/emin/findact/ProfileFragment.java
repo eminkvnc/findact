@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,6 +12,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,10 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
-import com.example.emin.findact.Adapters.UserListItemAdapter;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
@@ -34,25 +35,31 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements View.OnClickListener {
 
 
     public static final int INIT_MODE_MY_PROFILE_PAGE = 0;
     public static final int INIT_MODE_FRIEND_PROFILE_PAGE = 1;
-
+    private String TAG = "ProfileFragment";
     private int initMode;
     private View v;
 
-    ImageView profilePictureImageView;
-    TextView nameTextView, ageTextView, cityTextView;
-    ListView friendsAndActivitiesListView;
-    ArrayList<UserData> userDataArrayList;
-    UserListItemAdapter userListItemAdapter;
 
+    public static UsersListDialog listDialog;
+    ProgressDialog progressDialog;
+    ImageView profilePictureImageView;
+    ImageView addFriendImageView;
+    ImageView requestsImageView;
+    TextView nameTextView, ageTextView, cityTextView, followersTextView, followingTextView;
+    RecyclerView activitiesRecyclerView;
+    ArrayList<UserData> friendsArrayList;
+    ArrayList<Integer> statusList;
+    FirebaseDBHelper firebaseDBHelper;
 
     private SettingsFragment settingsFragment;
     User user;
     UserData userData;
+    int requestStatus;
 
     public static ProfileFragment getInstance() {
         return new ProfileFragment();
@@ -61,9 +68,18 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        userDataArrayList = new ArrayList<>();
+        friendsArrayList = new ArrayList<>();
+        statusList = new ArrayList<>();
+        firebaseDBHelper = FirebaseDBHelper.getInstance();
+        progressDialog = new ProgressDialog(getContext());
+        listDialog = UsersListDialog.getInstance();
         if(initMode == INIT_MODE_FRIEND_PROFILE_PAGE) {
-            userData = new UserData(getArguments());
+            userData = new UserData(getArguments().getBundle("UserData"));
+            if(userData.getUsername().equals(firebaseDBHelper.getCurrentUser())){
+                initMode = INIT_MODE_MY_PROFILE_PAGE;
+            }
+            requestStatus = getArguments().getInt("RequestStatus");
+
         }
         setHasOptionsMenu(true);
     }
@@ -92,28 +108,28 @@ public class ProfileFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if (item.getItemId() == R.id.profile_fragment_actionbar_activities){
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-            // go activities activity or fragment
+        switch (item.getItemId()){
+            case R.id.profile_fragment_actionbar_create_activity:
 
-        } else if (item.getItemId() == R.id.profile_fragment_actionbar_friends){
+                //create activity fragment
 
-            userListItemAdapter.notifyDataSetChanged();
-
-        } else if (item.getItemId() == R.id.profile_fragment_actionbar_settings){
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.replace(R.id.main_frame,settingsFragment);
-            fragmentTransaction.commit();
-        } else if (item.getItemId() == R.id.profile_fragment_actionbar_logout){
-            signOut();
-        } else if (item.getItemId() == R.id.profile_fragment_actionbar_edit_profile){
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.replace(R.id.main_frame,settingsFragment);
-            fragmentTransaction.commit();
+                break;
+            case R.id.profile_fragment_actionbar_settings:
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.replace(R.id.main_frame,settingsFragment);
+                fragmentTransaction.commit();
+                break;
+            case R.id.profile_fragment_actionbar_logout:
+                signOut();
+                break;
+            case R.id.profile_fragment_actionbar_edit_profile:
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.replace(R.id.main_frame,settingsFragment);
+                fragmentTransaction.commit();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -125,17 +141,28 @@ public class ProfileFragment extends Fragment {
         v = inflater.inflate(R.layout.fragment_profile,container,false);
 
         profilePictureImageView = v.findViewById(R.id.fragment_profile_picture_iv);
+        requestsImageView = v.findViewById(R.id.fragment_profile_requests_iv);
+        addFriendImageView = v.findViewById(R.id.fragment_profile_add_friend_iv);
+        followersTextView = v.findViewById(R.id.fragment_profile_followers_tv);
+        followingTextView = v.findViewById(R.id.fragment_profile_following_tv);
         nameTextView = v.findViewById(R.id.fragment_profile_name_tv);
         ageTextView = v.findViewById(R.id.fragment_profile_age_tv);
         cityTextView = v.findViewById(R.id.fragment_profile_city_tv);
-        friendsAndActivitiesListView = v.findViewById(R.id.fragment_profile_lv);
+        activitiesRecyclerView = v.findViewById(R.id.fragment_profile_activities_rv);
+
+        activitiesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        activitiesRecyclerView.setVisibility(View.GONE);
+
+        addFriendImageView.setOnClickListener(this);
+        requestsImageView.setOnClickListener(this);
+        followersTextView.setOnClickListener(this);
+        followingTextView.setOnClickListener(this);
 
         switch (initMode){
             case INIT_MODE_MY_PROFILE_PAGE:
                 setHasOptionsMenu(true);
-                userListItemAdapter = new UserListItemAdapter(getContext(),userDataArrayList,null);
-                friendsAndActivitiesListView.setAdapter(userListItemAdapter);
-                FirebaseDBHelper.getInstance().getFriendRequests(userDataArrayList);
+                addFriendImageView.setVisibility(View.GONE);
+                requestsImageView.setVisibility(View.VISIBLE);
                 settingsFragment = new SettingsFragment();
                 user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
                 Log.d("onCreateView", "onCreateView: "+ user.getFirstname()+ user.getCity() +user.getBirthday());
@@ -154,6 +181,19 @@ public class ProfileFragment extends Fragment {
                 break;
            case INIT_MODE_FRIEND_PROFILE_PAGE:
                setHasOptionsMenu(false);
+               addFriendImageView.setVisibility(View.VISIBLE);
+               requestsImageView.setVisibility(View.GONE);
+               switch (requestStatus){
+                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                       addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                       break;
+                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
+                       addFriendImageView.setImageResource(R.drawable.cancel);
+                       break;
+                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
+                       addFriendImageView.setImageResource(R.drawable.edit);
+                       break;
+               }
                Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
                nameTextView.setText(userData.getFirstname()+" "+userData.getLastname());
                cityTextView.setText(userData.getCity());
@@ -165,7 +205,6 @@ public class ProfileFragment extends Fragment {
     }
 
     private void signOut() {
-
         FirebaseAuth.getInstance().signOut();
         Intent intent = new Intent(getContext(), LoginActivity.class);
         startActivity(intent);
@@ -179,4 +218,76 @@ public class ProfileFragment extends Fragment {
         this.initMode = initMode;
     }
 
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.fragment_profile_add_friend_iv:
+
+                switch(requestStatus){
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                        firebaseDBHelper.sendFollowRequest(userData.getUsername());
+                        addFriendImageView.setImageResource(R.drawable.edit);
+                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING;
+                        break;
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
+                        firebaseDBHelper.undoFollowRequest(userData.getUsername());
+                        addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE;
+                        break;
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
+                        firebaseDBHelper.unfollowUser(userData.getUsername());
+                        addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE;
+                        break;
+                }
+
+                break;
+
+            case R.id.fragment_profile_following_tv:
+                progressDialog.show();
+                firebaseDBHelper.getFollowing(firebaseDBHelper.getCurrentUser(), friendsArrayList, statusList);
+                showListDialog("Following");
+                break;
+
+            case R.id.fragment_profile_followers_tv:
+                progressDialog.show();
+                firebaseDBHelper.getFollowers(firebaseDBHelper.getCurrentUser(), friendsArrayList, statusList);
+                showListDialog("Followers");
+                break;
+
+
+            case R.id.fragment_profile_requests_iv:
+                progressDialog.show();
+                statusList.clear();
+                firebaseDBHelper.getFollowRequests(friendsArrayList);
+                showListDialog("Requests");
+                break;
+        }
+    }
+
+    private void showListDialog(final String dialogTitle){
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Bundle bundle = new Bundle();
+                bundle.putString("Title",dialogTitle);
+                Bundle followersArrayListBundle = new Bundle();
+                for(int i = 0; i < friendsArrayList.size(); i++){
+                    followersArrayListBundle.putBundle(String.valueOf(i),friendsArrayList.get(i).UserDatatoBundle());
+
+                }
+                bundle.putBundle("UserDataArrayList",followersArrayListBundle);
+                bundle.putIntegerArrayList("StatusArrayList",statusList);
+                progressDialog.dismiss();
+                listDialog.setArguments(bundle);
+                listDialog.show(getActivity().getSupportFragmentManager(),"dialog");
+            }
+        },800);
+    }
+    public static void dismissListDialog(){
+        if(listDialog != null) {
+            listDialog.dismiss();
+        }
+    }
 }

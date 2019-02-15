@@ -30,8 +30,6 @@ import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.InitialLog;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
-//import com.example.emin.findact.RoomDatabase.UserRepository;
-//import com.example.emin.findact.RoomDatabase.UserViewModel;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -45,9 +43,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.UUID;
-
-//import com.example.emin.findact.SQLite.SQLiteContentProvider;
-//import com.example.emin.findact.SQLite.SQLiteContentProvider;
 
 public class GetUserDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -305,16 +300,16 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         File myPath = new File(directory, "profile.jpg");
 
-        FileOutputStream fos = null;
+        FileOutputStream fosu = null;
 
         try {
-            fos = new FileOutputStream(myPath);
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 90,fos );
+            fosu = new FileOutputStream(myPath);
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50,fosu );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
             try {
-                fos.close();
+                fosu.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

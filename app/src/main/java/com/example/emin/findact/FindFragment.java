@@ -9,31 +9,29 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
-
 import com.example.emin.findact.Adapters.UserListItemAdapter;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-
 import java.util.ArrayList;
 
 public class FindFragment extends Fragment {
 
     private View v;
+    String TAG = "FindFragment";
     DisplayActivityFragment displayActivityFragment;
     ArrayList<UserData> userDataArrayList;
     ArrayList<Integer> requestStatus;
     UserListItemAdapter findAdapter;
+    RecyclerView searchRecyclerView;
     ProgressDialog progressDialog;
     EditText searchEditText;
     FirebaseDBHelper firebaseDBHelper;
@@ -72,19 +70,21 @@ public class FindFragment extends Fragment {
         Button groupButton = v.findViewById(R.id.group_btn);
         searchEditText = v.findViewById(R.id.fragment_find_search_et);
         ImageView searchImageView = v.findViewById(R.id.fragment_find_search_iv);
-        ListView searchListView = v.findViewById(R.id.fragment_find_lv);
+        searchRecyclerView = v.findViewById(R.id.fragment_find_rv);
         findAdapter = new UserListItemAdapter(getContext(), userDataArrayList, requestStatus);
-        searchListView.setAdapter(findAdapter);
+        searchRecyclerView.setAdapter(findAdapter);
+        searchRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
 
         searchImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String searchParameter = searchEditText.getText().toString();
+                progressDialog.show();
+                final String searchParameter = searchEditText.getText().toString();
                 if (!searchParameter.equals("")) {
-                    progressDialog.show();
                     userDataArrayList.clear();
-                    firebaseDBHelper.searchUser(searchEditText.getText().toString(), userDataArrayList, requestStatus);
+                    requestStatus.clear();
+                    firebaseDBHelper.searchUser(searchParameter, userDataArrayList, requestStatus);
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -92,11 +92,11 @@ public class FindFragment extends Fragment {
                             findAdapter.notifyDataSetChanged();
                             progressDialog.dismiss();
                         }
-                    }, 1000);
+                    },800);
+
                 }
             }
         });
-
 
         movieButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,22 +121,16 @@ public class FindFragment extends Fragment {
             }
         });
 
-
         return v;
     }
 
-    private void setFindFragment(final Fragment fragment) {
+    private void setFindFragment(Fragment fragment) {
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.replace(R.id.main_frame, fragment);
-                fragmentTransaction.commit();
-            }
-        }).start();
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.replace(R.id.main_frame, fragment);
+            fragmentTransaction.commit();
 
     }
 
