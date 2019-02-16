@@ -5,34 +5,35 @@
 
     <item
         android:id="@+id/profile_fragment_actionbar_create_activity"
+        android:icon="@drawable/circle_plus"
         android:title="Create Activity"
-        app:showAsAction="always"
-        android:icon="@drawable/fill_plus"/>
+        app:showAsAction="always" />
 
-    <item android:id="@+id/options"
+    <item
+        android:id="@+id/options"
+        android:icon="@drawable/menu_vertical"
         android:title="Options"
-        app:showAsAction="always"
-        android:icon="@drawable/menu">
+        app:showAsAction="always">
 
         <menu>
 
             <item
                 android:id="@+id/profile_fragment_actionbar_edit_profile"
-                android:icon="@drawable/icons8_edit_50"
+                android:icon="@drawable/menu_edit"
                 android:title="Edit Profile"
                 app:showAsAction="withText"></item>
 
-            <item android:id="@+id/profile_fragment_actionbar_settings"
+            <item
+                android:id="@+id/profile_fragment_actionbar_settings"
+                android:icon="@drawable/menu_settings"
                 android:title="Settings"
-                app:showAsAction="withText"
-                android:icon="@drawable/icons8_settings_50">
-            </item>
+                app:showAsAction="withText"></item>
 
-            <item android:id="@+id/profile_fragment_actionbar_logout"
+            <item
+                android:id="@+id/profile_fragment_actionbar_logout"
+                android:icon="@drawable/menu_logout"
                 android:title="Logout"
-                app:showAsAction="withText"
-                android:icon="@drawable/icons8_shutdown_50">
-            </item>
+                app:showAsAction="withText"></item>
 
         </menu>
     </item>

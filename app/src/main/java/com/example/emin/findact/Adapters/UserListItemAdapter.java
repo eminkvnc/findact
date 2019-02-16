@@ -28,16 +28,18 @@ import java.util.ArrayList;
 public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapter.UserListItemViewHolder> {
 
     private String TAG = "UserListItemAdapter";
+    private String adapterCreatorTag;
     private FirebaseDBHelper firebaseDBHelper;
     private ArrayList<UserData> userDataArrayList;
     private ArrayList<Integer> requestStatus;
     private Context context;
 
 
-    public UserListItemAdapter(Context context, ArrayList<UserData> userDataArrayList, ArrayList<Integer> requestStatus) {
+    public UserListItemAdapter(Context context, ArrayList<UserData> userDataArrayList, ArrayList<Integer> requestStatus, String adapterCreatorTag) {
         this.context = context;
         this.userDataArrayList = userDataArrayList;
         this.requestStatus = requestStatus;
+        this.adapterCreatorTag = adapterCreatorTag;
         firebaseDBHelper = FirebaseDBHelper.getInstance();
     }
 
@@ -72,14 +74,14 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
             userListItemViewHolder.addFriendImageView.setVisibility(View.VISIBLE);
             switch (requestStatus.get(position)) {
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
-                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
                     break;
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
-                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.edit);
+                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
                     break;
                 //already your friend you can remove your friends
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
-                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.delete);
+                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
                     break;
             }
         }
@@ -135,20 +137,21 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                     switch(requestStatus.get(position)){
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
                             firebaseDBHelper.sendFollowRequest(userData.getUsername());
-                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.edit);
+                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
                             requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING);
                             break;
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
                             firebaseDBHelper.undoFollowRequest(userData.getUsername());
-                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
                             requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
                             break;
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                             firebaseDBHelper.unfollowUser(userData.getUsername());
-                            userDataArrayList.remove(position);
-                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                            if(adapterCreatorTag.equals(UsersListDialog.TAG)) {
+                                userDataArrayList.remove(position);
+                            }
+                            userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
                             requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
-                            notifyDataSetChanged();
                             break;
                     }
                     notifyDataSetChanged();

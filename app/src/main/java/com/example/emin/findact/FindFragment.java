@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +25,7 @@ import java.util.ArrayList;
 public class FindFragment extends Fragment {
 
     private View v;
-    String TAG = "FindFragment";
+    public static String TAG = "FindFragment";
     DisplayActivityFragment displayActivityFragment;
     ArrayList<UserData> userDataArrayList;
     ArrayList<Integer> requestStatus;
@@ -71,7 +70,7 @@ public class FindFragment extends Fragment {
         searchEditText = v.findViewById(R.id.fragment_find_search_et);
         ImageView searchImageView = v.findViewById(R.id.fragment_find_search_iv);
         searchRecyclerView = v.findViewById(R.id.fragment_find_rv);
-        findAdapter = new UserListItemAdapter(getContext(), userDataArrayList, requestStatus);
+        findAdapter = new UserListItemAdapter(getContext(), userDataArrayList, requestStatus, TAG);
         searchRecyclerView.setAdapter(findAdapter);
         searchRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
@@ -79,9 +78,9 @@ public class FindFragment extends Fragment {
         searchImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressDialog.show();
                 final String searchParameter = searchEditText.getText().toString();
                 if (!searchParameter.equals("")) {
+                    progressDialog.show();
                     userDataArrayList.clear();
                     requestStatus.clear();
                     firebaseDBHelper.searchUser(searchParameter, userDataArrayList, requestStatus);
@@ -133,9 +132,5 @@ public class FindFragment extends Fragment {
             fragmentTransaction.commit();
 
     }
-
-
-
-
 
 }

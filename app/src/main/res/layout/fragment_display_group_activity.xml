@@ -2,7 +2,6 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -14,7 +13,7 @@
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/fragment_display_group_title_tv"
-        app:srcCompat="@drawable/ic_group" />
+        app:srcCompat="@drawable/default_group" />
 
     <TextView
         android:id="@+id/fragment_display_group_title_tv"
@@ -59,7 +58,7 @@
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/ic_like" />
+        app:srcCompat="@drawable/like" />
 
     <ImageView
         android:id="@+id/fragment_display_group_dislike_iv"
@@ -69,7 +68,7 @@
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/fragment_display_group_like_iv"
-        app:srcCompat="@drawable/ic_dislike" />
+        app:srcCompat="@drawable/dislike" />
 
     <ImageView
         android:id="@+id/fragment_display_group_share_iv"
@@ -79,7 +78,7 @@
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_share" />
+        app:srcCompat="@drawable/share" />
 
     <com.google.android.gms.maps.MapView
         android:id="@+id/fragment_display_group_map_view"

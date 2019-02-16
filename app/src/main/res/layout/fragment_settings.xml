@@ -58,7 +58,7 @@
                 android:layout_height="25dp"
                 android:layout_marginStart="100dp"
                 android:layout_marginTop="105dp"
-                android:background="@drawable/fill_plus"
+                android:background="@drawable/plus_black"
                 app:layout_constraintStart_toStartOf="@+id/fragment_settings_cardview"
                 app:layout_constraintTop_toTopOf="@+id/fragment_settings_cardview" />
         </android.support.constraint.ConstraintLayout>

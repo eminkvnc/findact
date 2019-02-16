@@ -2,7 +2,6 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/profile_fragment">
@@ -128,7 +127,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/fragment_profile_followers_tv"
         app:layout_constraintStart_toEndOf="@+id/fragment_profile_followers_tv"
         app:layout_constraintTop_toTopOf="@+id/fragment_profile_followers_tv"
-        app:srcCompat="@drawable/icons8_friends_filled_50" />
+        app:srcCompat="@drawable/follow_requests" />
 
     <ImageView
         android:id="@+id/fragment_profile_add_friend_iv"
@@ -138,7 +137,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/fragment_profile_followers_tv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/fragment_profile_followers_tv"
-        app:srcCompat="@drawable/ic_add_friend" />
+        app:srcCompat="@drawable/send_follow_request" />
 
 
 

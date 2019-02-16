@@ -185,13 +185,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                requestsImageView.setVisibility(View.GONE);
                switch (requestStatus){
                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
-                       addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                       addFriendImageView.setImageResource(R.drawable.send_follow_request);
                        break;
                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
-                       addFriendImageView.setImageResource(R.drawable.cancel);
+                       addFriendImageView.setImageResource(R.drawable.circle_cancel);
                        break;
                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
-                       addFriendImageView.setImageResource(R.drawable.edit);
+                       addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
                        break;
                }
                Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
@@ -226,17 +226,17 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 switch(requestStatus){
                     case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
                         firebaseDBHelper.sendFollowRequest(userData.getUsername());
-                        addFriendImageView.setImageResource(R.drawable.edit);
+                        addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
                         requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING;
                         break;
                     case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
                         firebaseDBHelper.undoFollowRequest(userData.getUsername());
-                        addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                        addFriendImageView.setImageResource(R.drawable.send_follow_request);
                         requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE;
                         break;
                     case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                         firebaseDBHelper.unfollowUser(userData.getUsername());
-                        addFriendImageView.setImageResource(R.drawable.ic_add_friend);
+                        addFriendImageView.setImageResource(R.drawable.send_follow_request);
                         requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE;
                         break;
                 }

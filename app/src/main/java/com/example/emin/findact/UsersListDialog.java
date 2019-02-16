@@ -2,7 +2,6 @@ package com.example.emin.findact;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +15,8 @@ import com.example.emin.findact.Firebase.UserData;
 
 import java.util.ArrayList;
 
+
+
 public class UsersListDialog extends DialogFragment {
 
     static UsersListDialog dialog;
@@ -27,7 +28,7 @@ public class UsersListDialog extends DialogFragment {
         return dialog;
     }
 
-    private String TAG = "UsersListDialog";
+    public static String TAG = "UsersListDialog";
     private String title;
     private RecyclerView recyclerView;
     private UserListItemAdapter adapter;
@@ -61,7 +62,7 @@ public class UsersListDialog extends DialogFragment {
 
         recyclerView = new RecyclerView(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new UserListItemAdapter(getContext(),userDataArrayList,requestStatusArrayList);
+        adapter = new UserListItemAdapter(getContext(),userDataArrayList,requestStatusArrayList, TAG);
         recyclerView.setAdapter(adapter);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(title);
