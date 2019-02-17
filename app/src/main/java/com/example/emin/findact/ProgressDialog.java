@@ -29,7 +29,6 @@ public class ProgressDialog extends Dialog {
             }
         });
 
-        setOnCancelListener(null);
         LinearLayout linearLayout=new LinearLayout(context);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         //It can be change size with below line.

@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import com.example.emin.findact.Adapters.UserListItemAdapter;
+import com.example.emin.findact.Firebase.FirebaseAsyncTask;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import java.util.ArrayList;
@@ -62,7 +63,6 @@ public class FindFragment extends Fragment {
 
 
         displayActivityFragment = new DisplayActivityFragment();
-
         v = inflater.inflate(R.layout.fragment_find, container, false);
         Button movieButton = v.findViewById(R.id.movie_btn);
         Button gameButton = v.findViewById(R.id.game_btn);
@@ -74,15 +74,20 @@ public class FindFragment extends Fragment {
         searchRecyclerView.setAdapter(findAdapter);
         searchRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-
         searchImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final String searchParameter = searchEditText.getText().toString();
                 if (!searchParameter.equals("")) {
+                    /*Runnable runnableForTask = new Runnable() {
+                        @Override
+                        public void run() {
+                            firebaseDBHelper.searchUser(searchParameter, userDataArrayList, requestStatus);
+                        }
+                    };
+                    FirebaseAsyncTask searchTask = new FirebaseAsyncTask(findAdapter, progressDialog, runnableForTask);
+                    searchTask.execute();*/
                     progressDialog.show();
-                    userDataArrayList.clear();
-                    requestStatus.clear();
                     firebaseDBHelper.searchUser(searchParameter, userDataArrayList, requestStatus);
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
@@ -92,7 +97,10 @@ public class FindFragment extends Fragment {
                             progressDialog.dismiss();
                         }
                     },800);
-
+                }else{
+                    userDataArrayList.clear();
+                    requestStatus.clear();
+                    findAdapter.notifyDataSetChanged();
                 }
             }
         });

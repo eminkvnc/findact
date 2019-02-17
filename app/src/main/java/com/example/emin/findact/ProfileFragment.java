@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.emin.findact.Firebase.FirebaseAsyncTask;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
@@ -60,6 +61,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     User user;
     UserData userData;
     int requestStatus;
+    String currentUsername;
 
     public static ProfileFragment getInstance() {
         return new ProfileFragment();
@@ -75,11 +77,16 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         listDialog = UsersListDialog.getInstance();
         if(initMode == INIT_MODE_FRIEND_PROFILE_PAGE) {
             userData = new UserData(getArguments().getBundle("UserData"));
+            currentUsername = userData.getUsername();
             if(userData.getUsername().equals(firebaseDBHelper.getCurrentUser())){
                 initMode = INIT_MODE_MY_PROFILE_PAGE;
+                currentUsername = firebaseDBHelper.getCurrentUser();
             }
             requestStatus = getArguments().getInt("RequestStatus");
 
+        }
+        else{
+            currentUsername= firebaseDBHelper.getCurrentUser();
         }
         setHasOptionsMenu(true);
     }
@@ -184,7 +191,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                addFriendImageView.setVisibility(View.VISIBLE);
                requestsImageView.setVisibility(View.GONE);
                switch (requestStatus){
-                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
                        addFriendImageView.setImageResource(R.drawable.send_follow_request);
                        break;
                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
@@ -224,7 +231,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             case R.id.fragment_profile_add_friend_iv:
 
                 switch(requestStatus){
-                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
                         firebaseDBHelper.sendFollowRequest(userData.getUsername());
                         addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
                         requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING;
@@ -232,12 +239,12 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                     case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
                         firebaseDBHelper.undoFollowRequest(userData.getUsername());
                         addFriendImageView.setImageResource(R.drawable.send_follow_request);
-                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE;
+                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED;
                         break;
                     case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                         firebaseDBHelper.unfollowUser(userData.getUsername());
                         addFriendImageView.setImageResource(R.drawable.send_follow_request);
-                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE;
+                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED;
                         break;
                 }
 
@@ -245,21 +252,20 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
             case R.id.fragment_profile_following_tv:
                 progressDialog.show();
-                firebaseDBHelper.getFollowing(firebaseDBHelper.getCurrentUser(), friendsArrayList, statusList);
+                firebaseDBHelper.getFollowing(currentUsername, friendsArrayList, statusList);
                 showListDialog("Following");
                 break;
 
             case R.id.fragment_profile_followers_tv:
                 progressDialog.show();
-                firebaseDBHelper.getFollowers(firebaseDBHelper.getCurrentUser(), friendsArrayList, statusList);
+                firebaseDBHelper.getFollowers(currentUsername, friendsArrayList, statusList);
                 showListDialog("Followers");
                 break;
 
 
             case R.id.fragment_profile_requests_iv:
                 progressDialog.show();
-                statusList.clear();
-                firebaseDBHelper.getFollowRequests(friendsArrayList);
+                firebaseDBHelper.getFollowRequests(friendsArrayList, statusList);
                 showListDialog("Requests");
                 break;
         }
@@ -286,7 +292,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         },800);
     }
     public static void dismissListDialog(){
-        if(listDialog != null) {
+        if(listDialog != null && listDialog.isAdded()) {
             listDialog.dismiss();
         }
     }

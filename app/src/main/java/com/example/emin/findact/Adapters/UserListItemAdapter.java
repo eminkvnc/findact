@@ -3,7 +3,6 @@ package com.example.emin.findact.Adapters;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -73,7 +72,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
             userListItemViewHolder.declineFriendImageView.setVisibility(View.GONE);
             userListItemViewHolder.addFriendImageView.setVisibility(View.VISIBLE);
             switch (requestStatus.get(position)) {
-                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
                     userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
                     break;
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
@@ -83,13 +82,16 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                     userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
                     break;
+                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
+                    userListItemViewHolder.acceptFriendImageView.setVisibility(View.VISIBLE);
+                    userListItemViewHolder.declineFriendImageView.setVisibility(View.VISIBLE);
+                    userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
+                    break;
             }
         }
         else{
-            Log.d(TAG, "onBindViewHolder: reuqeststatus null");
-            userListItemViewHolder.acceptFriendImageView.setVisibility(View.VISIBLE);
-            userListItemViewHolder.declineFriendImageView.setVisibility(View.VISIBLE);
-            userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
+            Log.d(TAG, "onBindViewHolder: reuqest status null");
         }
     }
 
@@ -135,7 +137,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
             switch(v.getId()) {
                 case R.id.list_item_user_add_friend_iv:
                     switch(requestStatus.get(position)){
-                        case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                        case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
                             firebaseDBHelper.sendFollowRequest(userData.getUsername());
                             userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
                             requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING);
@@ -143,7 +145,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
                             firebaseDBHelper.undoFollowRequest(userData.getUsername());
                             userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
-                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
+                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED);
                             break;
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                             firebaseDBHelper.unfollowUser(userData.getUsername());
@@ -151,7 +153,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                                 userDataArrayList.remove(position);
                             }
                             userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
-                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
+                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED);
                             break;
                     }
                     notifyDataSetChanged();
