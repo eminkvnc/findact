@@ -2,6 +2,7 @@ package com.example.emin.findact;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,6 +10,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +25,7 @@ import android.widget.TextView;
 
 import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.APIs.TMDbAPI;
+import com.example.emin.findact.Adapters.MovieListItemAdapter;
 import com.example.emin.findact.Adapters.UserListItemAdapter;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
@@ -30,17 +34,21 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import static android.support.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiThread;
+
 public class FindFragment extends Fragment {
 
     private View v;
     DisplayActivityFragment displayActivityFragment;
     ArrayList<UserData> userDataArrayList;
     ArrayList<Integer> requestStatus;
-    UserListItemAdapter findAdapter;
+    MovieListItemAdapter findAdapter;
     ProgressDialog progressDialog;
     EditText searchEditText;
     FirebaseDBHelper firebaseDBHelper;
     TMDbAPI tmDbAPI;
+    ArrayList<MovieModel> movieModelArrayList;
+    RecyclerView searchRecylerView;
 
     public FindFragment() {
 
@@ -53,7 +61,10 @@ public class FindFragment extends Fragment {
         requestStatus = new ArrayList<>();
         progressDialog = new ProgressDialog(getContext());
         firebaseDBHelper = FirebaseDBHelper.getInstance();
+
         tmDbAPI = new TMDbAPI();
+        movieModelArrayList = new ArrayList<>();
+
     }
 
     @Override
@@ -68,7 +79,6 @@ public class FindFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-
         displayActivityFragment = new DisplayActivityFragment();
 
         v = inflater.inflate(R.layout.fragment_find, container, false);
@@ -77,9 +87,8 @@ public class FindFragment extends Fragment {
         Button groupButton = v.findViewById(R.id.group_btn);
         searchEditText = v.findViewById(R.id.fragment_find_search_et);
         ImageView searchImageView = v.findViewById(R.id.fragment_find_search_iv);
-        ListView searchListView = v.findViewById(R.id.fragment_find_lv);
-        findAdapter = new UserListItemAdapter(getContext(), userDataArrayList, requestStatus);
-        searchListView.setAdapter(findAdapter);
+        searchRecylerView = v.findViewById(R.id.fragment_find_rv);
+
 
 
         searchImageView.setOnClickListener(new View.OnClickListener() {
@@ -88,23 +97,24 @@ public class FindFragment extends Fragment {
                 String searchParameter = searchEditText.getText().toString();
                 if (!searchParameter.equals("")) {
                     progressDialog.show();
-                    userDataArrayList.clear();
-                    firebaseDBHelper.searchUser(searchEditText.getText().toString(), userDataArrayList, requestStatus);
-                    tmDbAPI.searchMovie(searchEditText.getText().toString());
+                    movieModelArrayList.clear();
+                    //userDataArrayList.clear();
+                    //firebaseDBHelper.searchUser(searchEditText.getText().toString(), userDataArrayList, requestStatus);
+                    tmDbAPI.searchMovie(getContext(),searchParameter, movieModelArrayList,searchRecylerView);
 
-
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            findAdapter.notifyDataSetChanged();
-                            progressDialog.dismiss();
-                        }
-                    }, 1000);
+//                    Handler handler = new Handler();
+//                    handler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+////                            findAdapter = new MovieListItemAdapter(getContext(), movieModelArrayList);
+////                            searchRecylerView.setAdapter(findAdapter);
+////                            searchRecylerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+//                            progressDialog.dismiss();
+//                        }
+//                    }, 1000);
                 }
             }
         });
-
 
         movieButton.setOnClickListener(new View.OnClickListener() {
             @Override

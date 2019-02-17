@@ -66,8 +66,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_find_black_24dp" />
 
-    <ListView
-        android:id="@+id/fragment_find_lv"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/fragment_find_rv"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
