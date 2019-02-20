@@ -19,6 +19,9 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -26,14 +29,22 @@ public class TMDbAPI {
 
     String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
     String posterPathUrl = "http://image.tmdb.org/t/p/w185/";   // +poster path
+    String genreUrl = "https://api.themoviedb.org/3/genre/movie/list?api_key=fd50bae5852bf6c2e149317a6e885416";
+
+
+    // Hashmape çevir
+    static String[] genreList = {"Action", "Adventure", "Animation", "Comedy", "Crime","Documentary", "Drama","Family","Fantasy","History",
+            "Horror","Music","Mystery","Romance","Sci-Fi","TV-Movie","Thriller","War","Western"};
+    static Integer[] genreIdList = {28,12,16,35,80,99,18,10751,14,36,27,10402,9648,10749,878,10770,53,10752,37};
 
     private static String TAG = "TMDbAPI";
 
 
-    public void searchMovie (Context context, String movieName, ArrayList<MovieModel> movieModelArrayList, RecyclerView recyclerView){
+    public void searchMovie (Context context, String movieName, ArrayList<MovieModel> movieModelArrayList){
+
         Log.d(TAG, "searchMovie: "+movieModelArrayList.size());
         Log.d(TAG, "searchMovie: "+movieName);
-        DownloadData downloadData = new DownloadData(context,movieModelArrayList,recyclerView);
+        DownloadData downloadData = new DownloadData(context,movieModelArrayList);
         String url = searchUrl + movieName;
         downloadData.execute(url);
 
@@ -43,14 +54,14 @@ public class TMDbAPI {
 
         private Context mContext;
         private ArrayList<MovieModel> mMovieModelArrayList;
-        private RecyclerView mRecyclerView;
         MovieListItemAdapter movieListItemAdapter;
         ProgressDialog dialog;
 
-        DownloadData(Context context, ArrayList<MovieModel> movieModelArrayList, RecyclerView recyclerView){
+
+
+        DownloadData(Context context, ArrayList<MovieModel> movieModelArrayList){
             this.mContext = context;
             this.mMovieModelArrayList = movieModelArrayList;
-            this.mRecyclerView = recyclerView;
         }
 
         @Override
@@ -109,38 +120,47 @@ public class TMDbAPI {
                 for (int i = 0; i < jsonArray.length(); i++){
                     JSONObject count = (JSONObject) jsonArray.get(i);
 
-                    String title = count.getString("original_title");
-                    String release_date = count.getString("release_date");
-                    String poster_path = count.getString("poster_path");
-                    Double vote_average = count.getDouble("vote_average");
-                    String overview = count.getString("overview");
-                    String genreIds = count.getString("genre_ids");
-
                     String language = count.getString("original_language");
-                    JSONArray jsonArray1 = new JSONArray(genreIds);
 
-                    String genres = "";
-                    for (int j = 0; j < jsonArray1.length(); j++){
-                        int count2 = (int) jsonArray1.get(j);
-                        genres = genres +"-"+ Integer.toString(count2);
+                    if (language.contains("tr")|| language.contains("en")){
+
+                        String title = count.getString("original_title");
+                        String release_date = count.getString("release_date");
+                        String poster_path = count.getString("poster_path");
+                        Double vote_average = count.getDouble("vote_average");
+                        String overview = count.getString("overview");
+                        String genreIds = count.getString("genre_ids");
+
+
+                        String genres = "";
+                        JSONArray jsonArray1 = new JSONArray(genreIds);
+
+                        if (jsonArray1.length() == 0){
+                            genres = "NaN";
+                        } else{
+                            for (int j = 0; j < jsonArray1.length(); j++){
+                                int count2 = (int) jsonArray1.get(j);
+                                for (int m = 0; m < genreIdList.length; m++){
+                                    if (genreIdList[m] == count2){
+                                        genres =  genreList[m] +", " + genres;
+                                    }
+                                }
+                            }
+                        }
+
+                        Log.d(TAG, "onPostExecute: "+genres);
+                        Log.d(TAG, "onPostExecute: "+poster_path);
+
+                        MovieModel movieModel = new MovieModel(title, release_date ,genres ,vote_average.toString() , poster_path,overview, language);
+                        mMovieModelArrayList.add(movieModel);
                     }
-
-                    MovieModel movieModel = new MovieModel(title, release_date ,genres ,vote_average.toString() , poster_path,overview);
-                    mMovieModelArrayList.add(movieModel);
-
-
                 }
 
                 movieListItemAdapter = new MovieListItemAdapter(mContext, mMovieModelArrayList);
-                mRecyclerView.setAdapter(movieListItemAdapter);
-                mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-                movieListItemAdapter.notifyDataSetChanged();
 
-                Log.d(TAG, "onPostExecute: ");
-
-                if (dialog != null && dialog.isShowing()){
-                    dialog.dismiss();
-                }
+//                if (dialog != null && dialog.isShowing()){
+//                    dialog.dismiss();
+//                }
 
 
             } catch (JSONException e) {
@@ -148,12 +168,12 @@ public class TMDbAPI {
             }
         }
 
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            if (dialog != null && dialog.isShowing()){
-                dialog.dismiss();
-            }
-        }
+//        @Override
+//        protected void onCancelled() {
+//            super.onCancelled();
+//            if (dialog != null && dialog.isShowing()){
+//                dialog.dismiss();
+//            }
+//        }
     }
 }
