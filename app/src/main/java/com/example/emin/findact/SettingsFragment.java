@@ -156,13 +156,14 @@ public class SettingsFragment extends Fragment{
         Log.d("getUserData", "getUserData: " + ns);
 
 
-        user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
+        user = UserDatabase.getInstance(getContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
 
         fullName.setText(user.getFirstname() +" "+user.getLastname());
         birthdate.setText(user.getBirthday());
         // Load image
         try{
-            file = new File("/data/user/0/com.example.emin.findact/app_imageDir","profile.jpg" );
+            file = new File("/data/user/0/com.example.emin.findact/app_imageDir",
+                    firebaseDBHelper.getCurrentUser()+".jpg" );
             Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
             profilePic.setImageBitmap(b);
         } catch (FileNotFoundException e) {
@@ -281,7 +282,7 @@ public class SettingsFragment extends Fragment{
         int i = nameSplit.length;
         firstname = nameSplit[0];
 
-        String username = firebaseDBHelper.getCurrentUser();
+        String username = firebaseDBHelper.getUserEmailSplit();
 
         if (i == 1){
             firstname = nameSplit[0];
@@ -310,7 +311,7 @@ public class SettingsFragment extends Fragment{
             }
         }
 
-        final User user = new User(1,uuidString,firstname,lastname ,city.getSelectedItem().toString() ,
+        final User user = new User(uuidString,firstname,lastname ,city.getSelectedItem().toString() ,
                 birthdate.getText().toString(), selectedImage.toString(), switchData,username);
 
         UserDatabase.getInstance(getContext()).getUserDao().update(user);
@@ -321,7 +322,8 @@ public class SettingsFragment extends Fragment{
 //        ContextWrapper cw = new ContextWrapper(getContext());
 //        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
 //        File myPath = new File(directory, "profile.jpg");
-        File myPath = new File("/data/user/0/com.example.emin.findact/app_imageDir/profile.jpg");
+        String imageDir = "/data/user/0/com.example.emin.findact/app_imageDir/"+firebaseDBHelper.getCurrentUser()+".jpg";
+        File myPath = new File(imageDir);
 
         FileOutputStream fos = null;
 

@@ -75,17 +75,22 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
                     userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
                     break;
-                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
+                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING:
                     userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
                     break;
                 //already your friend you can remove your friends
                 case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                     userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
                     break;
-                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING_ANSWER:
                     userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
                     userListItemViewHolder.acceptFriendImageView.setVisibility(View.VISIBLE);
                     userListItemViewHolder.declineFriendImageView.setVisibility(View.VISIBLE);
+                    userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
+                    break;
+                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                    userListItemViewHolder.acceptFriendImageView.setVisibility(View.GONE);
+                    userListItemViewHolder.declineFriendImageView.setVisibility(View.GONE);
                     userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
                     break;
             }
@@ -138,36 +143,38 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                 case R.id.list_item_user_add_friend_iv:
                     switch(requestStatus.get(position)){
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
-                            firebaseDBHelper.sendFollowRequest(userData.getUsername());
+                            firebaseDBHelper.sendFollowRequest(userData.getUuidString());
                             userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
-                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING);
+                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING);
                             break;
-                        case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
-                            firebaseDBHelper.undoFollowRequest(userData.getUsername());
+                        case FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING:
+                            firebaseDBHelper.undoFollowRequest(userData.getUuidString());
                             userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
                             requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED);
                             break;
                         case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
-                            firebaseDBHelper.unfollowUser(userData.getUsername());
+                            firebaseDBHelper.unfollowUser(userData.getUuidString());
                             if(adapterCreatorTag.equals(UsersListDialog.TAG)) {
                                 userDataArrayList.remove(position);
+                                requestStatus.remove(position);
                             }
                             userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
-                            requestStatus.set(position,FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED);
                             break;
                     }
                     notifyDataSetChanged();
                     break;
 
                 case R.id.list_item_user_accept_friend_iv:
-                    firebaseDBHelper.acceptFollowRequest(userData.getUsername());
+                    firebaseDBHelper.acceptFollowRequest(userData.getUuidString());
                     userDataArrayList.remove(position);
+                    requestStatus.remove(position);
                     notifyDataSetChanged();
                     break;
 
                 case R.id.list_item_user_decline_friend_iv:
-                    firebaseDBHelper.declineFollowRequest(userData.getUsername());
+                    firebaseDBHelper.declineFollowRequest(userData.getUuidString());
                     userDataArrayList.remove(position);
+                    requestStatus.remove(position);
                     notifyDataSetChanged();
 
                     break;
@@ -176,12 +183,17 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                     if(UsersListDialog.getInstance().isAdded()) {
                         UsersListDialog.getInstance().dismiss();
                     }
+
                     ProfileFragment profileFragment = new ProfileFragment();
                     Bundle bundle = new Bundle();
                     bundle.putBundle("UserData",userData.UserDatatoBundle());
                     bundle.putInt("RequestStatus",requestStatus.get(position));
                     profileFragment.setArguments(bundle);
-                    profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                    if(userData.getUuidString().equals(firebaseDBHelper.getCurrentUser())){
+                        profileFragment.setInitMode(ProfileFragment.INIT_MODE_MY_PROFILE_PAGE);
+                    }else {
+                        profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                    }
                     FragmentManager fragmentManager = ((FragmentActivity)context).getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     fragmentTransaction.addToBackStack(null);

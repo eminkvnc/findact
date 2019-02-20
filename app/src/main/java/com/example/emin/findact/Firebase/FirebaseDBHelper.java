@@ -1,8 +1,18 @@
 package com.example.emin.findact.Firebase;
 
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.preference.PreferenceGroup;
 import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.example.emin.findact.ProgressDialog;
+import com.example.emin.findact.RoomDatabase.User;
+import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -16,11 +26,19 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.concurrent.Callable;
+
+import javax.net.ssl.HttpsURLConnection;
 
 
 public class FirebaseDBHelper {
@@ -28,9 +46,10 @@ public class FirebaseDBHelper {
 /////////////////////////REQUEST STATUS CODES/////////////////////
 
     public static final int FRIEND_REQUEST_STATUS_UNFOLLOWED = 50;
-    public static final int FRIEND_REQUEST_STATUS_WAITING = 51;  // used in UserListItemAdapter , FirebaseDBHelper
+    public static final int FRIEND_REQUEST_STATUS_REQUEST_WAITING = 51;  // used in UserListItemAdapter , FirebaseDBHelper
     public static final int FRIEND_REQUEST_STATUS_ACCEPTED = 52;
-    public static final int FRIEND_REQUEST_STATUS_NONE = 53;
+    public static final int FRIEND_REQUEST_STATUS_WAITING_ANSWER = 53;
+    public static final int FRIEND_REQUEST_STATUS_NONE = 54;
 
 //////////////////////FIREBASE CHILD REFERENCES//////////////////
 
@@ -48,8 +67,6 @@ public class FirebaseDBHelper {
     private StorageReference storageReference;
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
-    private String userEmail;
-    private String[] userEmailSplit;
     public static FirebaseDBHelper getInstance(){
         return SingletonHolder.INSTANCE;
     }
@@ -66,20 +83,20 @@ public class FirebaseDBHelper {
 
 /////////////////////////////////////////ADD DATA///////////////////////////////////////////////////
 
-    public void addUserDetail(final UserData userData, final String user_email){
+    public void addUserDetail(final UserData userData, boolean isImageUpdated){
 
         String imageName = "images/profilePicture.jpg";
 
         Log.d("addUserDetail", "addUserDetail: "+ userData.getProfilePictureUri());
-        final StorageReference mStorageReference = storageReference.child(user_email).child(imageName);
+        final StorageReference mStorageReference = storageReference.child(getCurrentUser()).child(imageName);
 
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").setValue(userData.getFirstname());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").setValue(userData.getLastname());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").setValue(userData.getBirthdate());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_DATA).child("city").setValue(userData.getCity());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_DATA).child("username").setValue(userData.getUsername());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_DATA).child("notification").setValue(userData.getNotification());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").setValue(userData.getUuidString());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").setValue(userData.getFirstname());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").setValue(userData.getLastname());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").setValue(userData.getBirthdate());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("city").setValue(userData.getCity());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("username").setValue(userData.getUsername());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("notification").setValue(userData.getNotification());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").setValue(userData.getUuidString());
 
         mStorageReference.putFile(userData.getProfilePictureUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -88,7 +105,7 @@ public class FirebaseDBHelper {
                     @Override
                     public void onSuccess(Uri uri) {
                         String downloadUrl = uri.toString();
-                        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").setValue(downloadUrl);
+                        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").setValue(downloadUrl);
                         Log.d("onSuccess", "onSuccess: "+ downloadUrl);
                         }
                     });
@@ -101,28 +118,34 @@ public class FirebaseDBHelper {
             });
     }
 
-    public void updateUserDetailWithoutPicture(UserData userData){
+    public void getUserData(final String userId, final ArrayList<UserData> userData){
 
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").setValue(userData.getFirstname());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").setValue(userData.getLastname());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").setValue(userData.getBirthdate());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("city").setValue(userData.getCity());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("username").setValue(userData.getUsername());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("notification").setValue(userData.getNotification());
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").setValue(userData.getUuidString());
+        userData.clear();
+        DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(userId);
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                userData.add(mapUserData(dataSnapshot));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
 //////////////////////////////////////////ADD LOG///////////////////////////////////////////////////
 
-    public void addUserLog(final InitialLog initialLog, final String user_email){
+    public void addUserLog(final InitialLog initialLog){
 
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_LOG).child("Initial").setValue(initialLog);
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_LOG).child("Initial").setValue(initialLog);
 
     }
 
-    public void addUserLog(EventLog eventLog, String user_email){
+    public void addUserLog(EventLog eventLog){
 
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user_email).child(FIREBASE_DB_CHILD_USER_LOG).child("Event").setValue(eventLog);
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_LOG).child("Event").setValue(eventLog);
     }
 
 
@@ -138,36 +161,23 @@ public class FirebaseDBHelper {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    if (ds.getKey().contains(parameter) ||
+                    if (ds.child(FIREBASE_DB_CHILD_USER_DATA).child("username").getValue().toString().contains(parameter) ||
                         ds.child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").getValue().toString().contains(parameter) ||
                         ds.child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").getValue().toString().contains(parameter)) {
-                        String username = ds.child(FIREBASE_DB_CHILD_USER_DATA).child("username").getValue().toString();
                         userDataArrayList.add(mapUserData(ds));
-                        if(ds.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS)){
-                            Query reference1 = databaseReference
-                                    .child(FIREBASE_DB_CHILD_USERS)
-                                    .child(username)
+                        Log.d(TAG, "onDataChange: "+FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser());
+                        if(ds.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
+                            Log.d(TAG, "onDataChange: has request child");
+                            Integer status = Integer.parseInt(ds
                                     .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
                                     .child(FIREBASE_DB_CHILD_USER_REQUESTS)
-                                    .orderByKey()
-                                    .equalTo(getCurrentUser());
-                            reference1.addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if(dataSnapshot.exists()){
-                                        requestStatusList.add(Integer.parseInt(dataSnapshot.child(getCurrentUser()).child("status").getValue().toString()));
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });
-                        }else {
+                                    .child(getCurrentUser())
+                                    .child("status").getValue().toString());
+                            requestStatusList.add(status);
+                        }else{
+                            Log.d(TAG, "onDataChange: has no child");
                             requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
                         }
-
                     }
                 }
             }
@@ -187,7 +197,7 @@ public class FirebaseDBHelper {
                 .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
                 .child(FIREBASE_DB_CHILD_USER_REQUESTS)
                 .child(getCurrentUser())
-                .child("status").setValue(FRIEND_REQUEST_STATUS_WAITING);
+                .child("status").setValue(FRIEND_REQUEST_STATUS_REQUEST_WAITING);
 
         databaseReference.child(FIREBASE_DB_CHILD_USERS)
                 .child(username).child(FIREBASE_DB_CHILD_USER_FOLLOWS)
@@ -253,7 +263,7 @@ public class FirebaseDBHelper {
                 .child(FIREBASE_DB_CHILD_USER_FOLLOWERS)
                 .child(username).
                 child("date").setValue(Calendar.getInstance().getTime().toString());
-        // add current user to folliwings of username
+        // add current user to followings of username
         databaseReference.child(FIREBASE_DB_CHILD_USERS)
                 .child(username)
                 .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
@@ -265,17 +275,17 @@ public class FirebaseDBHelper {
     public void unfollowUser(String username){
         //update request status
         databaseReference.child(FIREBASE_DB_CHILD_USERS)
-                .child(getCurrentUser())
+                .child(username)
                 .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
                 .child(FIREBASE_DB_CHILD_USER_REQUESTS)
-                .child(username)
+                .child(getCurrentUser())
                 .child("status").setValue(FRIEND_REQUEST_STATUS_UNFOLLOWED);
         //update request date
         databaseReference.child(FIREBASE_DB_CHILD_USERS)
-                .child(getCurrentUser())
+                .child(username)
                 .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
                 .child(FIREBASE_DB_CHILD_USER_REQUESTS)
-                .child(username)
+                .child(getCurrentUser())
                 .child("date").setValue(Calendar.getInstance().getTime().toString());
         //remove username to following of current user
         databaseReference.child(FIREBASE_DB_CHILD_USERS)
@@ -307,7 +317,7 @@ public class FirebaseDBHelper {
                 Log.d(TAG, "onDataChange: ds: "+dataSnapshot.toString());
                 if(dataSnapshot.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS)){
                     for(DataSnapshot ds : dataSnapshot.child(FIREBASE_DB_CHILD_USER_FOLLOWS).child(FIREBASE_DB_CHILD_USER_REQUESTS).getChildren()){
-                        if(Integer.parseInt(ds.child("status").getValue().toString()) == FRIEND_REQUEST_STATUS_WAITING) {
+                        if(Integer.parseInt(ds.child("status").getValue().toString()) == FRIEND_REQUEST_STATUS_REQUEST_WAITING) {
                             final String username = ds.getKey();
                             databaseReference.child(FIREBASE_DB_CHILD_USERS).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
@@ -315,7 +325,7 @@ public class FirebaseDBHelper {
                                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
                                         if (ds.getKey().equals(username)) {
                                             userDataArrayList.add(mapUserData(ds));
-                                            statusList.add(FRIEND_REQUEST_STATUS_NONE);
+                                            statusList.add(FRIEND_REQUEST_STATUS_WAITING_ANSWER);
                                             Log.d(TAG, "onDataChange: request: "+username);
                                         }
                                     }
@@ -357,6 +367,17 @@ public class FirebaseDBHelper {
                                     for(DataSnapshot ds2 : dataSnapshot.getChildren()){
                                         if(ds2.getKey().equals(username)) {
                                             followingList.add(mapUserData(ds2));
+                                            if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
+                                                requestStatusList.add(Integer.parseInt(ds2
+                                                        .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                                                        .child(FIREBASE_DB_CHILD_USER_REQUESTS)
+                                                        .child(getCurrentUser())
+                                                        .child("status").getValue().toString()));
+
+                                            }else{
+                                                requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
+                                            }
+
                                         }
                                     }
                                 }
@@ -367,14 +388,6 @@ public class FirebaseDBHelper {
                             });
                         }
                     }
-                }
-                if(dataSnapshot.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
-                    requestStatusList.add(Integer.parseInt(dataSnapshot
-                            .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
-                            .child(FIREBASE_DB_CHILD_USER_REQUESTS)
-                            .child(getCurrentUser())
-                            .child("status").getValue().toString()));
-
                 }
             }
 
@@ -406,6 +419,15 @@ public class FirebaseDBHelper {
                                             for(DataSnapshot ds2 : dataSnapshot.getChildren()){
                                                 if(ds2.getKey().equals(username)) {
                                                     followersList.add(mapUserData(ds2));
+                                                    if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
+                                                        requestStatusList.add(Integer.parseInt(ds2
+                                                                .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                                                                .child(FIREBASE_DB_CHILD_USER_REQUESTS)
+                                                                .child(getCurrentUser())
+                                                                .child("status").getValue().toString()));
+                                                    }else{
+                                                        requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
+                                                    }
                                                 }
                                             }
                                         }
@@ -416,13 +438,6 @@ public class FirebaseDBHelper {
                                     });
                         }
                     }
-                }
-                if(dataSnapshot.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
-                    requestStatusList.add(Integer.parseInt(dataSnapshot
-                            .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
-                            .child(FIREBASE_DB_CHILD_USER_REQUESTS)
-                            .child(getCurrentUser())
-                            .child("status").getValue().toString()));
                 }
             }
 
@@ -453,9 +468,78 @@ public class FirebaseDBHelper {
     public String getCurrentUser(){
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
-        userEmail = firebaseUser.getEmail();
-        userEmailSplit = userEmail.split("@");
-        return userEmailSplit[0];
+        return firebaseUser.getUid();
     }
 
+    public String getUserEmailSplit(){
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        String email[] = firebaseUser.getEmail().split("@");
+        return email[0];
+    }
+
+    public void saveImageToLocal(Context context, User user, UserData userData){
+
+        ImageDownloaderTask task = new ImageDownloaderTask(context,user,userData);
+        task.execute();
+
+    }
+    public class ImageDownloaderTask extends AsyncTask<Void, Void, Void> {
+
+
+        private User user;
+        private UserData userData;
+        private Context context;
+
+
+
+        public ImageDownloaderTask(Context context, User user, UserData userData) {
+            this.context = context;
+            this.user = user;
+            this.userData = userData;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            ContextWrapper cw = new ContextWrapper(context);
+            File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+            File myPath = new File(directory, getCurrentUser()+".jpg");
+            try {
+                URL url = new URL(userData.getProfilePictureUri().toString());
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                Bitmap bitmap = BitmapFactory.decodeStream(input);
+                FileOutputStream fos = new FileOutputStream(myPath);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100,fos );
+                fos.close();
+                user = new User(userData.getUuidString()
+                        ,userData.getFirstname()
+                        ,userData.getLastname()
+                        ,userData.getCity()
+                        ,userData.getBirthdate()
+                        ,myPath.getAbsolutePath()
+                        ,userData.getNotification()
+                        ,userData.getUsername());
+                UserDatabase.getInstance(context).getUserDao().insert(user);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+        }
+
+
+    }
 }

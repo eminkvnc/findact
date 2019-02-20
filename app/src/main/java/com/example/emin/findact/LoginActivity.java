@@ -1,12 +1,13 @@
 package com.example.emin.findact;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -22,10 +23,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+
 public class LoginActivity extends AppCompatActivity {
 
     private final String TAG = "Login_Activity";
     private GoogleSignInClient googleSignInClient;
+    private SignInButton signInButton;
     private FirebaseAuth mAuth;
 
     @Override
@@ -33,8 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_login);
-
-        SignInButton signInButton = findViewById(R.id.activity_login_sign_in_with_google_btn);
+        signInButton = findViewById(R.id.activity_login_sign_in_with_google_btn);
         signInButton.setSize(SignInButton.SIZE_WIDE);
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -42,24 +44,31 @@ public class LoginActivity extends AppCompatActivity {
                 signIn();
             }
         });
+
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("759606393898-780fc9dduipijr2l9g3cag7mqe6t01im.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this,gso);
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null) {
-            Log.d(TAG, "userAlreadySignIn ");
-            updateUI(currentUser);
+        boolean isSignOut = getIntent().getBooleanExtra("SignOut",false);
+        if(isSignOut){
+            signOut();
+        }else{
+            if(currentUser != null) {
+                Log.d(TAG, "userAlreadySignIn ");
+                updateUI(currentUser);
+            }
         }
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
     }
 
     @Override
@@ -85,11 +94,17 @@ public class LoginActivity extends AppCompatActivity {
         Intent signInIntent = googleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, 1);
     }
+    private void signOut(){
+        googleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                mAuth.signOut();
+            }
+        });
+    }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
-
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -111,10 +126,12 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void updateUI(FirebaseUser firebaseUser){
-        Toast.makeText(this, "Welcome: "+firebaseUser.getEmail(), Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this, MainActivity.class);
+    private void updateUI(final FirebaseUser firebaseUser){
+
+        Toast.makeText(getApplicationContext(), "Welcome: "+firebaseUser.getEmail(), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
+        finish();
     }
 
     @Override

@@ -7,12 +7,12 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -26,12 +26,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.InitialLog;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.google.firebase.auth.FirebaseAuth;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -43,7 +45,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.UUID;
 
 public class GetUserDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -55,7 +56,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     EditText nameET, surnameET, birthdayET, usernameET;
     Spinner citySpinner;
     ListView gameListView, movieListView;
-    ImageView profilePicture;
+    ImageView profilePicture, saveImageView;
     String name, surname, city, birthday, username, movieGenres, gameGenres;
     Uri selectedImage;
 
@@ -137,6 +138,27 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         surnameET = findViewById(R.id.get_user_detail_lastname);
         citySpinner = findViewById(R.id.get_user_detail_city);
         birthdayET = findViewById(R.id.get_user_detail_birthday);
+        saveImageView = findViewById(R.id.get_user_detail_save_icon);
+
+        saveImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(nameET.getText().toString().equals("") ||
+                        surnameET.getText().toString().equals("") ||
+                        birthdayET.getText().toString().equals("") ||
+                        citySpinner.getSelectedItem().equals("Select City") ||
+                        nameET.getText().toString().equals("") ||
+                        bitmap == null ||
+                        selectedGameGenres.isEmpty() ||
+                        selectedMovieGenres.isEmpty()){
+                    Toast.makeText(getApplicationContext(), "Please fill your information.", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    saveDetail();
+                }
+            }
+        });
 
         birthdayET.setFocusable(false);
         birthdayET.setClickable(true);
@@ -244,7 +266,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         }
     }
 
-    public void SaveDetail(View view){
+    public void saveDetail(){
 
         firebaseDBHelper = new FirebaseDBHelper();
 
@@ -252,7 +274,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         surname = surnameET.getText().toString();
         city = citySpinner.getSelectedItem().toString();
         birthday = birthdayET.getText().toString();
-        username = firebaseDBHelper.getCurrentUser();
+        username = firebaseDBHelper.getUserEmailSplit();
 
 
         if(!selectedGameGenres.isEmpty()) {
@@ -270,12 +292,11 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         firebaseDBHelper = FirebaseDBHelper.getInstance();
 
-        UUID uuid = UUID.randomUUID();
-        String uuidString = uuid.toString();
+        String uuidString = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myPath = new File(directory, "profile.jpg");
+        File myPath = new File(directory, uuidString+".jpg");
 
         Log.d("SaveDetail", "SaveDetail: "+myPath.getAbsolutePath());
         saveToInternalStorage(bitmap,myPath);
@@ -288,7 +309,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         firebaseDBHelper.addUserDetail(userData, true);
         firebaseDBHelper.addUserLog(initialLog);
 
-        final User user = new User(1,uuidString,name,surname ,city ,birthday , selectedImage.toString(), "true", username);
+        final User user = new User(uuidString,name,surname ,city ,birthday , selectedImage.toString(), "true", username);
 
         UserDatabase.getInstance(getApplicationContext()).getUserDao().insert(user);
 
@@ -429,5 +450,25 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
             }
             return view;
         }
+    }
+
+    boolean doubleBackTab = false;
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackTab) {
+            finishAffinity();
+        } else {
+            Toast.makeText(this, "Please fill your information.", Toast.LENGTH_SHORT).show();
+            doubleBackTab = true;
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    doubleBackTab = false;
+                }
+            }, 500);
+        }
+
     }
 }

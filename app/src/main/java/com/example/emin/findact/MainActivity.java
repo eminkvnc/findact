@@ -2,6 +2,7 @@ package com.example.emin.findact;
 
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -15,6 +16,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.emin.findact.Firebase.FirebaseDBHelper;
+import com.example.emin.findact.Firebase.UserData;
+import com.example.emin.findact.RoomDatabase.User;
+import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
     final String TAG = "MainActivity";
@@ -24,6 +39,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     FindFragment findFragment;
     ExploreFragment exploreFragment;
     ProfileFragment profileFragment;
+    FirebaseUser firebaseUser;
+    FirebaseDBHelper firebaseDBHelper;
+    User user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +58,52 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
-        navigation.setSelectedItemId(R.id.navigation_explore);
+        navigation.setSelectedItemId(R.id.navigation_home);
+
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        progressDialog.show();
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String path = FirebaseDBHelper.FIREBASE_DB_CHILD_USERS+"/"+firebaseUser.getUid();
+                if(!dataSnapshot.hasChild(path)){
+                    progressDialog.dismiss();
+                    Intent intent = new Intent(getApplicationContext(), GetUserDetailActivity.class);
+                    startActivity(intent);
+                }else{
+                    firebaseDBHelper = FirebaseDBHelper.getInstance();
+                    user = UserDatabase.getInstance(getApplicationContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
+
+                    final ArrayList<UserData> userDatas = new ArrayList<>();
+
+                    if (user == null){
+                        firebaseDBHelper.getUserData(firebaseDBHelper.getCurrentUser(),userDatas);
+
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                firebaseDBHelper.saveImageToLocal(getApplicationContext(),user,userDatas.get(0));
+                            }
+                        },500);
+                        Handler handler1 = new Handler();
+                        handler1.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressDialog.dismiss();
+                            }
+                        },3000);
+                    }
+                    progressDialog.dismiss();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
@@ -57,9 +121,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         switch (item.getItemId()) {
             case R.id.navigation_home:
-                //setMainFragment(homeFragment);
-                Intent intent = new Intent(getApplicationContext(),GetUserDetailActivity.class);
-                startActivity(intent);
+                setMainFragment(homeFragment);
                 return true;
             case R.id.navigation_explore:
                 setMainFragment(exploreFragment);

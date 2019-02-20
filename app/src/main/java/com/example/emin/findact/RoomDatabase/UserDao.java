@@ -16,7 +16,7 @@ public interface UserDao {
     @Update
     void update(User user);
 
-    @Query("SELECT * FROM user_detail")
-    User getDatas();
+    @Query("SELECT * FROM user_detail WHERE uuid IN(:uuidString)")
+    User getDatas(String uuidString);
 
 }

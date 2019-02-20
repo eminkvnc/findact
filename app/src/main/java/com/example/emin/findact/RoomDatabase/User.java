@@ -12,9 +12,7 @@ import java.util.UUID;
 @Entity(tableName = "user_detail", indices = @Index(value = {"uuid"}, unique = true))
 public class User {
 
-    @PrimaryKey(autoGenerate = true)
-    private int userId;
-
+    @PrimaryKey
     @NonNull
     @ColumnInfo(name = "uuid")
     private String uuid;
@@ -47,10 +45,9 @@ public class User {
     @ColumnInfo(name = "username")
     private String username;
 
-    public User(int userId, @NonNull String uuid, @NonNull String firstname,
+    public User(@NonNull String uuid, @NonNull String firstname,
                 @NonNull String lastname, @NonNull String city, @NonNull String birthday,
                 @NonNull String pictureUri, @NonNull String notification, @NonNull String username) {
-        this.userId = userId;
         this.uuid = uuid;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -59,11 +56,6 @@ public class User {
         this.pictureUri = pictureUri;
         this.notification = notification;
         this.username = username;
-    }
-
-
-    public int getUserId() {
-        return userId;
     }
 
     @NonNull

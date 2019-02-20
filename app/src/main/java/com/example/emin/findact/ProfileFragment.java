@@ -24,12 +24,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.emin.findact.Firebase.FirebaseAsyncTask;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -77,8 +79,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         listDialog = UsersListDialog.getInstance();
         if(initMode == INIT_MODE_FRIEND_PROFILE_PAGE) {
             userData = new UserData(getArguments().getBundle("UserData"));
-            currentUsername = userData.getUsername();
-            if(userData.getUsername().equals(firebaseDBHelper.getCurrentUser())){
+            currentUsername = userData.getUuidString();
+            if(userData.getUuidString().equals(firebaseDBHelper.getCurrentUser())){
                 initMode = INIT_MODE_MY_PROFILE_PAGE;
                 currentUsername = firebaseDBHelper.getCurrentUser();
             }
@@ -171,7 +173,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 addFriendImageView.setVisibility(View.GONE);
                 requestsImageView.setVisibility(View.VISIBLE);
                 settingsFragment = new SettingsFragment();
-                user = UserDatabase.getInstance(getContext()).getUserDao().getDatas();
+                user = UserDatabase.getInstance(getContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
                 Log.d("onCreateView", "onCreateView: "+ user.getFirstname()+ user.getCity() +user.getBirthday());
                 nameTextView.setText(user.getFirstname()+" "+ user.getLastname());
                 cityTextView.setText(user.getCity());
@@ -179,7 +181,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 String [] birthdaySplit = birthday.split("/");
                 ageTextView.setText(birthdaySplit[0]+"/"+birthdaySplit[1]);
                 try{
-                    File file = new File("/data/user/0/com.example.emin.findact/app_imageDir","profile.jpg" );
+                    File file = new File("/data/user/0/com.example.emin.findact/app_imageDir",
+                            firebaseDBHelper.getCurrentUser()+".jpg" );
                     Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
                     profilePictureImageView.setImageBitmap(b);
                 } catch (Exception e){
@@ -197,7 +200,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
                        addFriendImageView.setImageResource(R.drawable.circle_cancel);
                        break;
-                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
+                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING:
                        addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
                        break;
                }
@@ -212,8 +215,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     }
 
     private void signOut() {
-        FirebaseAuth.getInstance().signOut();
         Intent intent = new Intent(getContext(), LoginActivity.class);
+        intent.putExtra("SignOut",true);
         startActivity(intent);
     }
 
@@ -232,17 +235,17 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
                 switch(requestStatus){
                     case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
-                        firebaseDBHelper.sendFollowRequest(userData.getUsername());
+                        firebaseDBHelper.sendFollowRequest(userData.getUuidString());
                         addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
-                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING;
+                        requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING;
                         break;
-                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING:
-                        firebaseDBHelper.undoFollowRequest(userData.getUsername());
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING:
+                        firebaseDBHelper.undoFollowRequest(userData.getUuidString());
                         addFriendImageView.setImageResource(R.drawable.send_follow_request);
                         requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED;
                         break;
                     case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
-                        firebaseDBHelper.unfollowUser(userData.getUsername());
+                        firebaseDBHelper.unfollowUser(userData.getUuidString());
                         addFriendImageView.setImageResource(R.drawable.send_follow_request);
                         requestStatus = FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED;
                         break;
@@ -279,9 +282,14 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 Bundle bundle = new Bundle();
                 bundle.putString("Title",dialogTitle);
                 Bundle followersArrayListBundle = new Bundle();
+                if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals("Followers")){
+                    statusList.clear();
+                }
                 for(int i = 0; i < friendsArrayList.size(); i++){
                     followersArrayListBundle.putBundle(String.valueOf(i),friendsArrayList.get(i).UserDatatoBundle());
-
+                    if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals("Followers")){
+                        statusList.add(i,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
+                    }
                 }
                 bundle.putBundle("UserDataArrayList",followersArrayListBundle);
                 bundle.putIntegerArrayList("StatusArrayList",statusList);
