@@ -2,6 +2,7 @@ package com.example.emin.findact;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,12 +12,21 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.example.emin.findact.APIs.MovieModel;
+import com.example.emin.findact.APIs.TMDbAPI;
+import com.example.emin.findact.Adapters.MovieListItemAdapter;
 import com.example.emin.findact.Adapters.UserListItemAdapter;
 import com.example.emin.findact.Firebase.FirebaseAsyncTask;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
@@ -35,6 +45,9 @@ public class FindFragment extends Fragment {
     ProgressDialog progressDialog;
     EditText searchEditText;
     FirebaseDBHelper firebaseDBHelper;
+    TMDbAPI tmDbAPI;
+    ArrayList<MovieModel> movieModelArrayList;
+    RecyclerView searchRecylerView;
 
     public FindFragment() {
 
@@ -47,6 +60,10 @@ public class FindFragment extends Fragment {
         requestStatus = new ArrayList<>();
         progressDialog = new ProgressDialog(getContext());
         firebaseDBHelper = FirebaseDBHelper.getInstance();
+
+        tmDbAPI = new TMDbAPI();
+        movieModelArrayList = new ArrayList<>();
+
     }
 
     @Override
@@ -60,7 +77,6 @@ public class FindFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
 
         displayActivityFragment = new DisplayActivityFragment();
         v = inflater.inflate(R.layout.fragment_find, container, false);
