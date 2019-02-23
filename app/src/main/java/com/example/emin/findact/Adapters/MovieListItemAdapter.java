@@ -2,7 +2,12 @@ package com.example.emin.findact.Adapters;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,6 +18,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.emin.findact.APIs.MovieModel;
+import com.example.emin.findact.DisplayActivityFragment;
+import com.example.emin.findact.FindFragment;
 import com.example.emin.findact.R;
 import com.squareup.picasso.Picasso;
 
@@ -20,12 +27,10 @@ import java.util.ArrayList;
 
 public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdapter.MovieListItemViewHolder> {
 
-
-    // Adaptera girmiyor
     private ArrayList<MovieModel> movieModelArrayList;
     private Context context;
-
     private String TAG = "MovieListItemAdapter";
+
 
     public MovieListItemAdapter( Context context, ArrayList<MovieModel> movieModelArrayList) {
         this.movieModelArrayList = movieModelArrayList;
@@ -50,27 +55,11 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
 
         movieListItemViewHolder.title.setText(movieModel.getTitle());
         movieListItemViewHolder.releaseDate.setText(movieModel.getRelease_date());
-        Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+movieModel.getPoster_path())).into(movieListItemViewHolder.poster);
-
-//        try {
-//            URL url = new URL("http://image.tmdb.org/t/p/w185/"+movieModel.getPoster_path());
-//
-//            Log.d("onBindViewHolder", "onBindViewHolder: "+url);
-//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//            connection.setDoInput(true);
-//            connection.connect();
-//
-//            InputStream is = connection.getInputStream();
-//            Bitmap bm = BitmapFactory.decodeStream(is);
-//            movieListItemViewHolder.poster.setImageBitmap(bm);
-//
-//
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
+        if (!movieModel.getPoster_path().equals("null") && movieModel.getPoster_path() != null){
+            Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+movieModel.getPoster_path())).into(movieListItemViewHolder.poster);
+        } else {
+            movieListItemViewHolder.poster.setImageResource(R.drawable.ic_movie);
+        }
     }
 
 
@@ -98,11 +87,14 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
         }
     }
 
+
     class CustomListener implements View.OnClickListener{
 
         private MovieListItemViewHolder movieListItemViewHolder;
         private int position;
         private MovieModel movieModel;
+        DisplayActivityFragment displayActivityFragment;
+
 
         CustomListener(MovieListItemViewHolder movieListItemViewHolder, int position, MovieModel movieModel) {
             this.movieListItemViewHolder = movieListItemViewHolder;
@@ -112,7 +104,27 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
 
         @Override
         public void onClick(View view) {
+            if (view.getId() == R.id.list_item_movie_cardview) {
+                displayActivityFragment = new DisplayActivityFragment();
+
+                Log.d(TAG, "onClick: "+movieModel.getTitle());
+                Bundle bundle = new Bundle();
+                bundle.putBundle("MovieData" ,movieModel.MovieDataToBundle());
+
+                Log.d(TAG, "onClick: "+ bundle.getString("title"));
+                displayActivityFragment.setArguments(bundle);
+                displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_MOVIE_ACTIVITY);
+
+                FragmentManager fragmentManager = ((FragmentActivity)context).getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.replace(R.id.main_frame,displayActivityFragment);
+                fragmentTransaction.commit();
+
+            }
+
 
         }
+
     }
 }

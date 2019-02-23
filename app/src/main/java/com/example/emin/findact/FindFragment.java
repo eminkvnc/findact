@@ -59,8 +59,8 @@ public class FindFragment extends Fragment implements View.OnClickListener {
     ArrayList<MovieModel> movieModelArrayList;
     MovieListItemAdapter findMovieAdapter;
 
-    public FindFragment() {
-
+    public static FindFragment getInstance() {
+        return new FindFragment();
     }
 
     @Override
@@ -70,7 +70,6 @@ public class FindFragment extends Fragment implements View.OnClickListener {
         requestStatus = new ArrayList<>();
         progressDialog = new ProgressDialog(getContext());
         firebaseDBHelper = FirebaseDBHelper.getInstance();
-
         tmDbAPI = new TMDbAPI();
         movieModelArrayList = new ArrayList<>();
 
@@ -193,7 +192,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                         @Override
                         public void run() {
                             firebaseDBHelper.searchUser(searchParameter, userDataArrayList, requestStatus);
-                            tmDbAPI.searchMovie(getContext(),searchParameter,movieModelArrayList,searchMovieRecyclerView);
+                            tmDbAPI.searchMovie(getContext(),searchParameter,movieModelArrayList);
                         }
                     };
                     progressDialog.show();
