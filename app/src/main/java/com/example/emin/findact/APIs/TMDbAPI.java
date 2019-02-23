@@ -33,6 +33,7 @@ public class TMDbAPI {
     public void searchMovie (Context context, String movieName, ArrayList<MovieModel> movieModelArrayList, RecyclerView recyclerView){
         Log.d(TAG, "searchMovie: "+movieModelArrayList.size());
         Log.d(TAG, "searchMovie: "+movieName);
+        movieModelArrayList.clear();
         DownloadData downloadData = new DownloadData(context,movieModelArrayList,recyclerView);
         String url = searchUrl + movieName;
         downloadData.execute(url);
@@ -45,7 +46,7 @@ public class TMDbAPI {
         private ArrayList<MovieModel> mMovieModelArrayList;
         private RecyclerView mRecyclerView;
         MovieListItemAdapter movieListItemAdapter;
-        ProgressDialog dialog;
+        //ProgressDialog dialog;
 
         DownloadData(Context context, ArrayList<MovieModel> movieModelArrayList, RecyclerView recyclerView){
             this.mContext = context;
@@ -56,9 +57,8 @@ public class TMDbAPI {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            dialog = new ProgressDialog(mContext);
-            dialog.show();
-
+            //dialog = new ProgressDialog(mContext);
+            //dialog.show();
             Log.d(TAG, "onPreExecute: ");
 
         }
@@ -138,9 +138,9 @@ public class TMDbAPI {
 
                 Log.d(TAG, "onPostExecute: ");
 
-                if (dialog != null && dialog.isShowing()){
+                /*if (dialog != null && dialog.isShowing()){
                     dialog.dismiss();
-                }
+                }*/
 
 
             } catch (JSONException e) {
@@ -151,9 +151,9 @@ public class TMDbAPI {
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            if (dialog != null && dialog.isShowing()){
+            /*if (dialog != null && dialog.isShowing()){
                 dialog.dismiss();
-            }
+            }*/
         }
     }
 }

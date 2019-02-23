@@ -28,10 +28,6 @@ import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
-import com.google.android.gms.auth.GoogleAuthUtil;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -39,6 +35,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 
 public class ProfileFragment extends Fragment implements View.OnClickListener {
+
 
 
     public static final int INIT_MODE_MY_PROFILE_PAGE = 0;

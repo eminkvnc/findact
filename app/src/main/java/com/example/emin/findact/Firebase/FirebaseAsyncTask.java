@@ -1,44 +1,56 @@
 package com.example.emin.findact.Firebase;
 
 import android.os.AsyncTask;
-import android.util.Log;
-import com.example.emin.findact.Adapters.UserListItemAdapter;
-import com.example.emin.findact.ProgressDialog;
+import android.os.Handler;
 
 
-public class FirebaseAsyncTask extends AsyncTask<Void, Void, Void> {
-    private String TAG = "FirebaseAsyncTask";
-    private UserListItemAdapter adapter;
-    private ProgressDialog progressDialog;
+public class FirebaseAsyncTask extends AsyncTask<Void, Void, Void>{
+
     private Runnable runnable;
+    private Runnable timeoutRunnable;
+    private Handler handler;
+    private boolean taskComplete =false;
+    private boolean timeout =false;
+    private OnTaskCompletedListener listener;
 
-    public FirebaseAsyncTask(UserListItemAdapter adapter, ProgressDialog progressDialog, Runnable runnable) {
-        this.adapter = adapter;
-        this.progressDialog = progressDialog;
+    public FirebaseAsyncTask(Runnable runnable, OnTaskCompletedListener listener) {
         this.runnable = runnable;
+        this.listener = listener;
     }
 
     @Override
     protected void onPreExecute() {
-        Log.d(TAG, "onPreExecute: "+getStatus().toString());
-        progressDialog.show();
-        super.onPreExecute();
+        taskComplete = false;
+        timeout = false;
+        timeoutRunnable = new Runnable() {
+            @Override
+            public void run() {
+                timeout = true;
+            }
+        };
+        handler = new Handler();
+        handler.postDelayed(timeoutRunnable,5000);
     }
 
     @Override
     protected Void doInBackground(Void... voids) {
-
-        Log.d(TAG, "doInBackground: "+getStatus().toString());
         runnable.run();
         return null;
     }
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        Log.d(TAG, "onPostExecute: "+getStatus().toString());
-        progressDialog.dismiss();
-        adapter.notifyDataSetChanged();
-        super.onPostExecute(aVoid);
+        handler.removeCallbacks(timeoutRunnable);
+        taskComplete = true;
+        listener.onTaskCompleted();
+    }
+
+    public boolean isTaskComplete() {
+        return taskComplete;
+    }
+
+    public boolean isTimeout() {
+        return timeout;
     }
 
 

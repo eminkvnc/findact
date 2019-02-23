@@ -2,50 +2,54 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/movie_btn"
-        style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/fragment_find_ll"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Movie"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/game_btn" />
-
-    <Button
-        android:id="@+id/game_btn"
-        style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Game"
-        app:layout_constraintStart_toEndOf="@+id/movie_btn"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_find_search_et" />
-
-    <Button
-        android:id="@+id/group_btn"
-        style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:text="Group"
-        app:layout_constraintEnd_toStartOf="@+id/person_btn"
-        app:layout_constraintTop_toTopOf="@+id/game_btn" />
-
-    <Button
-        android:id="@+id/person_btn"
-        style="@style/Widget.AppCompat.Button.Small"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:text="Person"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/game_btn" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/fragment_find_search_et">
+
+        <Button
+            android:id="@+id/fragment_find_person_btn"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Person" />
+
+        <Button
+            android:id="@+id/fragment_find_movie_btn"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Movie" />
+
+        <Button
+            android:id="@+id/fragment_find_game_btn"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Game" />
+
+        <Button
+            android:id="@+id/fragment_find_group_btn"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Group" />
+
+    </LinearLayout>
+
 
     <EditText
         android:id="@+id/fragment_find_search_et"
@@ -71,7 +75,8 @@
         app:srcCompat="@drawable/search" />
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/fragment_find_rv"
+        android:id="@+id/fragment_find_person_rv"
+        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
@@ -81,6 +86,48 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/game_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_ll" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/fragment_find_movie_rv"
+        android:visibility="gone"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_ll" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/fragment_find_game_rv"
+        android:visibility="gone"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_ll" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/fragment_find_group_rv"
+        android:visibility="gone"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_ll" />
 
 </android.support.constraint.ConstraintLayout>

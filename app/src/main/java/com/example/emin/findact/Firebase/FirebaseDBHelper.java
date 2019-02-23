@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.preference.PreferenceGroup;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -183,7 +184,7 @@ public class FirebaseDBHelper {
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Log.d(TAG, "onCancelled: "+databaseError.getMessage());
             }
         });
     }
@@ -491,8 +492,6 @@ public class FirebaseDBHelper {
         private UserData userData;
         private Context context;
 
-
-
         public ImageDownloaderTask(Context context, User user, UserData userData) {
             this.context = context;
             this.user = user;
@@ -501,7 +500,7 @@ public class FirebaseDBHelper {
 
         @Override
         protected void onPreExecute() {
-            super.onPreExecute();
+
         }
 
         @Override
@@ -539,7 +538,6 @@ public class FirebaseDBHelper {
         protected void onPostExecute(Void aVoid) {
 
         }
-
 
     }
 }
