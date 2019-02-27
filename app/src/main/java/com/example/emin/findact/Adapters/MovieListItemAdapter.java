@@ -2,9 +2,9 @@ package com.example.emin.findact.Adapters;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -19,11 +19,21 @@ import android.widget.TextView;
 
 import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.DisplayActivityFragment;
-import com.example.emin.findact.FindFragment;
 import com.example.emin.findact.R;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdapter.MovieListItemViewHolder> {
 
@@ -58,7 +68,7 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
         if (!movieModel.getPoster_path().equals("null") && movieModel.getPoster_path() != null){
             Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+movieModel.getPoster_path())).into(movieListItemViewHolder.poster);
         } else {
-            movieListItemViewHolder.poster.setImageResource(R.drawable.ic_movie);
+            movieListItemViewHolder.poster.setImageResource(R.drawable.default_movie);
         }
     }
 
@@ -105,13 +115,13 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
         @Override
         public void onClick(View view) {
             if (view.getId() == R.id.list_item_movie_cardview) {
+
                 displayActivityFragment = new DisplayActivityFragment();
 
                 Log.d(TAG, "onClick: "+movieModel.getTitle());
                 Bundle bundle = new Bundle();
                 bundle.putBundle("MovieData" ,movieModel.MovieDataToBundle());
 
-                Log.d(TAG, "onClick: "+ bundle.getString("title"));
                 displayActivityFragment.setArguments(bundle);
                 displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_MOVIE_ACTIVITY);
 
@@ -122,9 +132,9 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
                 fragmentTransaction.commit();
 
             }
-
-
         }
-
     }
+
+
+
 }

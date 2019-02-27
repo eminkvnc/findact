@@ -12,6 +12,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +21,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.emin.findact.APIs.GameModel;
+import com.example.emin.findact.APIs.IGDbAPI;
 import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.APIs.TMDbAPI;
+import com.example.emin.findact.Adapters.GameListItemAdapter;
 import com.example.emin.findact.Adapters.MovieListItemAdapter;
 import com.example.emin.findact.Adapters.UserListItemAdapter;
 import com.example.emin.findact.Firebase.FirebaseAsyncTask;
@@ -34,6 +38,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
 
     private View v;
     public static String TAG = "FindFragment";
+    String sParam;
     FirebaseDBHelper firebaseDBHelper;
     ProgressDialog progressDialog;
     DisplayActivityFragment displayActivityFragment;
@@ -59,6 +64,10 @@ public class FindFragment extends Fragment implements View.OnClickListener {
     ArrayList<MovieModel> movieModelArrayList;
     MovieListItemAdapter findMovieAdapter;
 
+    IGDbAPI igDbAPI;
+    ArrayList<GameModel> gameModelArrayList;
+    GameListItemAdapter findGameAdapter;
+
     public static FindFragment getInstance() {
         return new FindFragment();
     }
@@ -72,6 +81,8 @@ public class FindFragment extends Fragment implements View.OnClickListener {
         firebaseDBHelper = FirebaseDBHelper.getInstance();
         tmDbAPI = new TMDbAPI();
         movieModelArrayList = new ArrayList<>();
+        igDbAPI = new IGDbAPI();
+        gameModelArrayList = new ArrayList<>();
 
     }
 
@@ -105,10 +116,13 @@ public class FindFragment extends Fragment implements View.OnClickListener {
         searchPersonRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         searchPersonRecyclerView.setAdapter(findPersonAdapter);
 
-        //findMovieAdapter = new MovieListItemAdapter(getContext(),movieModelArrayList);
-        //searchMovieRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        //searchMovieRecyclerView.setAdapter(findMovieAdapter);
+        findMovieAdapter = new MovieListItemAdapter(getContext(),movieModelArrayList);
+        searchMovieRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        searchMovieRecyclerView.setAdapter(findMovieAdapter);
 
+        findGameAdapter = new GameListItemAdapter(getContext(),gameModelArrayList );
+        searchGameRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        searchGameRecyclerView.setAdapter(findGameAdapter);
 
         searchImageView.setOnClickListener(this);
         personButton.setOnClickListener(this);
@@ -188,11 +202,22 @@ public class FindFragment extends Fragment implements View.OnClickListener {
             case R.id.fragment_find_search_iv:
                 final String searchParameter = searchEditText.getText().toString();
                 if (!searchParameter.equals("")) {
+
+                    String [] split = searchParameter.split(" ");
+                    int i = split.length;
+                    sParam = split[0];
+                    if (i > 1){
+                        for (int j = 1; j < i; j++){
+                            sParam = sParam + "+" + split[j];
+                        }
+                    }
+                    Log.d(TAG, "onClick: "+sParam);
                     final Runnable searchRunnable = new Runnable() {
                         @Override
                         public void run() {
-                            firebaseDBHelper.searchUser(searchParameter, userDataArrayList, requestStatus);
-                            tmDbAPI.searchMovie(getContext(),searchParameter,movieModelArrayList);
+                            firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus);
+                            tmDbAPI.searchMovie(/*getContext(),*/sParam,movieModelArrayList);
+                            igDbAPI.searchGame(sParam,gameModelArrayList);
                         }
                     };
                     progressDialog.show();
@@ -223,6 +248,13 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                     userDataArrayList.clear();
                     requestStatus.clear();
                     findPersonAdapter.notifyDataSetChanged();
+
+                    movieModelArrayList.clear();
+                    findMovieAdapter.notifyDataSetChanged();
+
+                    gameModelArrayList.clear();
+                    findGameAdapter.notifyDataSetChanged();
+
                 }
                 break;
         }

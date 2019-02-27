@@ -28,55 +28,36 @@ import javax.net.ssl.HttpsURLConnection;
 public class TMDbAPI {
 
     String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
-    String posterPathUrl = "http://image.tmdb.org/t/p/w185/";   // +poster path
-    String genreUrl = "https://api.themoviedb.org/3/genre/movie/list?api_key=fd50bae5852bf6c2e149317a6e885416";
 
-
-    // Hashmape çevir
     static String[] genreList = {"Action", "Adventure", "Animation", "Comedy", "Crime","Documentary", "Drama","Family","Fantasy","History",
             "Horror","Music","Mystery","Romance","Sci-Fi","TV-Movie","Thriller","War","Western"};
     static Integer[] genreIdList = {28,12,16,35,80,99,18,10751,14,36,27,10402,9648,10749,878,10770,53,10752,37};
 
     private static String TAG = "TMDbAPI";
 
+    public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList){
 
-    public void searchMovie (Context context, String movieName, ArrayList<MovieModel> movieModelArrayList){
-
-        Log.d(TAG, "searchMovie: "+movieModelArrayList.size());
-        Log.d(TAG, "searchMovie: "+movieName);
         movieModelArrayList.clear();
-        DownloadData downloadData = new DownloadData(context,movieModelArrayList);
+        DownloadData downloadData = new DownloadData(movieModelArrayList);
         String url = searchUrl + movieName;
         downloadData.execute(url);
-
     }
 
     private static class DownloadData extends AsyncTask<String, Void, String>{
 
-        private Context mContext;
         private ArrayList<MovieModel> mMovieModelArrayList;
-        MovieListItemAdapter movieListItemAdapter;
-        //ProgressDialog dialog;
 
-
-
-        DownloadData(Context context, ArrayList<MovieModel> movieModelArrayList){
-            this.mContext = context;
+        DownloadData(ArrayList<MovieModel> movieModelArrayList){
             this.mMovieModelArrayList = movieModelArrayList;
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            //dialog = new ProgressDialog(mContext);
-            //dialog.show();
-            Log.d(TAG, "onPreExecute: ");
-
         }
 
         @Override
         protected String doInBackground(String... strings) {
-
 
             String result = "";
             URL url;
@@ -124,6 +105,7 @@ public class TMDbAPI {
 
                     if (language.contains("tr")|| language.contains("en")){
 
+                        int movieId = count.getInt("id");
                         String title = count.getString("original_title");
                         String release_date = count.getString("release_date");
                         String poster_path = count.getString("poster_path");
@@ -131,51 +113,32 @@ public class TMDbAPI {
                         String overview = count.getString("overview");
                         String genreIds = count.getString("genre_ids");
 
-
-                        String genres = "";
+                        ArrayList<String> genre = new ArrayList<>();
                         JSONArray jsonArray1 = new JSONArray(genreIds);
 
                         if (jsonArray1.length() == 0){
-                            genres = "NaN";
+                            genre.add("NaN");
                         } else{
                             for (int j = 0; j < jsonArray1.length(); j++){
                                 int count2 = (int) jsonArray1.get(j);
                                 for (int m = 0; m < genreIdList.length; m++){
                                     if (genreIdList[m] == count2){
-                                        genres =  genreList[m] +", " + genres;
+                                        genre.add(genreList[m]);
                                     }
                                 }
                             }
                         }
 
-                        Log.d(TAG, "onPostExecute: "+genres);
-                        Log.d(TAG, "onPostExecute: "+poster_path);
+                        String [] date = release_date.split("-");
+                        release_date = date[2]+"."+date[1]+"."+date[0];
 
-                        MovieModel movieModel = new MovieModel(title, release_date ,genres ,vote_average.toString() , poster_path,overview, language);
+                        MovieModel movieModel = new MovieModel(movieId, title, release_date ,genre ,vote_average.toString() , poster_path,overview, language);
                         mMovieModelArrayList.add(movieModel);
                     }
                 }
-
-                movieListItemAdapter = new MovieListItemAdapter(mContext, mMovieModelArrayList);
-
-                Log.d(TAG, "onPostExecute: ");
-
-                /*if (dialog != null && dialog.isShowing()){
-                    dialog.dismiss();
-                }*/
-
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            /*if (dialog != null && dialog.isShowing()){
-                dialog.dismiss();
-            }*/
         }
     }
 }

@@ -1,64 +1,239 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/fragment_display_game_poster_iv"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_title_tv"
-        app:srcCompat="@drawable/default_game" />
-
-    <TextView
-        android:id="@+id/fragment_display_game_title_tv"
-        android:layout_width="wrap_content"
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:text="Game Title"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title"
-        android:textSize="24sp"
+        android:layout_marginBottom="8dp"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/fragment_display_game_like_iv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/fragment_display_game_year_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Year"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toEndOf="@+id/fragment_display_game_poster_iv"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_title_tv" />
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/fragment_display_game_poster_iv"
+                android:layout_width="120dp"
+                android:layout_height="150dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_title_tv"
+                app:srcCompat="@drawable/default_movie" />
+
+            <TextView
+                android:id="@+id/fragment_display_game_title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center"
+                android:text="Game Title"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                android:textSize="24sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/ReleaseDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:text="Release Date : "
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@+id/fragment_display_game_poster_iv"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_title_tv" />
+
+            <TextView
+                android:id="@+id/fragment_display_game_year_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Year"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                app:layout_constraintStart_toEndOf="@+id/ReleaseDate"
+                app:layout_constraintTop_toTopOf="@+id/ReleaseDate" />
 
 
-    <TextView
-        android:id="@+id/fragment_display_game_describtion_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:text="Describtion"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_poster_iv" />
+            <LinearLayout
+                android:id="@+id/fragment_display_game_container_ll"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="8dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_poster_iv">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/Platforms"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Platforms"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/fragment_display_game_platforms_ll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/Genre"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Genres"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                        android:textStyle="bold"
+                        app:layout_constraintTop_toTopOf="@+id/Platforms" />
+
+                    <LinearLayout
+                        android:id="@+id/fragment_display_game_type_ll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/VoteAverage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Rating : "
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/ReleaseDate"
+                app:layout_constraintTop_toBottomOf="@+id/ReleaseDate" />
+
+            <TextView
+                android:id="@+id/fragment_display_game_stars_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Stars"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                app:layout_constraintStart_toEndOf="@+id/VoteAverage"
+                app:layout_constraintTop_toTopOf="@+id/VoteAverage" />
+
+            <TextView
+                android:id="@+id/Game_Modes"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_marginTop="8dp"
+                android:inputType="textMultiLine"
+                android:text="Game Modes"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/fragment_display_game_container_ll"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_container_ll" />
+
+            <LinearLayout
+                android:id="@+id/fragment_display_game_modes_name_ll"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/Game_Modes"
+                app:layout_constraintTop_toBottomOf="@+id/Game_Modes" />
+
+
+            <TextView
+                android:id="@+id/Overview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Overview"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/fragment_display_game_modes_name_ll"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_modes_name_ll" />
+
+
+            <TextView
+                android:id="@+id/fragment_display_game_overview_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:inputType="textMultiLine"
+                android:text="Overview"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/Overview"
+                app:layout_constraintTop_toBottomOf="@+id/Overview" />
+
+            <TextView
+                android:id="@+id/Trailer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Trailer : "
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/VoteAverage"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_stars_tv" />
+
+
+            <ImageView
+                android:id="@+id/fragment_display_game_trailer_iv"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/Trailer"
+                app:layout_constraintStart_toEndOf="@+id/Trailer"
+                app:layout_constraintTop_toTopOf="@+id/Trailer"
+                app:srcCompat="@drawable/youtube_play" />
+
+
+        </android.support.constraint.ConstraintLayout>
+
+
+    </ScrollView>
+
 
     <ImageView
         android:id="@+id/fragment_display_game_like_iv"
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/like" />
@@ -68,9 +243,10 @@
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/fragment_display_game_like_iv"
         app:layout_constraintStart_toEndOf="@+id/fragment_display_game_like_iv"
+        app:layout_constraintTop_toTopOf="@+id/fragment_display_game_like_iv"
+        app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/dislike" />
 
     <ImageView
@@ -78,30 +254,10 @@
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/fragment_display_game_dislike_iv"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/fragment_display_game_dislike_iv"
         app:srcCompat="@drawable/share" />
 
-    <TextView
-        android:id="@+id/fragment_display_game_studio_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Studio"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toEndOf="@+id/fragment_display_game_poster_iv"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_type_tv" />
-
-    <TextView
-        android:id="@+id/fragment_display_game_type_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Type"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintStart_toEndOf="@+id/fragment_display_game_poster_iv"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_year_tv" />
 </android.support.constraint.ConstraintLayout>
+

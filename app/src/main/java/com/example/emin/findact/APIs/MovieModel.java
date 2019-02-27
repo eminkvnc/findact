@@ -2,18 +2,22 @@ package com.example.emin.findact.APIs;
 
 import android.os.Bundle;
 
+import java.util.ArrayList;
+
 public class MovieModel {
 
+    private int movieId;
     private String title;
     private String release_date;
-    private String genre;
+    private ArrayList<String> genre;
     private String vote_average;
     private String poster_path;
     private String overview;
     private String language;
 
 
-    MovieModel(String title, String release_date, String genre, String vote_average, String poster_path, String overview, String language) {
+    MovieModel(int movieId,String title, String release_date, ArrayList<String> genre, String vote_average, String poster_path, String overview, String language) {
+        this.movieId = movieId;
         this.title = title;
         this.release_date = release_date;
         this.genre = genre;
@@ -24,13 +28,18 @@ public class MovieModel {
     }
 
     public MovieModel(Bundle bundle){
+        this.movieId = bundle.getInt("movie_id");
         this.title = bundle.getString("title");
         this.release_date = bundle.getString("release_date");
-        this.genre = bundle.getString("genre");
+        this.genre = bundle.getStringArrayList("genre");
         this.vote_average = bundle.getString("vote_average");
         this.poster_path = bundle.getString("poster_path");
         this.overview = bundle.getString("overview");
         this.language = bundle.getString("language");
+    }
+
+    public int getMovieId(){
+        return movieId;
     }
 
     public String getTitle() {
@@ -41,7 +50,7 @@ public class MovieModel {
         return release_date;
     }
 
-    public String getGenre() {
+    public ArrayList<String> getGenre() {
         return genre;
     }
 
@@ -64,9 +73,10 @@ public class MovieModel {
     public Bundle MovieDataToBundle(){
         Bundle bundle = new Bundle();
 
+        bundle.putInt("movie_id",this.movieId);
         bundle.putString("title", this.title);
         bundle.putString("release_date", this.release_date);
-        bundle.putString("genre", this.genre);
+        bundle.putStringArrayList("genre", this.genre);
         bundle.putString("vote_average", this.vote_average);
         bundle.putString("poster_path", this.poster_path);
         bundle.putString("overview", this.overview);
