@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -16,10 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.DisplayActivityFragment;
-import com.example.emin.findact.FindFragment;
 import com.example.emin.findact.R;
 import com.squareup.picasso.Picasso;
 
@@ -58,7 +55,7 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
         if (!movieModel.getPoster_path().equals("null") && movieModel.getPoster_path() != null){
             Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+movieModel.getPoster_path())).into(movieListItemViewHolder.poster);
         } else {
-            movieListItemViewHolder.poster.setImageResource(R.drawable.ic_movie);
+            movieListItemViewHolder.poster.setImageResource(R.drawable.default_movie);
         }
     }
 

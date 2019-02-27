@@ -3,6 +3,8 @@ package com.example.emin.findact.Firebase;
 import android.os.AsyncTask;
 import android.os.Handler;
 
+import com.example.emin.findact.OnTaskCompletedListener;
+
 
 public class FirebaseAsyncTask extends AsyncTask<Void, Void, Void>{
 
@@ -13,9 +15,9 @@ public class FirebaseAsyncTask extends AsyncTask<Void, Void, Void>{
     private boolean timeout =false;
     private OnTaskCompletedListener listener;
 
-    public FirebaseAsyncTask(Runnable runnable, OnTaskCompletedListener listener) {
+    public FirebaseAsyncTask(Runnable runnable, OnTaskCompletedListener onTaskCompletedListener) {
         this.runnable = runnable;
-        this.listener = listener;
+        this.listener = onTaskCompletedListener;
     }
 
     @Override

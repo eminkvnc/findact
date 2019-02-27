@@ -1,68 +1,56 @@
 package com.example.emin.findact.APIs;
 
-import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-
-import com.example.emin.findact.Adapters.MovieListItemAdapter;
-import com.example.emin.findact.ProgressDialog;
-
+import com.example.emin.findact.OnTaskCompletedListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.net.ssl.HttpsURLConnection;
 
 public class TMDbAPI {
 
-    String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
+    private String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
     String posterPathUrl = "http://image.tmdb.org/t/p/w185/";   // +poster path
     String genreUrl = "https://api.themoviedb.org/3/genre/movie/list?api_key=fd50bae5852bf6c2e149317a6e885416";
 
 
     // Hashmape çevir
-    static String[] genreList = {"Action", "Adventure", "Animation", "Comedy", "Crime","Documentary", "Drama","Family","Fantasy","History",
+    private String[] genreList = {"Action", "Adventure", "Animation", "Comedy", "Crime","Documentary", "Drama","Family","Fantasy","History",
             "Horror","Music","Mystery","Romance","Sci-Fi","TV-Movie","Thriller","War","Western"};
-    static Integer[] genreIdList = {28,12,16,35,80,99,18,10751,14,36,27,10402,9648,10749,878,10770,53,10752,37};
+    private Integer[] genreIdList = {28,12,16,35,80,99,18,10751,14,36,27,10402,9648,10749,878,10770,53,10752,37};
 
     private static String TAG = "TMDbAPI";
 
 
-    public void searchMovie (Context context, String movieName, ArrayList<MovieModel> movieModelArrayList){
+    public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener onTaskCompletedListener){
 
         Log.d(TAG, "searchMovie: "+movieModelArrayList.size());
         Log.d(TAG, "searchMovie: "+movieName);
         movieModelArrayList.clear();
-        DownloadData downloadData = new DownloadData(context,movieModelArrayList);
+        DownloadData downloadData = new DownloadData(movieModelArrayList,onTaskCompletedListener);
         String url = searchUrl + movieName;
         downloadData.execute(url);
 
     }
 
-    private static class DownloadData extends AsyncTask<String, Void, String>{
+    private class DownloadData extends AsyncTask<String, Void, String>{
 
-        private Context mContext;
         private ArrayList<MovieModel> mMovieModelArrayList;
-        MovieListItemAdapter movieListItemAdapter;
+        private OnTaskCompletedListener listener;
         //ProgressDialog dialog;
 
 
 
-        DownloadData(Context context, ArrayList<MovieModel> movieModelArrayList){
-            this.mContext = context;
+        DownloadData(ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener){
             this.mMovieModelArrayList = movieModelArrayList;
+            this.listener = listener;
         }
 
         @Override
@@ -76,7 +64,6 @@ public class TMDbAPI {
 
         @Override
         protected String doInBackground(String... strings) {
-
 
             String result = "";
             URL url;
@@ -156,26 +143,11 @@ public class TMDbAPI {
                     }
                 }
 
-                movieListItemAdapter = new MovieListItemAdapter(mContext, mMovieModelArrayList);
-
                 Log.d(TAG, "onPostExecute: ");
-
-                /*if (dialog != null && dialog.isShowing()){
-                    dialog.dismiss();
-                }*/
-
-
+                listener.onTaskCompleted();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            /*if (dialog != null && dialog.isShowing()){
-                dialog.dismiss();
-            }*/
         }
     }
 }
