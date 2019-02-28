@@ -56,7 +56,7 @@ public class GameListItemAdapter extends RecyclerView.Adapter<GameListItemAdapte
         gameListItemViewHolder.releaseDate.setText(gameModel.getRelease_date());
 
         Log.d(TAG, "onBindViewHolder: "+gameModel.getImage_id());
-        if (!gameModel.getImage_id().equals("null") && gameModel.getImage_id() != null){
+        if (gameModel.getImage_id() != null){
             Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImage_id()+".jpg")).into(gameListItemViewHolder.poster);
         } else {
             gameListItemViewHolder.poster.setImageResource(R.drawable.default_game);

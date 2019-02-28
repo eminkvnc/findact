@@ -135,7 +135,7 @@ public class DisplayActivityFragment extends Fragment {
 
                 gameOverview.setMovementMethod(new ScrollingMovementMethod());
 
-                if (!gameModel.getImage_id().equals("null") && gameModel.getImage_id() != null){
+                if (gameModel.getImage_id() != null){
                     Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImage_id()+".jpg")).into(gamePoster);
                 } else {
                     gamePoster.setImageResource(R.drawable.default_game);
@@ -148,8 +148,14 @@ public class DisplayActivityFragment extends Fragment {
                 gameTrailer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:"+gameModel.getVideo_id()));
-                        startActivity(intent);
+                        if (gameModel.getVideo_id() != null){
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:"+gameModel.getVideo_id()));
+                            startActivity(intent);
+                        } else {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query="+gameModel.getName()+" trailer"));
+                            startActivity(intent);
+                        }
+
                     }
                 });
 
