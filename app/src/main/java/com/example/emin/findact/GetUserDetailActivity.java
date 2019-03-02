@@ -53,18 +53,22 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     Bitmap bitmap;
     FirebaseDBHelper firebaseDBHelper;
 
-    EditText nameET, surnameET, birthdayET, usernameET;
+    EditText nameET, surnameET, birthdayET;
     Spinner citySpinner;
     ListView gameListView, movieListView;
     ImageView profilePicture, saveImageView;
     String name, surname, city, birthday, username, movieGenres, gameGenres;
     Uri selectedImage;
-
     private String[] gameGenresList = {"FPS","MOBA","SINGLE PLAYER","MULTIPLAYER","BATTLEROYAL","VR"};
-    //private String[] movieGenresList = {"ACTION","ADVENTURE","SCI-FI","HORROR","COMEDY","WAR","FANTASTIC","CRIME"};
-    private String[] movieGenresList = {"ACTION","FANTASY","COMEDY","BIOGRAPHY"};
-    HashMap<String,Integer> hashMap;
 
+    private String[] movieGenresList = {"Action","Adventure","Animation",
+            "Comedy","Crime","Documentary",
+            "Drama","Family","Fantasy","History",
+            "Horror","Music","Mystery","Romance",
+            "Sci-Fi","TV-Movie",
+            "Thriller","War","Western"};
+
+    HashMap<String,Integer> movieHashMap;
 
     private ArrayAdapter<String> cityAdapter;
     private String[] citiesList = { "Select City","Adana", "Adıyaman","Afyon","Ağrı","Amasya","Ankara","Antalya","Artvin","Aydın","Balıkesir","Bilecik",
@@ -73,9 +77,6 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
             "Kocaeli","Konya","Kütahya","Malatya","Manisa","K.maraş","Mardin","Muğla","Muş","Nevşehir","Niğde","Ordu","Rize","Sakarya","Samsun","Siirt","Sinop",
             "Sivas","Tekirdağ","Tokat","Trabzon","Tunceli","Şanlıurfa","Uşak","Van","Yozgat","Zonguldak","Aksaray","Bayburt","Karaman","Kırıkkale","Batman",
             "Şırnak","Bartın","Ardahan","Iğdır","Yalova","Karabük","Kilis","Osmaniye","Düzce"};
-
-    private ArrayList<String> gameData = null;
-    private ArrayList<String> movieData = null;
 
     private ArrayList<InfoCheckboxData> gameInfoData;
     private ArrayList<InfoCheckboxData> movieInfoData;
@@ -91,29 +92,26 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_user_detail);
 
-        gameData = new ArrayList<>();
-        gameData.add("FPS");
-        gameData.add("MULTIPLAYER");
-        gameData.add("SINGLE PLAYER");
-        gameData.add("MOBA");
-        gameData.add("BATTLEROYAL");
-        gameData.add("VR");
-
-        movieData = new ArrayList<>();
-        movieData.add("ACTION");
-        movieData.add("ADVENTURE");
-        movieData.add("COMEDY");
-        movieData.add("CRIME");
-        movieData.add("FANTASTIC");
-        movieData.add("HORROR");
-        movieData.add("SCI-FI");
-        movieData.add("WAR");
-
-        hashMap = new HashMap<>();
-        hashMap.put(movieGenresList[0],R.drawable.ic_action);
-        hashMap.put(movieGenresList[1],R.drawable.ic_fantasy);
-        hashMap.put(movieGenresList[2],R.drawable.ic_comedy);
-        hashMap.put(movieGenresList[3],R.drawable.ic_biography);
+        movieHashMap = new HashMap<>();
+        movieHashMap.put(movieGenresList[0],R.drawable.ic_action);
+        movieHashMap.put(movieGenresList[1],R.drawable.ic_fantasy);
+        movieHashMap.put(movieGenresList[2],R.drawable.ic_comedy);
+        movieHashMap.put(movieGenresList[3],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[4],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[5],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[6],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[7],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[8],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[9],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[10],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[11],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[12],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[13],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[14],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[15],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[16],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[17],R.drawable.ic_biography);
+        movieHashMap.put(movieGenresList[18],R.drawable.ic_biography);
 
 
         gameListView = findViewById(R.id.get_user_detail_game_genres);
@@ -122,7 +120,6 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         gameInfoData = new ArrayList<>();
         for (int i = 0; i < gameGenresList.length; i++){
             gameInfoData.add(new InfoCheckboxData(false, i));
-            System.out.println("Data is == "+gameGenresList[i]);
         }
 
         gameListView.setAdapter(new GameCheckBoxAdapter());
@@ -422,7 +419,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
             View view = View.inflate(getApplicationContext(),R.layout.custom_checkbox_list ,null );
 
             ImageView imageView = view.findViewById(R.id.imageView3);
-            imageView.setImageResource(hashMap.get(movieGenresList[position]));
+            imageView.setImageResource(movieHashMap.get(movieGenresList[position]));
             final CardView cardView = view.findViewById(R.id.custom_checkbox_list_cv);
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override

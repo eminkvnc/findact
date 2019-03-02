@@ -2,6 +2,7 @@ package com.example.emin.findact.Adapters;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
@@ -20,7 +21,18 @@ import com.example.emin.findact.DisplayActivityFragment;
 import com.example.emin.findact.R;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdapter.MovieListItemViewHolder> {
 
@@ -102,13 +114,13 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
         @Override
         public void onClick(View view) {
             if (view.getId() == R.id.list_item_movie_cardview) {
+
                 displayActivityFragment = new DisplayActivityFragment();
 
                 Log.d(TAG, "onClick: "+movieModel.getTitle());
                 Bundle bundle = new Bundle();
                 bundle.putBundle("MovieData" ,movieModel.MovieDataToBundle());
 
-                Log.d(TAG, "onClick: "+ bundle.getString("title"));
                 displayActivityFragment.setArguments(bundle);
                 displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_MOVIE_ACTIVITY);
 
@@ -119,9 +131,9 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
                 fragmentTransaction.commit();
 
             }
-
-
         }
-
     }
+
+
+
 }

@@ -2,6 +2,7 @@ package com.example.emin.findact.APIs;
 
 import android.os.AsyncTask;
 import android.util.Log;
+
 import com.example.emin.findact.OnTaskCompletedListener;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,41 +13,39 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import javax.net.ssl.HttpsURLConnection;
 
 public class TMDbAPI {
 
-    private String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
-    String posterPathUrl = "http://image.tmdb.org/t/p/w185/";   // +poster path
-    String genreUrl = "https://api.themoviedb.org/3/genre/movie/list?api_key=fd50bae5852bf6c2e149317a6e885416";
+    String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
 
-
-    // Hashmape çevir
-    private String[] genreList = {"Action", "Adventure", "Animation", "Comedy", "Crime","Documentary", "Drama","Family","Fantasy","History",
-            "Horror","Music","Mystery","Romance","Sci-Fi","TV-Movie","Thriller","War","Western"};
-    private Integer[] genreIdList = {28,12,16,35,80,99,18,10751,14,36,27,10402,9648,10749,878,10770,53,10752,37};
+    static HashMap<Integer,String> genre_list = new HashMap<Integer, String>(){{put(28, "Action");put(12,"Adventure");
+                                    put(16,"Animation");put(35,"Comedy" );put(80,"Crime");
+                                    put(99, "Documentary");put(18,"Drama" );put(10751,"Family" );
+                                    put(14,"Fantasy" );put(36,"History" );put(27,"Horror" );put(10402,"Music" );
+                                    put(9648,"Mystery" );put(10749,"Romance" );put(878,"Sci-Fi");
+                                    put(10770,"TV-Movie" );put(53,"Thriller");put(10752,"War" );put(37,"Western");}};
 
     private static String TAG = "TMDbAPI";
 
+    public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList){
 
-    public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener onTaskCompletedListener){
-
-        Log.d(TAG, "searchMovie: "+movieModelArrayList.size());
-        Log.d(TAG, "searchMovie: "+movieName);
         movieModelArrayList.clear();
-        DownloadData downloadData = new DownloadData(movieModelArrayList,onTaskCompletedListener);
+        DownloadData downloadData = new DownloadData(movieModelArrayList);
         String url = searchUrl + movieName;
         downloadData.execute(url);
-
     }
 
-    private class DownloadData extends AsyncTask<String, Void, String>{
+    private static class DownloadData extends AsyncTask<String, Void, String>{
 
         private ArrayList<MovieModel> mMovieModelArrayList;
         private OnTaskCompletedListener listener;
         //ProgressDialog dialog;
 
 
+        DownloadData(ArrayList<MovieModel> movieModelArrayList){
 
         DownloadData(ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener){
             this.mMovieModelArrayList = movieModelArrayList;
@@ -56,10 +55,6 @@ public class TMDbAPI {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            //dialog = new ProgressDialog(mContext);
-            //dialog.show();
-            Log.d(TAG, "onPreExecute: ");
-
         }
 
         @Override
@@ -111,6 +106,7 @@ public class TMDbAPI {
 
                     if (language.contains("tr")|| language.contains("en")){
 
+                        int movieId = count.getInt("id");
                         String title = count.getString("original_title");
                         String release_date = count.getString("release_date");
                         String poster_path = count.getString("poster_path");
@@ -118,27 +114,28 @@ public class TMDbAPI {
                         String overview = count.getString("overview");
                         String genreIds = count.getString("genre_ids");
 
-
-                        String genres = "";
+                        ArrayList<String> genre = new ArrayList<>();
                         JSONArray jsonArray1 = new JSONArray(genreIds);
 
                         if (jsonArray1.length() == 0){
-                            genres = "NaN";
+                            genre.add("NaN");
                         } else{
                             for (int j = 0; j < jsonArray1.length(); j++){
                                 int count2 = (int) jsonArray1.get(j);
-                                for (int m = 0; m < genreIdList.length; m++){
-                                    if (genreIdList[m] == count2){
-                                        genres =  genreList[m] +", " + genres;
-                                    }
-                                }
+                                genre.add(genre_list.get(count2));
                             }
                         }
 
-                        Log.d(TAG, "onPostExecute: "+genres);
-                        Log.d(TAG, "onPostExecute: "+poster_path);
+                        if (release_date.equals("")){
+                            release_date = "NaN";
+                        } else {
+                            String [] date = release_date.split("-");
+                            release_date = date[2]+"."+date[1]+"."+date[0];
+                        }
 
-                        MovieModel movieModel = new MovieModel(title, release_date ,genres ,vote_average.toString() , poster_path,overview, language);
+
+                        Log.d(TAG, "onPostExecute: "+genre);
+                        MovieModel movieModel = new MovieModel(movieId, title, release_date ,genre ,vote_average.toString() , poster_path,overview, language);
                         mMovieModelArrayList.add(movieModel);
                     }
                 }

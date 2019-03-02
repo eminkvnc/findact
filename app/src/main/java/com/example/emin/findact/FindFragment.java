@@ -6,10 +6,13 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +20,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.example.emin.findact.APIs.GameModel;
+import com.example.emin.findact.APIs.IGDbAPI;
 import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.APIs.TMDbAPI;
+import com.example.emin.findact.Adapters.GameListItemAdapter;
 import com.example.emin.findact.Adapters.MovieListItemAdapter;
 import com.example.emin.findact.Adapters.UserListItemAdapter;
 import com.example.emin.findact.Firebase.FirebaseAsyncTask;
@@ -29,6 +36,7 @@ import java.util.ArrayList;
 public class FindFragment extends Fragment implements View.OnClickListener, OnTaskCompletedListener {
 
     public static String TAG = "FindFragment";
+    String sParam;
     FirebaseDBHelper firebaseDBHelper;
     FirebaseAsyncTask searchTask;
     ProgressDialog progressDialog;
@@ -56,6 +64,10 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
     ArrayList<MovieModel> movieModelArrayList;
     MovieListItemAdapter findMovieAdapter;
 
+    IGDbAPI igDbAPI;
+    ArrayList<GameModel> gameModelArrayList;
+    GameListItemAdapter findGameAdapter;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,6 +79,9 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         tmDbAPI = new TMDbAPI();
         movieModelArrayList = new ArrayList<>();
         selectedTab = "Person";
+        igDbAPI = new IGDbAPI();
+        gameModelArrayList = new ArrayList<>();
+
     }
 
     @Override
@@ -103,6 +118,9 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         searchMovieRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         searchMovieRecyclerView.setAdapter(findMovieAdapter);
 
+        findGameAdapter = new GameListItemAdapter(getContext(),gameModelArrayList );
+        searchGameRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        searchGameRecyclerView.setAdapter(findGameAdapter);
 
         searchImageView.setOnClickListener(this);
         personButton.setOnClickListener(this);
@@ -185,6 +203,14 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
 
             case R.id.fragment_find_search_iv:
 
+                String [] split = searchParameter.split(" ");
+                int i = split.length;
+                sParam = split[0];
+                if (i > 1){
+                    for (int j = 1; j < i; j++){
+                        sParam = sParam + "+" + split[j];
+                    }
+                }
                 if (!searchParameter.equals("")) {
                 switch (selectedTab){
                     case "Person":
