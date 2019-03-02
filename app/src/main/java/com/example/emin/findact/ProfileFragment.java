@@ -120,7 +120,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         switch (item.getItemId()){
             case R.id.profile_fragment_actionbar_create_activity:
 
-                //create activity fragment
+                Intent intent = new Intent(getContext(),CreateActivity.class);
+                startActivity(intent);
 
                 break;
             case R.id.profile_fragment_actionbar_settings:
