@@ -51,8 +51,6 @@ public class DisplayActivityFragment extends Fragment {
         }
          else if (initMode == INIT_MODE_GAME_ACTIVITY){
             gameModel = new GameModel(getArguments().getBundle("GameData"));
-            videoKey = getArguments().getString("movie_key");
-            videoSite = getArguments().getString("movie_site");
             Log.d(TAG, "onCreate: "+videoSite+videoKey);
         }
     }
@@ -83,8 +81,6 @@ public class DisplayActivityFragment extends Fragment {
                 TextView movieLanguage = v.findViewById(R.id.fragment_display_movie_language_tv);
 
                 LinearLayout movieGenre = v.findViewById(R.id.fragment_display_movie_genre_ll);
-
-                movieOverview.setMovementMethod(new ScrollingMovementMethod());
 
                 movieGenre.removeAllViews();
                 for (int i = 0; i < movieModel.getGenre().size(); i++){
@@ -122,18 +118,17 @@ public class DisplayActivityFragment extends Fragment {
                 v = inflater.inflate(R.layout.fragment_display_game_activity,container,false);
 
                 ImageView gamePoster = v.findViewById(R.id.fragment_display_game_poster_iv);
+                ImageView gameTrailer = v.findViewById(R.id.fragment_display_game_trailer_iv);
 
                 TextView gameTitle = v.findViewById(R.id.fragment_display_game_title_tv);
                 TextView gameReleaseDate = v.findViewById(R.id.fragment_display_game_year_tv);
                 TextView gameRating = v.findViewById(R.id.fragment_display_game_stars_tv);
                 TextView gameOverview = v.findViewById(R.id.fragment_display_game_overview_tv);
-                ImageView gameTrailer = v.findViewById(R.id.fragment_display_game_trailer_iv);
+                TextView gamePopularity = v.findViewById(R.id.fragment_display_game_popularity_tv);
 
                 LinearLayout gameGenre = v.findViewById(R.id.fragment_display_game_type_ll);
                 LinearLayout gameModeName = v.findViewById(R.id.fragment_display_game_modes_name_ll);
                 LinearLayout gamePlatform = v.findViewById(R.id.fragment_display_game_platforms_ll);
-
-                gameOverview.setMovementMethod(new ScrollingMovementMethod());
 
                 if (gameModel.getImage_id() != null){
                     Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImage_id()+".jpg")).into(gamePoster);
@@ -145,6 +140,8 @@ public class DisplayActivityFragment extends Fragment {
                 gameReleaseDate.setText(gameModel.getRelease_date());
                 gameRating.setText(new DecimalFormat ("##.#").format(gameModel.getRating()));
                 gameOverview.setText(gameModel.getSummary());
+                gamePopularity.setText(new DecimalFormat ("##.#").format(gameModel.getPopularity()));
+
                 gameTrailer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -182,8 +179,6 @@ public class DisplayActivityFragment extends Fragment {
                     textView.setTextSize(18);
                     gamePlatform.addView(textView);
                 }
-
-
 
                 break;
             case INIT_MODE_GROUP_ACTIVITY:

@@ -16,8 +16,12 @@ public class GameModel {
     private Double rating;
     private ArrayList<String> platform_name;
     private String video_id;
+    private Double popularity;
 
-    public GameModel(int gameId,String name,ArrayList<String>  genre, String release_date, String summary, String image_id, ArrayList<String>  game_mode_name, Double rating, ArrayList<String>  platform_name, String video_id) {
+    public GameModel(int gameId,String name,ArrayList<String>  genre, String release_date,
+                     String summary, String image_id, ArrayList<String>  game_mode_name,
+                     Double rating, ArrayList<String>  platform_name, String video_id,
+                     Double popularity) {
         this.gameId = gameId;
         this.name = name;
         this.genre = genre;
@@ -28,6 +32,7 @@ public class GameModel {
         this.rating = rating;
         this.platform_name = platform_name;
         this.video_id = video_id;
+        this.popularity = popularity;
     }
 
     public GameModel(Bundle bundle){
@@ -41,6 +46,7 @@ public class GameModel {
         this.rating = bundle.getDouble("rating");
         this.platform_name = bundle.getStringArrayList("platform_name");
         this.video_id = bundle.getString("video_id");
+        this.popularity = bundle.getDouble("popularity");
 
     }
 
@@ -57,6 +63,8 @@ public class GameModel {
         bundle.putDouble("rating",this.rating );
         bundle.putStringArrayList("platform_name", this.platform_name);
         bundle.putString("video_id",this.video_id );
+        bundle.putDouble("popularity", this.popularity );
+
         return bundle;
     }
 
@@ -99,4 +107,9 @@ public class GameModel {
     public String getVideo_id() {
         return video_id;
     }
+
+    public Double getPopularity() {
+        return popularity;
+    }
+
 }

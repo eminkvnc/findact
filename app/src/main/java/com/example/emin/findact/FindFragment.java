@@ -211,12 +211,11 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                             sParam = sParam + "+" + split[j];
                         }
                     }
-                    Log.d(TAG, "onClick: "+sParam);
                     final Runnable searchRunnable = new Runnable() {
                         @Override
                         public void run() {
                             firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus);
-                            tmDbAPI.searchMovie(/*getContext(),*/sParam,movieModelArrayList);
+                            tmDbAPI.searchMovie(sParam,movieModelArrayList);
                             igDbAPI.searchGame(sParam,gameModelArrayList);
                         }
                     };

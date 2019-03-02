@@ -1,13 +1,7 @@
 package com.example.emin.findact.APIs;
 
-import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-
-import com.example.emin.findact.Adapters.MovieListItemAdapter;
-import com.example.emin.findact.ProgressDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,8 +14,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -29,9 +21,12 @@ public class TMDbAPI {
 
     String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
 
-    static String[] genreList = {"Action", "Adventure", "Animation", "Comedy", "Crime","Documentary", "Drama","Family","Fantasy","History",
-            "Horror","Music","Mystery","Romance","Sci-Fi","TV-Movie","Thriller","War","Western"};
-    static Integer[] genreIdList = {28,12,16,35,80,99,18,10751,14,36,27,10402,9648,10749,878,10770,53,10752,37};
+    static HashMap<Integer,String> genre_list = new HashMap<Integer, String>(){{put(28, "Action");put(12,"Adventure");
+                                    put(16,"Animation");put(35,"Comedy" );put(80,"Crime");
+                                    put(99, "Documentary");put(18,"Drama" );put(10751,"Family" );
+                                    put(14,"Fantasy" );put(36,"History" );put(27,"Horror" );put(10402,"Music" );
+                                    put(9648,"Mystery" );put(10749,"Romance" );put(878,"Sci-Fi");
+                                    put(10770,"TV-Movie" );put(53,"Thriller");put(10752,"War" );put(37,"Western");}};
 
     private static String TAG = "TMDbAPI";
 
@@ -121,17 +116,19 @@ public class TMDbAPI {
                         } else{
                             for (int j = 0; j < jsonArray1.length(); j++){
                                 int count2 = (int) jsonArray1.get(j);
-                                for (int m = 0; m < genreIdList.length; m++){
-                                    if (genreIdList[m] == count2){
-                                        genre.add(genreList[m]);
-                                    }
-                                }
+                                genre.add(genre_list.get(count2));
                             }
                         }
 
-                        String [] date = release_date.split("-");
-                        release_date = date[2]+"."+date[1]+"."+date[0];
+                        if (release_date.equals("")){
+                            release_date = "NaN";
+                        } else {
+                            String [] date = release_date.split("-");
+                            release_date = date[2]+"."+date[1]+"."+date[0];
+                        }
 
+
+                        Log.d(TAG, "onPostExecute: "+genre);
                         MovieModel movieModel = new MovieModel(movieId, title, release_date ,genre ,vote_average.toString() , poster_path,overview, language);
                         mMovieModelArrayList.add(movieModel);
                     }

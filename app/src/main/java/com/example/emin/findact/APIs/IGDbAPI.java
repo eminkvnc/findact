@@ -22,7 +22,7 @@ public class IGDbAPI {
     private static String TAG = "IGDbAPI";
 
 
-    private String fields = "&fields=name,genres.name,platforms.alternative_name,first_release_date,summary,cover.image_id,game_modes.name,total_rating,videos.video_id";
+    private String fields = "&fields=name,genres.name,platforms.alternative_name,first_release_date,summary,cover.image_id,game_modes.name,total_rating,videos.video_id,popularity";
     private String searchUrl = "https://api-v3.igdb.com/games/?search="; //+game_name+fields
     private String user_key = "user-key";
     private String key = "2bd597197d5320a9a882cac6123f52eb";
@@ -35,7 +35,6 @@ public class IGDbAPI {
 
     public void searchGame(String game_name, final ArrayList<GameModel> gameModelArrayList){
 
-        Log.d(TAG, "searchGame: "+game_name);
         gameModelArrayList.clear();
 
         OkHttpClient client = new OkHttpClient();
@@ -70,8 +69,10 @@ public class IGDbAPI {
                         if (jsonObject.has("videos")){
                             String videos = jsonObject.getString("videos");
                             JSONArray videoArray = new JSONArray(videos);
-                            JSONObject videoObject = videoArray.getJSONObject(0); // for ile yapılabilir.
+
+                            JSONObject videoObject = videoArray.getJSONObject(0);
                             video_id = videoObject.getString("video_id");
+
                         } else {
                             video_id = null;
                         }
@@ -162,15 +163,22 @@ public class IGDbAPI {
                         }
 
 
-                        Double rating;
+                        double rating;
                         if (jsonObject.has("total_rating")){
                             rating = jsonObject.getDouble("total_rating");
                         } else {
                             rating = 0.0;
                         }
 
+                        double popularity;
+                        if (jsonObject.has("popularity")){
+                            popularity = jsonObject.getDouble("popularity");
+                        } else {
+                            popularity = 0.0;
+                        }
+
                         GameModel gameModel = new GameModel(gameId,gameName, genre_list, release_date, summary, image_id, game_mode_name_list,
-                                rating ,platform_list, video_id);
+                                rating ,platform_list, video_id, popularity);
 
                         gameModelArrayList.add(gameModel);
 

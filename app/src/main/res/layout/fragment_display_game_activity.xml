@@ -207,8 +207,8 @@
                 android:text="Trailer : "
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/VoteAverage"
-                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_stars_tv" />
+                app:layout_constraintStart_toStartOf="@+id/Popularity"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_popularity_tv" />
 
 
             <ImageView
@@ -220,6 +220,27 @@
                 app:layout_constraintStart_toEndOf="@+id/Trailer"
                 app:layout_constraintTop_toTopOf="@+id/Trailer"
                 app:srcCompat="@drawable/youtube_play" />
+
+            <TextView
+                android:id="@+id/Popularity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Popularity : "
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/VoteAverage"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_game_stars_tv" />
+
+            <TextView
+                android:id="@+id/fragment_display_game_popularity_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Popularity"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                app:layout_constraintStart_toEndOf="@+id/Popularity"
+                app:layout_constraintTop_toTopOf="@+id/Popularity" />
 
 
         </android.support.constraint.ConstraintLayout>
