@@ -2,7 +2,6 @@ package com.example.emin.findact.APIs;
 
 import android.os.AsyncTask;
 import android.util.Log;
-
 import com.example.emin.findact.OnTaskCompletedListener;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,9 +18,9 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class TMDbAPI {
 
-    String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
+    private String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
 
-    static HashMap<Integer,String> genre_list = new HashMap<Integer, String>(){{put(28, "Action");put(12,"Adventure");
+    private static HashMap<Integer,String> genre_list = new HashMap<Integer, String>(){{put(28, "Action");put(12,"Adventure");
                                     put(16,"Animation");put(35,"Comedy" );put(80,"Crime");
                                     put(99, "Documentary");put(18,"Drama" );put(10751,"Family" );
                                     put(14,"Fantasy" );put(36,"History" );put(27,"Horror" );put(10402,"Music" );
@@ -30,10 +29,10 @@ public class TMDbAPI {
 
     private static String TAG = "TMDbAPI";
 
-    public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList){
+    public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener onTaskCompletedListener){
 
         movieModelArrayList.clear();
-        DownloadData downloadData = new DownloadData(movieModelArrayList);
+        DownloadData downloadData = new DownloadData(movieModelArrayList,onTaskCompletedListener);
         String url = searchUrl + movieName;
         downloadData.execute(url);
     }
@@ -42,10 +41,7 @@ public class TMDbAPI {
 
         private ArrayList<MovieModel> mMovieModelArrayList;
         private OnTaskCompletedListener listener;
-        //ProgressDialog dialog;
 
-
-        DownloadData(ArrayList<MovieModel> movieModelArrayList){
 
         DownloadData(ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener){
             this.mMovieModelArrayList = movieModelArrayList;

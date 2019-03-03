@@ -126,7 +126,7 @@ public class DisplayActivityFragment extends Fragment {
                 TextView gameOverview = v.findViewById(R.id.fragment_display_game_overview_tv);
                 TextView gamePopularity = v.findViewById(R.id.fragment_display_game_popularity_tv);
 
-                LinearLayout gameGenre = v.findViewById(R.id.fragment_display_game_type_ll);
+                LinearLayout gameGenre = v.findViewById(R.id.fragment_display_game_genre_ll);
                 LinearLayout gameModeName = v.findViewById(R.id.fragment_display_game_modes_name_ll);
                 LinearLayout gamePlatform = v.findViewById(R.id.fragment_display_game_platforms_ll);
 
