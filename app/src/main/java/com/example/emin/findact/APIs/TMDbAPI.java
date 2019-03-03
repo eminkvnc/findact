@@ -30,35 +30,34 @@ public class TMDbAPI {
 
     private static String TAG = "TMDbAPI";
 
-    public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList){
+    public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener){
 
         movieModelArrayList.clear();
-        DownloadData downloadData = new DownloadData(movieModelArrayList);
+        DownloadData downloadData = new DownloadData(movieModelArrayList, listener);
         String url = searchUrl + movieName;
         downloadData.execute(url);
     }
 
-    private static class DownloadData extends AsyncTask<String, Void, String>{
+    private static class DownloadData extends AsyncTask<String, Void, String> {
 
         private ArrayList<MovieModel> mMovieModelArrayList;
         private OnTaskCompletedListener listener;
         //ProgressDialog dialog;
 
 
-        DownloadData(ArrayList<MovieModel> movieModelArrayList){
+        DownloadData(ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener) {
 
-        DownloadData(ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener){
             this.mMovieModelArrayList = movieModelArrayList;
             this.listener = listener;
         }
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute () {
             super.onPreExecute();
         }
 
         @Override
-        protected String doInBackground(String... strings) {
+        protected String doInBackground (String...strings){
 
             String result = "";
             URL url;
@@ -72,12 +71,12 @@ public class TMDbAPI {
 
                 int data = inputStreamReader.read();
 
-                while (data > 0){
+                while (data > 0) {
                     char ch = (char) data;
                     result += ch;
                     data = inputStreamReader.read();
                 }
-                Log.d(TAG, "doInBackground: "+ result);
+                Log.d(TAG, "doInBackground: " + result);
                 return result;
 
             } catch (MalformedURLException e) {
@@ -90,7 +89,7 @@ public class TMDbAPI {
         }
 
         @Override
-        protected void onPostExecute(String s) {
+        protected void onPostExecute (String s){
             super.onPostExecute(s);
 
             try {
@@ -99,12 +98,12 @@ public class TMDbAPI {
 
                 JSONArray jsonArray = new JSONArray(results);
 
-                for (int i = 0; i < jsonArray.length(); i++){
+                for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject count = (JSONObject) jsonArray.get(i);
 
                     String language = count.getString("original_language");
 
-                    if (language.contains("tr")|| language.contains("en")){
+                    if (language.contains("tr") || language.contains("en")) {
 
                         int movieId = count.getInt("id");
                         String title = count.getString("original_title");
@@ -117,30 +116,27 @@ public class TMDbAPI {
                         ArrayList<String> genre = new ArrayList<>();
                         JSONArray jsonArray1 = new JSONArray(genreIds);
 
-                        if (jsonArray1.length() == 0){
+                        if (jsonArray1.length() == 0) {
                             genre.add("NaN");
-                        } else{
-                            for (int j = 0; j < jsonArray1.length(); j++){
+                        } else {
+                            for (int j = 0; j < jsonArray1.length(); j++) {
                                 int count2 = (int) jsonArray1.get(j);
                                 genre.add(genre_list.get(count2));
                             }
                         }
 
-                        if (release_date.equals("")){
+                        if (release_date.equals("")) {
                             release_date = "NaN";
                         } else {
-                            String [] date = release_date.split("-");
-                            release_date = date[2]+"."+date[1]+"."+date[0];
+                            String[] date = release_date.split("-");
+                            release_date = date[2] + "." + date[1] + "." + date[0];
                         }
 
-
-                        Log.d(TAG, "onPostExecute: "+genre);
-                        MovieModel movieModel = new MovieModel(movieId, title, release_date ,genre ,vote_average.toString() , poster_path,overview, language);
+                        MovieModel movieModel = new MovieModel(movieId, title, release_date, genre, vote_average.toString(), poster_path, overview, language);
                         mMovieModelArrayList.add(movieModel);
                     }
                 }
 
-                Log.d(TAG, "onPostExecute: ");
                 listener.onTaskCompleted();
             } catch (JSONException e) {
                 e.printStackTrace();
