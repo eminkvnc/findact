@@ -223,12 +223,13 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                         break;
                     case "Movie":
                         progressDialog.show();
-                        tmDbAPI.searchMovie(searchParameter,movieModelArrayList,this);
+                        tmDbAPI.searchMovie(sParam,movieModelArrayList,this);
 
                         break;
                     case "Game":
                         progressDialog.show();
-                        igDbAPI.searchGame(sParam,gameModelArrayList,this);
+                        igDbAPI.search(sParam, gameModelArrayList, this);
+                        //igDbAPI.searchGame(sParam, gameModelArrayList,this);
 
                         break;
                     case "Group":
@@ -238,7 +239,11 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 }else{
                     userDataArrayList.clear();
                     movieModelArrayList.clear();
+                    gameModelArrayList.clear();
                     requestStatus.clear();
+
+                    findGameAdapter.notifyDataSetChanged();
+                    findMovieAdapter.notifyDataSetChanged();
                     findPersonAdapter.notifyDataSetChanged();
                 }
                 break;
@@ -276,7 +281,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
 
                 break;
             case "Game":
-                //Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                 findGameAdapter.notifyDataSetChanged();
                 progressDialog.dismiss();
 

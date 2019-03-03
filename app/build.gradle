@@ -42,6 +42,5 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:$rootProject.archLifecycleVersion"
     annotationProcessor "android.arch.lifecycle:compiler:$rootProject.archLifecycleVersion"
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
-    implementation 'com.squareup.okhttp3:okhttp:3.12.0'
 }
 apply plugin: 'com.google.gms.google-services'
