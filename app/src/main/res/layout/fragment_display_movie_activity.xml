@@ -62,7 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:text="Year"
+                android:text="Release Date"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 app:layout_constraintStart_toEndOf="@id/fragment_display_movie_release_date"
                 app:layout_constraintTop_toTopOf="@id/fragment_display_movie_release_date" />
@@ -86,11 +86,11 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@id/fragment_display_movie_genre"
-                app:layout_constraintTop_toBottomOf="@id/fragment_display_movie_genre" />
+                app:layout_constraintStart_toStartOf="@id/fragment_display_movie_genre_ll"
+                app:layout_constraintTop_toBottomOf="@id/fragment_display_movie_genre_ll" />
 
             <TextView
-                android:id="@+id/fragment_display_movie_platforms"
+                android:id="@+id/fragment_display_movie_language"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -107,8 +107,8 @@
                 android:layout_marginStart="4dp"
                 android:text="Language"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                app:layout_constraintStart_toEndOf="@id/fragment_display_movie_platforms"
-                app:layout_constraintTop_toTopOf="@id/fragment_display_movie_platforms" />
+                app:layout_constraintStart_toEndOf="@id/fragment_display_movie_language"
+                app:layout_constraintTop_toTopOf="@id/fragment_display_movie_language" />
 
             <TextView
                 android:id="@+id/fragment_display_movie_vote_average"
@@ -118,15 +118,15 @@
                 android:text="Rating : "
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@id/fragment_display_movie_platforms"
+                app:layout_constraintStart_toStartOf="@id/fragment_display_movie_language"
                 app:layout_constraintTop_toBottomOf="@id/fragment_display_movie_language_tv" />
 
             <TextView
-                android:id="@+id/fragment_display_movie_stars_tv"
+                android:id="@+id/fragment_display_movie_vote_average_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:text="Stars"
+                android:text="Rating"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 app:layout_constraintStart_toEndOf="@id/fragment_display_movie_vote_average"
                 app:layout_constraintTop_toTopOf="@id/fragment_display_movie_vote_average" />
@@ -135,13 +135,12 @@
                 android:id="@+id/fragment_display_movie_overview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="0dp"
                 android:layout_marginTop="8dp"
                 android:text="Overview"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@id/fragment_display_movie_genre_ll"
-                app:layout_constraintTop_toBottomOf="@id/fragment_display_movie_genre_ll" />
+                app:layout_constraintStart_toStartOf="@+id/fragment_display_movie_genre"
+                app:layout_constraintTop_toBottomOf="@+id/fragment_display_movie_genre" />
 
 
             <TextView
@@ -169,7 +168,7 @@
                 android:textStyle="bold"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 app:layout_constraintStart_toStartOf="@id/fragment_display_movie_vote_average"
-                app:layout_constraintTop_toBottomOf="@id/fragment_display_movie_stars_tv" />
+                app:layout_constraintTop_toBottomOf="@id/fragment_display_movie_vote_average_tv" />
 
             <ImageView
                 android:id="@+id/fragment_display_movie_trailer_iv"

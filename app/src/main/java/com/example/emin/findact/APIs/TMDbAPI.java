@@ -18,8 +18,6 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class TMDbAPI {
 
-    private String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
-
     private static HashMap<Integer,String> genre_list = new HashMap<Integer, String>(){{put(28, "Action");put(12,"Adventure");
                                     put(16,"Animation");put(35,"Comedy" );put(80,"Crime");
                                     put(99, "Documentary");put(18,"Drama" );put(10751,"Family" );
@@ -27,9 +25,9 @@ public class TMDbAPI {
                                     put(9648,"Mystery" );put(10749,"Romance" );put(878,"Sci-Fi");
                                     put(10770,"TV-Movie" );put(53,"Thriller");put(10752,"War" );put(37,"Western");}};
 
-    private static String TAG = "TMDbAPI";
-
     public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener){
+
+        String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&query="; // +movieName
 
         movieModelArrayList.clear();
         DownloadData downloadData = new DownloadData(movieModelArrayList, listener);
@@ -74,7 +72,6 @@ public class TMDbAPI {
                     result += ch;
                     data = inputStreamReader.read();
                 }
-                Log.d(TAG, "doInBackground: " + result);
                 return result;
 
             } catch (MalformedURLException e) {

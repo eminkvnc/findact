@@ -23,21 +23,10 @@ import okhttp3.Response;
 
 public class IGDbAPI {
 
-    private static String TAG = "IGDbAPI";
-
-
-    private String fields = "&fields=name,genres.name,platforms.alternative_name,first_release_date,summary,cover.image_id,game_modes.name,total_rating,videos.video_id,popularity";
-    private String searchUrl = "https://api-v3.igdb.com/games/?search="; //+game_name+fields
-    private String user_key = "user-key";
-    private String key = "2bd597197d5320a9a882cac6123f52eb";
-    private String content_type = "Content-Type";
-    private String dataFormat = "application/json; charset=UTF-8";
-
-    private ArrayList<String> game_mode_name_list;
-    private ArrayList<String> genre_list;
-    private ArrayList<String> platform_list;
-
     public void searchGame(String game_name, final ArrayList<GameModel> gameModelArrayList, final OnTaskCompletedListener listener) {
+
+        String fields = "&fields=name,genres.name,platforms.alternative_name,first_release_date,summary,cover.image_id,game_modes.name,total_rating,videos.video_id,popularity";
+        String searchUrl = "https://api-v3.igdb.com/games/?search="; //+game_name+fields
 
         gameModelArrayList.clear();
         DownloadData downloadData = new DownloadData(gameModelArrayList, listener);
@@ -50,6 +39,16 @@ public class IGDbAPI {
 
         private ArrayList<GameModel> gameModelArrayList;
         private OnTaskCompletedListener listener;
+
+        private String user_key = "user-key";
+        private String key = "2bd597197d5320a9a882cac6123f52eb";
+        private String content_type = "Content-Type";
+        private String dataFormat = "application/json; charset=UTF-8";
+
+        private ArrayList<String> game_mode_name_list;
+        private ArrayList<String> genre_list;
+        private ArrayList<String> platform_list;
+
 
         DownloadData(ArrayList<GameModel> gameModelArrayList, OnTaskCompletedListener listener) {
             this.gameModelArrayList = gameModelArrayList;
@@ -79,7 +78,6 @@ public class IGDbAPI {
                     result += ch;
                     data = inputStreamReader.read();
                 }
-                Log.d(TAG, "doInBackground: " + result);
                 return result;
 
             } catch (MalformedURLException e) {
