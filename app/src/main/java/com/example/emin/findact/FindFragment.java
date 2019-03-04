@@ -232,8 +232,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                         break;
                     case "Game":
                         progressDialog.show();
-                        igDbAPI.search(sParam, gameModelArrayList, this);
-                        //igDbAPI.searchGame(sParam, gameModelArrayList,this);
+                        igDbAPI.searchGame(sParam, gameModelArrayList, this);
 
                         break;
                     case "Group":

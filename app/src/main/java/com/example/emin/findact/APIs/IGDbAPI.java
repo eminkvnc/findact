@@ -36,7 +36,7 @@ public class IGDbAPI {
     private ArrayList<String> genre_list;
     private ArrayList<String> platform_list;
 
-    public void search(String game_name, final ArrayList<GameModel> gameModelArrayList, final OnTaskCompletedListener listener) {
+    public void searchGame(String game_name, final ArrayList<GameModel> gameModelArrayList, final OnTaskCompletedListener listener) {
 
         gameModelArrayList.clear();
         DownloadData downloadData = new DownloadData(gameModelArrayList, listener);
