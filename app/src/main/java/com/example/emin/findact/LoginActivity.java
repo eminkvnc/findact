@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.emin.findact.RoomDatabase.User;
+import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -22,6 +24,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+
+import java.io.IOException;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -58,9 +62,19 @@ public class LoginActivity extends AppCompatActivity {
         if(isSignOut){
             signOut();
         }else{
-            if(currentUser != null) {
-                Log.d(TAG, "userAlreadySignIn ");
-                updateUI(currentUser);
+            if (isOnline()){
+                if(currentUser != null) {
+                    Log.d(TAG, "userAlreadySignIn ");
+                    updateUI(currentUser);
+                }
+            } else {
+                User user = UserDatabase.getInstance(getApplicationContext()).getUserDao().getData();
+                if (user != null){
+                    Toast.makeText(getApplicationContext(), "Welcome: "+user.getUsername(), Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
             }
         }
 
@@ -138,5 +152,18 @@ public class LoginActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         finishAffinity();
+    }
+
+    public boolean isOnline() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+            int exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        }
+        catch (IOException e)          { e.printStackTrace(); }
+        catch (InterruptedException e) { e.printStackTrace(); }
+
+        return false;
     }
 }

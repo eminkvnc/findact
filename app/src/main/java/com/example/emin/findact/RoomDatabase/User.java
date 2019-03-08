@@ -6,7 +6,6 @@ import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
-import java.util.UUID;
 
 
 @Entity(tableName = "user_detail", indices = @Index(value = {"uuid"}, unique = true))

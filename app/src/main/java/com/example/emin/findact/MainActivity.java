@@ -2,10 +2,8 @@ package com.example.emin.findact;
 
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -28,6 +26,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -59,10 +58,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
         navigation.setSelectedItemId(R.id.navigation_home);
+        progressDialog.show();
+
+        if (!isOnline()){
+            Toast.makeText(getApplicationContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
+            navigation.setSelectedItemId(R.id.navigation_profile);
+            profileFragment.setInitMode(ProfileFragment.INIT_MODE_MY_PROFILE_PAGE);
+            setMainFragment(profileFragment);
+        }
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        progressDialog.show();
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -101,9 +108,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Toast.makeText(MainActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
 
@@ -161,5 +169,18 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 }, 500);
             }
         }
+    }
+
+    public boolean isOnline() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+            int     exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        }
+        catch (IOException e)          { e.printStackTrace(); }
+        catch (InterruptedException e) { e.printStackTrace(); }
+
+        return false;
     }
 }

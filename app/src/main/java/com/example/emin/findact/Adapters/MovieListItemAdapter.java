@@ -44,7 +44,6 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
     public MovieListItemAdapter( Context context, ArrayList<MovieModel> movieModelArrayList) {
         this.movieModelArrayList = movieModelArrayList;
         this.context = context;
-        Log.d(TAG, "MovieListItemAdapter: size "+movieModelArrayList.size());
     }
 
     @NonNull
@@ -58,9 +57,8 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
     public void onBindViewHolder(@NonNull MovieListItemViewHolder movieListItemViewHolder, int position) {
 
         MovieModel movieModel = movieModelArrayList.get(position);
-        CustomListener customListener = new CustomListener(movieListItemViewHolder, position, movieModel);
+        CustomListener customListener = new CustomListener(movieModel);
         movieListItemViewHolder.cardView.setOnClickListener(customListener);
-        Log.d(TAG, "onBindViewHolder: "+ movieModel.getTitle());
 
         movieListItemViewHolder.title.setText(movieModel.getTitle());
         movieListItemViewHolder.releaseDate.setText(movieModel.getRelease_date());
@@ -91,7 +89,6 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
             poster = v.findViewById(R.id.list_item_movie_poster);
             title = v.findViewById(R.id.list_item_movie_title);
             releaseDate = v.findViewById(R.id.list_item_movie_releaseDate);
-            Log.d(TAG, "MovieListItemViewHolder: "+title.getText().toString());
 
         }
     }
@@ -99,15 +96,11 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
 
     class CustomListener implements View.OnClickListener{
 
-        private MovieListItemViewHolder movieListItemViewHolder;
-        private int position;
         private MovieModel movieModel;
         DisplayActivityFragment displayActivityFragment;
 
 
-        CustomListener(MovieListItemViewHolder movieListItemViewHolder, int position, MovieModel movieModel) {
-            this.movieListItemViewHolder = movieListItemViewHolder;
-            this.position = position;
+        CustomListener(MovieModel movieModel) {
             this.movieModel = movieModel;
         }
 
@@ -117,7 +110,6 @@ public class MovieListItemAdapter extends RecyclerView.Adapter<MovieListItemAdap
 
                 displayActivityFragment = new DisplayActivityFragment();
 
-                Log.d(TAG, "onClick: "+movieModel.getTitle());
                 Bundle bundle = new Bundle();
                 bundle.putBundle("MovieData" ,movieModel.MovieDataToBundle());
 

@@ -77,7 +77,7 @@ public class DisplayActivityFragment extends Fragment {
                 TextView movieTitle = v.findViewById(R.id.fragment_display_movie_title_tv);
                 TextView movieOverview = v.findViewById(R.id.fragment_display_movie_overview_tv);
                 TextView movieRelease_date = v.findViewById(R.id.fragment_display_movie_year_tv);
-                TextView movieVote_average = v.findViewById(R.id.fragment_display_movie_stars_tv);
+                TextView movieVote_average = v.findViewById(R.id.fragment_display_movie_vote_average_tv);
                 TextView movieLanguage = v.findViewById(R.id.fragment_display_movie_language_tv);
 
                 LinearLayout movieGenre = v.findViewById(R.id.fragment_display_movie_genre_ll);
@@ -121,7 +121,7 @@ public class DisplayActivityFragment extends Fragment {
                 ImageView gameTrailer = v.findViewById(R.id.fragment_display_game_trailer_iv);
 
                 TextView gameTitle = v.findViewById(R.id.fragment_display_game_title_tv);
-                TextView gameReleaseDate = v.findViewById(R.id.fragment_display_game_year_tv);
+                TextView gameReleaseDate = v.findViewById(R.id.fragment_display_game_release_date_tv);
                 TextView gameRating = v.findViewById(R.id.fragment_display_game_stars_tv);
                 TextView gameOverview = v.findViewById(R.id.fragment_display_game_overview_tv);
                 TextView gamePopularity = v.findViewById(R.id.fragment_display_game_popularity_tv);
@@ -198,8 +198,4 @@ public class DisplayActivityFragment extends Fragment {
     public void setInitMode(int initMode) {
         this.initMode = initMode;
     }
-
-
-
-
 }
