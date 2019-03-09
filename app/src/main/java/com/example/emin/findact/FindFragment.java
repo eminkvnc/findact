@@ -121,9 +121,10 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         gameModelArrayList = new ArrayList<>();
         activityArrayList = new ArrayList<>();
 
-        tmDbAPI.getGenres(movieGenresList);
-        igDbAPI.getGenres(gameGenreList,gameModesList);
-
+        if(isOnline()){
+            tmDbAPI.getGenres(movieGenresList);
+            igDbAPI.getGenres(gameGenreList,gameModesList);
+        }
     }
 
     @Override
@@ -330,7 +331,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     if (!sParam.equals("")) {
                         switch (selectedTab) {
                             case "Person":
-
                                 //runnable
                                 Runnable searchRunnable = new Runnable() {
                                     @Override
@@ -338,41 +338,26 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                                         firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus);
                                     }
                                 };
-                                progressDialog.show();
+                                if(!progressDialog.isShowing()){
+                                    progressDialog.show();
+                                }
                                 searchTask = new FirebaseAsyncTask(searchRunnable, this);
                                 searchTask.execute();
                                 break;
 
                             case "Movie":
-                                progressDialog.show();
+                                if(!progressDialog.isShowing()){
+                                    progressDialog.show();
+                                }
                                 tmDbAPI.searchMovie(sParam, movieModelArrayList, this);
                                 break;
                             case "Game":
 
-                                progressDialog.show();
+                                if(!progressDialog.isShowing()){
+                                    progressDialog.show();
+                                }
                                 igDbAPI.searchGame(sParam, gameModelArrayList, this);
 
-                                break;
-                            case "Group":
-
-                                break;
-                        }
-                    } else if (sParam.equals("")){
-                        switch (selectedTab){
-                            case "Person":
-                                break;
-                            case "Movie":
-                                if (!selectedGenreList.isEmpty()){
-                                    progressDialog.show();
-                                    tmDbAPI.searchMovieByGenre(selectedGenreList, movieModelArrayList,this );
-                                }
-                                break;
-                            case "Game":
-
-                                if (!selectedGenreList.isEmpty() || !selectedModeList.isEmpty()){
-                                    progressDialog.show();
-                                    igDbAPI.searchByGenreAndModeName(selectedGenreList, selectedModeList, gameModelArrayList, this);
-                                }
                                 break;
                             case "Group":
                                 //runnable
@@ -382,9 +367,36 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                                         firebaseDBHelper.searchActivity(searchParameter, activityArrayList);
                                     }
                                 };
-                                progressDialog.show();
+                                if(!progressDialog.isShowing()){
+                                    progressDialog.show();
+                                }
                                 searchTask = new FirebaseAsyncTask(searchActivityRunnable,this);
                                 searchTask.execute();
+                                break;
+                        }
+                    } else if (sParam.equals("")){
+                        switch (selectedTab){
+                            case "Person":
+
+                                break;
+                            case "Movie":
+                                if (!selectedGenreList.isEmpty()){
+                                    if(!progressDialog.isShowing()){
+                                        progressDialog.show();
+                                    }
+                                    tmDbAPI.searchMovieByGenre(selectedGenreList, movieModelArrayList,this );
+                                }
+                                break;
+                            case "Game":
+                                if (!selectedGenreList.isEmpty() || !selectedModeList.isEmpty()){
+                                    if(!progressDialog.isShowing()){
+                                        progressDialog.show();
+                                    }
+                                    igDbAPI.searchByGenreAndModeName(selectedGenreList, selectedModeList, gameModelArrayList, this);
+                                }
+                                break;
+                            case "Group":
+
                                 break;
                         }
 
@@ -419,7 +431,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     progressDialog.dismiss();
                 }
                 if(searchTask.isTaskComplete()){
-                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -433,31 +445,38 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 break;
             case "Movie":
 
-                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                 findMovieAdapter.notifyDataSetChanged();
-                progressDialog.dismiss();
-
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
                 break;
             case "Game":
-                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                 findGameAdapter.notifyDataSetChanged();
-                progressDialog.dismiss();
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
 
                 break;
             case "Group":
                 if(searchTask.isTimeout()){
                     Toast.makeText(getContext(), "Task Timeout", Toast.LENGTH_SHORT).show();
                     searchTask.cancel(true);
-                    progressDialog.dismiss();
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
                 }
                 if(searchTask.isTaskComplete()) {
-                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             findActivityAdapter.notifyDataSetChanged();
-                            progressDialog.dismiss();
+                            if(progressDialog.isShowing()){
+                                progressDialog.dismiss();
+                            }
                         }
                     }, 1000);
                 }
