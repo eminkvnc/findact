@@ -8,8 +8,11 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.example.emin.findact.APIs.ActivityModel;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,6 +55,7 @@ public class FirebaseDBHelper {
     public static final String FIREBASE_DB_CHILD_USER_REQUESTS = "Requests";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWERS = "Followers";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWING = "Following";
+    public static final String FIREBASE_DB_CHILD_USER_ACTIVITIES = "Activities";
 
 
     private String TAG = "FirebaseDBHelper";
@@ -88,16 +93,16 @@ public class FirebaseDBHelper {
         databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("username").setValue(userData.getUsername());
         databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("notification").setValue(userData.getNotification());
         databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").setValue(userData.getUuidString());
-
-        mStorageReference.putFile(userData.getProfilePictureUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                mStorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        String downloadUrl = uri.toString();
-                        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").setValue(downloadUrl);
-                        Log.d("onSuccess", "onSuccess: "+ downloadUrl);
+        if(isImageUpdated) {
+            mStorageReference.putFile(userData.getProfilePictureUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    mStorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String downloadUrl = uri.toString();
+                            databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").setValue(downloadUrl);
+                            Log.d("onSuccess", "onSuccess: " + downloadUrl);
                         }
                     });
                 }
@@ -107,9 +112,10 @@ public class FirebaseDBHelper {
                     Log.d("onFailure", "onFailure: " + e);
                 }
             });
+        }
     }
 
-    public void getUserData(final String userId, final ArrayList<UserData> userData){
+    public void getUserData(String userId, final ArrayList<UserData> userData){
 
         userData.clear();
         DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(userId);
@@ -128,7 +134,7 @@ public class FirebaseDBHelper {
 
 //////////////////////////////////////////ADD LOG///////////////////////////////////////////////////
 
-    public void addUserLog(final InitialLog initialLog){
+    public void addUserLog(InitialLog initialLog){
 
         databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_LOG).child("Initial").setValue(initialLog);
 
@@ -137,6 +143,57 @@ public class FirebaseDBHelper {
     public void addUserLog(EventLog eventLog){
 
         databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_LOG).child("Event").setValue(eventLog);
+    }
+
+//////////////////////////////////////////ADD ACTIVITY//////////////////////////////////////////////
+
+    public void addGroupActivity(final ActivityModel activityModel){
+
+        String imageName = "images/activityImages/"+activityModel.getActivityId();
+        ArrayList<String> subCategoriesList = activityModel.getSubCategories();
+        String subCategories = "";
+        for(int i = 0; i < subCategoriesList.size(); i++){
+            subCategories += subCategoriesList.get(i);
+            if(i != subCategoriesList.size()-1){
+                subCategories += ",";
+            }
+        }
+
+        final DatabaseReference reference = databaseReference
+                .child(FIREBASE_DB_CHILD_USER_ACTIVITIES)
+                .child(activityModel.getActivityId());
+
+                reference.child("id").setValue(activityModel.getActivityId());
+                reference.child("name").setValue(activityModel.getName());
+                reference.child("latitude").setValue(activityModel.getLocation().latitude);
+                reference.child("longitude").setValue(activityModel.getLocation().longitude);
+                reference.child("date").setValue(activityModel.getDate());
+                reference.child("category").setValue(activityModel.getCategory());
+                reference.child("description").setValue(activityModel.getDescription());
+                reference.child("sub-categories").setValue(subCategories);
+                reference.child("owner").setValue(getCurrentUser());
+
+
+        final StorageReference mStorageReference = storageReference.child(getCurrentUser()).child(imageName);
+        mStorageReference.putFile(activityModel.getImageUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                mStorageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        String downloadUrl = uri.toString();
+                        reference.child("image").setValue(downloadUrl);
+                        Log.d("onSuccess", "onSuccess: " + downloadUrl);
+                    }
+                });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d("onFailure", "onFailure: " + e);
+            }
+        });
+
     }
 
 
@@ -178,6 +235,31 @@ public class FirebaseDBHelper {
             }
         });
     }
+
+    public void searchActivity(final String parameter, final ArrayList<ActivityModel> activities){
+
+        activities.clear();
+        DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USER_ACTIVITIES);
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                    if (ds.child("name").getValue().toString().contains(parameter)) {
+                        activities.add(mapActivity(ds));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+    }
+
 
 //////////////////////////////////////SENDING REQUESTS//////////////////////////////////////////////
 
@@ -454,6 +536,33 @@ public class FirebaseDBHelper {
                     Uri.parse(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").getValue().toString()));
             return userData;
     }
+
+    private ActivityModel mapActivity(DataSnapshot ds){
+
+        LatLng latLng = new LatLng(
+                Double.parseDouble(ds.child("latitude").getValue().toString()),
+                Double.parseDouble(ds.child("longitude").getValue().toString()));
+
+        ArrayList<String> subCategories = new ArrayList<>();
+
+        String[] subCategoriesArray = ds.child("sub-categories").getValue().toString().split(",");
+        for (int i = 0; i < subCategoriesArray.length; i++){
+            subCategories.add(subCategoriesArray[i]);
+        }
+
+        ActivityModel activityModel = new ActivityModel(ds.child("id").getValue().toString(),
+                ds.child("name").getValue().toString(),
+                Uri.parse(ds.child("image").getValue().toString()),
+                latLng,
+                ds.child("date").getValue().toString(),
+                ds.child("category").getValue().toString(),
+                subCategories,
+                ds.child("description").getValue().toString(),
+                ds.child("owner").getValue().toString());
+
+        return activityModel;
+    }
+
 
 
     public String getCurrentUser(){

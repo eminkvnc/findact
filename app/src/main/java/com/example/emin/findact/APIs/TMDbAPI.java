@@ -6,6 +6,8 @@ import com.example.emin.findact.OnTaskCompletedListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,13 +68,13 @@ public class TMDbAPI {
                 httpsURLConnection = (HttpsURLConnection) url.openConnection();
                 InputStream inputStream = httpsURLConnection.getInputStream();
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String data = bufferedReader.readLine();
 
-                int data = inputStreamReader.read();
-
-                while (data > 0) {
-                    char ch = (char) data;
+                while (data != null) {
+                    String ch = data;
                     result += ch;
-                    data = inputStreamReader.read();
+                    data = bufferedReader.readLine();
                 }
                 Log.d(TAG, "doInBackground: " + result);
                 return result;
