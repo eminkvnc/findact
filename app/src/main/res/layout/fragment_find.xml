@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -10,11 +11,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/fragment_find_search_et">
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_search_et">
 
         <Button
             android:id="@+id/fragment_find_person_btn"
@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Movie" />
+            android:text="MOVIE" />
 
         <Button
             android:id="@+id/fragment_find_game_btn"
@@ -56,8 +56,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
         android:ems="10"
         android:hint="Search"
         android:inputType="textPersonName"
@@ -69,65 +68,84 @@
         android:id="@+id/fragment_find_search_iv"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/search" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/fragment_find_person_rv"
-        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_find_ll" />
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_mode_name_list_rv" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/fragment_find_movie_rv"
-        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="4dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_find_ll" />
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_mode_name_list_rv" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/fragment_find_game_rv"
-        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="4dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_find_ll" />
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_mode_name_list_rv" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/fragment_find_group_rv"
-        android:visibility="gone"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_mode_name_list_rv" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/fragment_find_genre_list_rv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragment_find_search_iv"
+        app:layout_constraintStart_toStartOf="@+id/fragment_find_search_et"
         app:layout_constraintTop_toBottomOf="@+id/fragment_find_ll" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/fragment_find_mode_name_list_rv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/fragment_find_search_iv"
+        app:layout_constraintStart_toStartOf="@+id/fragment_find_genre_list_rv"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_find_genre_list_rv" />
+
 
 </android.support.constraint.ConstraintLayout>

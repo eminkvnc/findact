@@ -33,7 +33,6 @@ public class GameListItemAdapter extends RecyclerView.Adapter<GameListItemAdapte
 
         this.context = context;
         this.gameModelArrayList = gameModelArrayList;
-        Log.d(TAG, "GameListItemAdapter: "+gameModelArrayList.size());
     }
 
     @NonNull
@@ -48,14 +47,12 @@ public class GameListItemAdapter extends RecyclerView.Adapter<GameListItemAdapte
     public void onBindViewHolder(@NonNull GameListItemViewHolder gameListItemViewHolder, int position) {
 
         GameModel gameModel = gameModelArrayList.get(position);
-        CustomListener customListener = new CustomListener(gameListItemViewHolder, position,gameModel );
+        CustomListener customListener = new CustomListener(gameModel );
         gameListItemViewHolder.cardView.setOnClickListener(customListener);
-        Log.d(TAG, "onBindViewHolder: "+gameModel.getName());
 
         gameListItemViewHolder.name.setText(gameModel.getName());
         gameListItemViewHolder.releaseDate.setText(gameModel.getRelease_date());
 
-        Log.d(TAG, "onBindViewHolder: "+gameModel.getImage_id());
         if (gameModel.getImage_id() != null){
             Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImage_id()+".jpg")).into(gameListItemViewHolder.poster);
         } else {
@@ -90,16 +87,12 @@ public class GameListItemAdapter extends RecyclerView.Adapter<GameListItemAdapte
     // Custom Listener
     class CustomListener implements View.OnClickListener{
 
-        private GameListItemAdapter.GameListItemViewHolder gameListItemViewHolder;
-        private int position;
         private GameModel gameModel;
         DisplayActivityFragment displayActivityFragment;
 
 
-        CustomListener(GameListItemViewHolder gameListItemViewHolder, int position, GameModel gameModel) {
+        CustomListener( GameModel gameModel) {
 
-            this.gameListItemViewHolder = gameListItemViewHolder;
-            this.position = position;
             this.gameModel = gameModel;
         }
 
