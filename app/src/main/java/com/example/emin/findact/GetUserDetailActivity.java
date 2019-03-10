@@ -45,6 +45,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class GetUserDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -301,10 +302,10 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         Uri storageImageUri = Uri.fromFile(new File(myPath.getAbsolutePath()));
 
         UserData userData = new UserData(name, surname, city, birthday ,username ,uuidString ,"true",storageImageUri);
-        InitialLog initialLog = new InitialLog(gameGenres,movieGenres ,Calendar.getInstance().getTime().toString() ,"status" );
+        InitialLog initialLog = new InitialLog(gameGenres, movieGenres , UUID.randomUUID().toString(), Calendar.getInstance().getTime().toString());
 
         firebaseDBHelper.addUserDetail(userData, true);
-        firebaseDBHelper.addUserLog(initialLog);
+        firebaseDBHelper.addInitialUserLog(initialLog);
 
         final User user = new User(uuidString,name,surname ,city ,birthday , selectedImage.toString(), "true", username);
 

@@ -18,6 +18,8 @@ import android.widget.TextView;
 import com.example.emin.findact.APIs.ActivityModel;
 import com.example.emin.findact.APIs.GameModel;
 import com.example.emin.findact.APIs.MovieModel;
+import com.example.emin.findact.Firebase.EventLog;
+import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -26,8 +28,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
 import java.text.DecimalFormat;
+import java.util.Calendar;
+import java.util.UUID;
 
-public class DisplayActivityFragment extends Fragment{
+public class DisplayActivityFragment extends Fragment {
+
+    FirebaseDBHelper firebaseDBHelper = FirebaseDBHelper.getInstance();
 
     public static final int INIT_MODE_MOVIE_ACTIVITY = 0;
     public static final int INIT_MODE_GAME_ACTIVITY = 1;
@@ -90,6 +96,9 @@ public class DisplayActivityFragment extends Fragment{
                 TextView movieRelease_date = v.findViewById(R.id.fragment_display_movie_release_date_tv);
                 TextView movieVote_average = v.findViewById(R.id.fragment_display_movie_vote_average_tv);
                 TextView movieLanguage = v.findViewById(R.id.fragment_display_movie_language_tv);
+                ImageView movieLikeImageView = v.findViewById(R.id.fragment_display_movie_like_iv);
+                ImageView movieDislikeImageView = v.findViewById(R.id.fragment_display_movie_dislike_iv);
+                ImageView movieShareImageView = v.findViewById(R.id.fragment_display_movie_share_iv);
 
                 LinearLayout movieGenre = v.findViewById(R.id.fragment_display_movie_genre_ll);
 
@@ -107,7 +116,6 @@ public class DisplayActivityFragment extends Fragment{
                     moviePoster.setImageResource(R.drawable.default_movie);
                 }
 
-
                 trailer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -115,6 +123,11 @@ public class DisplayActivityFragment extends Fragment{
                         startActivity(intent);
                     }
                 });
+
+                EventLogOnClickListener listenerMovie = new EventLogOnClickListener(String.valueOf(movieModel.getMovieId()));
+                movieLikeImageView.setOnClickListener(listenerMovie);
+                movieDislikeImageView.setOnClickListener(listenerMovie);
+                movieShareImageView.setOnClickListener(listenerMovie);
 
                 movieTitle.setText(movieModel.getTitle());
                 movieOverview.setText(movieModel.getOverview());
@@ -140,11 +153,16 @@ public class DisplayActivityFragment extends Fragment{
                 LinearLayout gameModeName = v.findViewById(R.id.fragment_display_game_modes_name_ll);
                 LinearLayout gamePlatform = v.findViewById(R.id.fragment_display_game_platforms_ll);
 
+                ImageView gameLikeImageView = v.findViewById(R.id.fragment_display_game_like_iv);
+                ImageView gameDislikeImageView = v.findViewById(R.id.fragment_display_game_dislike_iv);
+                ImageView gemeShareImageView = v.findViewById(R.id.fragment_display_game_share_iv);
+
                 if (gameModel.getImage_id() != null){
                     Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImage_id()+".jpg")).into(gamePoster);
                 } else {
                     gamePoster.setImageResource(R.drawable.default_game);
                 }
+
 
                 gameTitle.setText(gameModel.getName());
                 gameReleaseDate.setText(gameModel.getRelease_date());
@@ -164,6 +182,11 @@ public class DisplayActivityFragment extends Fragment{
                         }
                     }
                 });
+
+                EventLogOnClickListener listenerGame = new EventLogOnClickListener(String.valueOf(gameModel.getGameId()));
+                gameLikeImageView.setOnClickListener(listenerGame);
+                gameDislikeImageView.setOnClickListener(listenerGame);
+                gemeShareImageView.setOnClickListener(listenerGame);
 
                 gameGenre.removeAllViews();
                 for (int i = 0; i < gameModel.getGenre().size(); i++){
@@ -198,6 +221,11 @@ public class DisplayActivityFragment extends Fragment{
                 TextView activityCategory = v.findViewById(R.id.fragment_display_group_categoty_tv);
                 LinearLayout activitySubCategories = v.findViewById(R.id.fragment_display_group_sub_categoty_ll);
                 TextView activityDescription = v.findViewById(R.id.fragment_display_group_description_tv);
+
+                ImageView activityLikeImageView = v.findViewById(R.id.fragment_display_group_like_iv);
+                ImageView activityDislikeImageView = v.findViewById(R.id.fragment_display_group_dislike_iv);
+                ImageView activityShareImageView = v.findViewById(R.id.fragment_display_group_share_iv);
+
                 activityMap = v.findViewById(R.id.fragment_display_group_mapview);
                 activityMap.onCreate(savedInstanceState);
                 final LatLng location = activityModel.getLocation();
@@ -226,6 +254,10 @@ public class DisplayActivityFragment extends Fragment{
                     }
                 });
 
+                EventLogOnClickListener listenerActivity = new EventLogOnClickListener(activityModel.getActivityId());
+                activityLikeImageView.setOnClickListener(listenerActivity);
+                activityDislikeImageView.setOnClickListener(listenerActivity);
+                activityShareImageView.setOnClickListener(listenerActivity);
                 break;
             default:
                 v = null;
@@ -264,4 +296,95 @@ public class DisplayActivityFragment extends Fragment{
         }
         super.onLowMemory();
     }
+
+    class EventLogOnClickListener implements View.OnClickListener{
+
+        String activityId;
+
+        public EventLogOnClickListener(String activityId) {
+            this.activityId = activityId;
+        }
+
+        @Override
+        public void onClick(View v) {
+            EventLog eventLog;
+            switch (v.getId()){
+                case R.id.fragment_display_movie_like_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_LIKE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_MOVIE);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_movie_dislike_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_DISLIKE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_MOVIE);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_movie_share_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_SHARE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_MOVIE);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_game_like_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_LIKE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_GAME);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_game_dislike_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_DISLIKE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_GAME);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_game_share_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_SHARE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_GAME);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_group_like_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_LIKE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_ACTIVITY);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_group_dislike_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_DISLIKE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_ACTIVITY);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_group_share_iv:
+                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                            Calendar.getInstance().getTime().toString(),
+                            EventLog.EVENT_TYPE_SHARE,
+                            activityId,
+                            EventLog.ACTIVITY_TYPE_ACTIVITY);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+            }
+        }
+    }
+
+
+
 }
