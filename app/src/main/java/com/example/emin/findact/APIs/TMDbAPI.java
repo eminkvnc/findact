@@ -20,6 +20,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class TMDbAPI {
 
+    private static int requestCount;
 
     // https://api.themoviedb.org/3/discover/movie?api_key=fd50bae5852bf6c2e149317a6e885416&sort_by=popularity.desc&with_genres=// +id%2Cid
     private static HashMap<Integer,String> genre_list = new HashMap<Integer, String>(){{put(28, "Action");put(12,"Adventure");
@@ -44,6 +45,8 @@ public class TMDbAPI {
 
     public void searchMovie (String movieName, ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener){
 
+        requestCount = 9;
+
         String searchUrl = "https://api.themoviedb.org/3/search/movie?api_key=fd50bae5852bf6c2e149317a6e885416&sort_by=popularity.desc&query="; // +movieName
 
         movieModelArrayList.clear();
@@ -60,9 +63,9 @@ public class TMDbAPI {
         for (int i = 1; i< selectedMovieIds.size(); i++){
             ids = ids+"%2C"+String.valueOf(genreIDList.get(selectedMovieIds.get(i)));
         }
-
+         requestCount = 0;
         movieModelArrayList.clear();
-        for (int i = 1; i <= 5; i++){
+        for (int i = 1; i <= 10; i++){
             DownloadData downloadData1 = new DownloadData(movieModelArrayList,listener );
             String searchUrl = "https://api.themoviedb.org/3/discover/movie?api_key=fd50bae5852bf6c2e149317a6e885416&sort_by=popularity.desc&page="+i+"&with_genres=";
             downloadData1.execute(searchUrl+ids);
@@ -183,7 +186,7 @@ public class TMDbAPI {
         @Override
         protected void onPostExecute (String s){
             super.onPostExecute(s);
-
+            requestCount++;
             try {
                 JSONObject jsonObject = new JSONObject(s);
                 String results = jsonObject.getString("results");
@@ -228,8 +231,9 @@ public class TMDbAPI {
                         mMovieModelArrayList.add(movieModel);
                     }
                 }
-
-                listener.onTaskCompleted();
+                if(requestCount == 10){
+                    listener.onTaskCompleted();
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }

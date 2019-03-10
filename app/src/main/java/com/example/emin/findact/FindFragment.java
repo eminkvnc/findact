@@ -11,6 +11,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,10 +23,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Toast;
+
+import com.example.emin.findact.APIs.ActivityModel;
 import com.example.emin.findact.APIs.GameModel;
 import com.example.emin.findact.APIs.IGDbAPI;
 import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.APIs.TMDbAPI;
+import com.example.emin.findact.Adapters.ActivityListItemAdapter;
 import com.example.emin.findact.Adapters.GameListItemAdapter;
 import com.example.emin.findact.Adapters.MovieListItemAdapter;
 import com.example.emin.findact.Adapters.UserListItemAdapter;
@@ -34,16 +39,25 @@ import com.example.emin.findact.Firebase.UserData;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class FindFragment extends Fragment implements View.OnClickListener, OnTaskCompletedListener {
 
+    public static final String TAB_NAME_PERSON = "Person";
+    public static final String TAB_NAME_MOVIE = "Movie";
+    public static final String TAB_NAME_GAME = "Game";
+    public static final String TAB_NAME_ACTIVITY = "Activity";
+
     public static String TAG = "FindFragment";
+    public static String selectedTab;
     String sParam;
     FirebaseDBHelper firebaseDBHelper;
     FirebaseAsyncTask searchTask;
     ProgressDialog progressDialog;
     DisplayActivityFragment displayActivityFragment;
-    String selectedTab;
+    String oldSearchParameter;
+    HashMap<String,Boolean> firstClick;
 
     RecyclerView searchPersonRecyclerView;
     RecyclerView searchMovieRecyclerView;
@@ -71,6 +85,9 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
     ArrayList<GameModel> gameModelArrayList;
     GameListItemAdapter findGameAdapter;
 
+    ArrayList<ActivityModel> activityArrayList;
+    ActivityListItemAdapter findActivityAdapter;
+
     ArrayList<String> selectedGenreList;
     ArrayList<String> selectedModeList;
     ArrayList<String> gameModesList;
@@ -91,6 +108,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         firebaseDBHelper = FirebaseDBHelper.getInstance();
 
         tmDbAPI = new TMDbAPI();
+        movieModelArrayList = new ArrayList<>();
         igDbAPI = new IGDbAPI();
 
         selectedGenreList = new ArrayList<>();
@@ -101,10 +119,12 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
 
         movieModelArrayList = new ArrayList<>();
         gameModelArrayList = new ArrayList<>();
+        activityArrayList = new ArrayList<>();
 
-        tmDbAPI.getGenres(movieGenresList);
-        igDbAPI.getGenres(gameGenreList,gameModesList);
-
+        if(isOnline()){
+            tmDbAPI.getGenres(movieGenresList);
+            igDbAPI.getGenres(gameGenreList,gameModesList);
+        }
     }
 
     @Override
@@ -149,18 +169,47 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         searchMovieRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         searchMovieRecyclerView.setAdapter(findMovieAdapter);
 
-        findGameAdapter = new GameListItemAdapter(getContext(),gameModelArrayList );
+        findGameAdapter = new GameListItemAdapter(getContext(),gameModelArrayList);
         searchGameRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         searchGameRecyclerView.setAdapter(findGameAdapter);
+
+        findActivityAdapter = new ActivityListItemAdapter(getContext(),activityArrayList);
+        searchGroupRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        searchGroupRecyclerView.setAdapter(findActivityAdapter);
+
+        oldSearchParameter = searchEditText.getText().toString();
+        firstClick = new HashMap<>();
+        firstClick.put("Person",true);
+        firstClick.put("Movie",true);
+        firstClick.put("Game",true);
+        firstClick.put("Group",true);
 
         searchImageView.setOnClickListener(this);
         personButton.setOnClickListener(this);
         movieButton.setOnClickListener(this);
         gameButton.setOnClickListener(this);
         groupButton.setOnClickListener(this);
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                oldSearchParameter = searchEditText.getText().toString();
+                firstClick.put("Person",true);
+                firstClick.put("Movie",true);
+                firstClick.put("Game",true);
+                firstClick.put("Group",true);
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
         personButton.performClick();
-
         return v;
     }
 
@@ -168,6 +217,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
     public void onClick(View v) {
         final String searchParameter = searchEditText.getText().toString();
         switch (v.getId()){
+
             case R.id.fragment_find_person_btn:
                 personButton.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
                 movieButton.setTextColor(Color.BLACK);
@@ -182,7 +232,10 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 modeRecyclerView.setVisibility(View.GONE);
 
                 selectedTab = "Person";
-                searchImageView.performClick();
+                if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Person")){
+                    searchImageView.performClick();
+                    firstClick.put("Person",false);
+                }
 
                 break;
 
@@ -205,7 +258,10 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 modeRecyclerView.setVisibility(View.GONE);
 
                 selectedTab = "Movie";
-                searchImageView.performClick();
+                if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Movie")){
+                    searchImageView.performClick();
+                    firstClick.put("Movie",false);
+                }
 
                 break;
 
@@ -233,7 +289,10 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 modeNamesAdapter.notifyDataSetChanged();
 
                 selectedTab = "Game";
-                searchImageView.performClick();
+                if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Game")){
+                    searchImageView.performClick();
+                    firstClick.put("Game",false);
+                }
 
                 break;
 
@@ -252,7 +311,10 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
 
 
                 selectedTab = "Group";
-                searchImageView.performClick();
+                if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Group")){
+                    searchImageView.performClick();
+                    firstClick.put("Group",false);
+                }
 
                 break;
 
@@ -269,7 +331,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     if (!sParam.equals("")) {
                         switch (selectedTab) {
                             case "Person":
-
                                 //runnable
                                 Runnable searchRunnable = new Runnable() {
                                     @Override
@@ -277,43 +338,65 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                                         firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus);
                                     }
                                 };
-                                progressDialog.show();
+                                if(!progressDialog.isShowing()){
+                                    progressDialog.show();
+                                }
                                 searchTask = new FirebaseAsyncTask(searchRunnable, this);
                                 searchTask.execute();
                                 break;
 
                             case "Movie":
-                                progressDialog.show();
+                                if(!progressDialog.isShowing()){
+                                    progressDialog.show();
+                                }
                                 tmDbAPI.searchMovie(sParam, movieModelArrayList, this);
                                 break;
                             case "Game":
 
-                                progressDialog.show();
+                                if(!progressDialog.isShowing()){
+                                    progressDialog.show();
+                                }
                                 igDbAPI.searchGame(sParam, gameModelArrayList, this);
 
                                 break;
                             case "Group":
-
+                                //runnable
+                                Runnable searchActivityRunnable = new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        firebaseDBHelper.searchActivity(searchParameter, activityArrayList);
+                                    }
+                                };
+                                if(!progressDialog.isShowing()){
+                                    progressDialog.show();
+                                }
+                                searchTask = new FirebaseAsyncTask(searchActivityRunnable,this);
+                                searchTask.execute();
                                 break;
                         }
                     } else if (sParam.equals("")){
                         switch (selectedTab){
                             case "Person":
+
                                 break;
                             case "Movie":
                                 if (!selectedGenreList.isEmpty()){
-                                    progressDialog.show();
+                                    if(!progressDialog.isShowing()){
+                                        progressDialog.show();
+                                    }
                                     tmDbAPI.searchMovieByGenre(selectedGenreList, movieModelArrayList,this );
                                 }
                                 break;
                             case "Game":
-
                                 if (!selectedGenreList.isEmpty() || !selectedModeList.isEmpty()){
-                                    progressDialog.show();
+                                    if(!progressDialog.isShowing()){
+                                        progressDialog.show();
+                                    }
                                     igDbAPI.searchByGenreAndModeName(selectedGenreList, selectedModeList, gameModelArrayList, this);
                                 }
                                 break;
                             case "Group":
+
                                 break;
                         }
 
@@ -322,11 +405,13 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                         userDataArrayList.clear();
                         movieModelArrayList.clear();
                         gameModelArrayList.clear();
+                        activityArrayList.clear();
                         requestStatus.clear();
 
                         findGameAdapter.notifyDataSetChanged();
                         findMovieAdapter.notifyDataSetChanged();
                         findPersonAdapter.notifyDataSetChanged();
+                        findActivityAdapter.notifyDataSetChanged();
                     }
                     break;
                 } else {
@@ -346,7 +431,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     progressDialog.dismiss();
                 }
                 if(searchTask.isTaskComplete()){
-                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -360,19 +445,41 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 break;
             case "Movie":
 
-                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                 findMovieAdapter.notifyDataSetChanged();
-                progressDialog.dismiss();
-
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
                 break;
             case "Game":
-                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                 findGameAdapter.notifyDataSetChanged();
-                progressDialog.dismiss();
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
 
                 break;
             case "Group":
-
+                if(searchTask.isTimeout()){
+                    Toast.makeText(getContext(), "Task Timeout", Toast.LENGTH_SHORT).show();
+                    searchTask.cancel(true);
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
+                }
+                if(searchTask.isTaskComplete()) {
+//                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            findActivityAdapter.notifyDataSetChanged();
+                            if(progressDialog.isShowing()){
+                                progressDialog.dismiss();
+                            }
+                        }
+                    }, 1000);
+                }
                 break;
         }
     }

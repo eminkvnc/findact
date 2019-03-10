@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,14 +15,19 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
+import com.example.emin.findact.APIs.ActivityModel;
 import com.example.emin.findact.APIs.GameModel;
 import com.example.emin.findact.APIs.MovieModel;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
-
 import java.text.DecimalFormat;
 
-public class DisplayActivityFragment extends Fragment {
+public class DisplayActivityFragment extends Fragment{
 
     public static final int INIT_MODE_MOVIE_ACTIVITY = 0;
     public static final int INIT_MODE_GAME_ACTIVITY = 1;
@@ -34,10 +38,12 @@ public class DisplayActivityFragment extends Fragment {
     private String TAG = "DisplayActivityFragment";
     MovieModel movieModel;
     GameModel gameModel;
+    ActivityModel activityModel;
 
     String videoKey;
     String videoSite;
-
+    GoogleMap mMap;
+    MapView activityMap;
 
     public  DisplayActivityFragment() {
     }
@@ -53,11 +59,17 @@ public class DisplayActivityFragment extends Fragment {
             gameModel = new GameModel(getArguments().getBundle("GameData"));
             Log.d(TAG, "onCreate: "+videoSite+videoKey);
         }
+        else if(initMode == INIT_MODE_GROUP_ACTIVITY){
+            activityModel = new ActivityModel(getArguments().getBundle("ActivityData"));
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        if(initMode == INIT_MODE_GROUP_ACTIVITY){
+            activityMap.onResume();
+        }
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
         actionBar.setTitle(R.string.title_display_activity);
@@ -73,10 +85,9 @@ public class DisplayActivityFragment extends Fragment {
 
                 ImageView moviePoster = v.findViewById(R.id.fragment_display_movie_poster_iv);
                 ImageView trailer = v.findViewById(R.id.fragment_display_movie_trailer_iv);
-
                 TextView movieTitle = v.findViewById(R.id.fragment_display_movie_title_tv);
                 TextView movieOverview = v.findViewById(R.id.fragment_display_movie_overview_tv);
-                TextView movieRelease_date = v.findViewById(R.id.fragment_display_movie_year_tv);
+                TextView movieRelease_date = v.findViewById(R.id.fragment_display_movie_release_date_tv);
                 TextView movieVote_average = v.findViewById(R.id.fragment_display_movie_vote_average_tv);
                 TextView movieLanguage = v.findViewById(R.id.fragment_display_movie_language_tv);
 
@@ -105,7 +116,6 @@ public class DisplayActivityFragment extends Fragment {
                     }
                 });
 
-
                 movieTitle.setText(movieModel.getTitle());
                 movieOverview.setText(movieModel.getOverview());
                 movieRelease_date.setText(movieModel.getRelease_date());
@@ -122,7 +132,7 @@ public class DisplayActivityFragment extends Fragment {
 
                 TextView gameTitle = v.findViewById(R.id.fragment_display_game_title_tv);
                 TextView gameReleaseDate = v.findViewById(R.id.fragment_display_game_release_date_tv);
-                TextView gameRating = v.findViewById(R.id.fragment_display_game_stars_tv);
+                TextView gameRating = v.findViewById(R.id.fragment_display_game_rating_tv);
                 TextView gameOverview = v.findViewById(R.id.fragment_display_game_overview_tv);
                 TextView gamePopularity = v.findViewById(R.id.fragment_display_game_popularity_tv);
 
@@ -152,7 +162,6 @@ public class DisplayActivityFragment extends Fragment {
                             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query="+gameModel.getName()+" trailer"));
                             startActivity(intent);
                         }
-
                     }
                 });
 
@@ -183,11 +192,44 @@ public class DisplayActivityFragment extends Fragment {
                 break;
             case INIT_MODE_GROUP_ACTIVITY:
                 v = inflater.inflate(R.layout.fragment_display_group_activity,container,false);
+                ImageView activityImage = v.findViewById(R.id.fragment_display_group_poster_iv);
+                TextView activityName = v.findViewById(R.id.fragment_display_group_title_tv);
+                TextView activityDate = v.findViewById(R.id.fragment_display_group_date_tv);
+                TextView activityCategory = v.findViewById(R.id.fragment_display_group_categoty_tv);
+                LinearLayout activitySubCategories = v.findViewById(R.id.fragment_display_group_sub_categoty_ll);
+                TextView activityDescription = v.findViewById(R.id.fragment_display_group_description_tv);
+                activityMap = v.findViewById(R.id.fragment_display_group_mapview);
+                activityMap.onCreate(savedInstanceState);
+                final LatLng location = activityModel.getLocation();
+
+                Picasso.get().load(activityModel.getImageUri()).into(activityImage);
+
+                activityName.setText(activityModel.getName());
+                activityDate.setText(activityModel.getDate());
+                activityCategory.setText(activityModel.getCategory());
+                activityDescription.setText(activityModel.getDescription());
+
+                for(int i = 0; i < activityModel.getSubCategories().size(); i++){
+                    TextView textView = new TextView(getContext());
+                    textView.setTextSize(18);
+                    textView.setText(activityModel.getSubCategories().get(i));
+                    activitySubCategories.addView(textView);
+                }
+
+                activityMap.getMapAsync(new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(GoogleMap googleMap) {
+                        mMap = googleMap;
+                        mMap.clear();
+                        mMap.addMarker(new MarkerOptions().title("Selected Place").position(location));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 17f));
+                    }
+                });
+
                 break;
             default:
                 v = null;
         }
-
         return v;
     }
 
@@ -197,5 +239,29 @@ public class DisplayActivityFragment extends Fragment {
 
     public void setInitMode(int initMode) {
         this.initMode = initMode;
+    }
+
+    @Override
+    public void onPause() {
+        if(initMode == INIT_MODE_GROUP_ACTIVITY) {
+            activityMap.onPause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        if(initMode == INIT_MODE_GROUP_ACTIVITY) {
+            activityMap.onDestroy();
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        if(initMode == INIT_MODE_GROUP_ACTIVITY){
+            activityMap.onLowMemory();
+        }
+        super.onLowMemory();
     }
 }
