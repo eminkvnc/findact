@@ -133,20 +133,19 @@ public class IGDbAPI {
 
             String result = "";
             URL url;
-            HttpsURLConnection httpsURLConnection;
+            HttpURLConnection httpURLConnection;
             try {
 
                 url = new URL(strings[0]);
-                httpsURLConnection = (HttpsURLConnection) url.openConnection();
-                httpsURLConnection.setDoOutput(true);
-                httpsURLConnection.setRequestProperty(user_key, key);
-                httpsURLConnection.setRequestProperty(content_type, dataFormat);
-                httpsURLConnection.setRequestProperty("Accept", dataFormat);
+                httpURLConnection = (HttpsURLConnection) url.openConnection();
+                httpURLConnection.setRequestProperty(user_key, key);
+                httpURLConnection.setRequestProperty(content_type, dataFormat);
+                httpURLConnection.setRequestProperty("Accept", dataFormat);
 
                 InputStream inputStream;
 
-                if (httpsURLConnection.getResponseCode() != HttpURLConnection.HTTP_OK){
-                    inputStream = httpsURLConnection.getErrorStream();
+                if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
+                    inputStream = httpURLConnection.getInputStream();
                     InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
@@ -158,7 +157,7 @@ public class IGDbAPI {
                         data = bufferedReader.readLine();
                     }
                     inputStream.close();
-                    httpsURLConnection.disconnect();
+                    httpURLConnection.disconnect();
                     return result;
                 }else{
                     return null;
