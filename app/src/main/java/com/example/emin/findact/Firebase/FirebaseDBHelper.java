@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.example.emin.findact.APIs.ActivityModel;
+import com.example.emin.findact.OnTaskCompletedListener;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.google.android.gms.maps.model.LatLng;
@@ -51,6 +52,8 @@ public class FirebaseDBHelper {
     public static final String FIREBASE_DB_CHILD_USERS = "Users";
     public static final String FIREBASE_DB_CHILD_USER_DATA = "Data";
     public static final String FIREBASE_DB_CHILD_USER_LOG = "Logs";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_INITIAL = "Initial";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT = "Event";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWS = "Follows";
     public static final String FIREBASE_DB_CHILD_USER_REQUESTS = "Requests";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWERS = "Followers";
@@ -136,33 +139,77 @@ public class FirebaseDBHelper {
 
     public void addInitialUserLog(InitialLog initialLog){
 
-        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_LOG).child("Initial").setValue(initialLog);
+        databaseReference
+                .child(FIREBASE_DB_CHILD_USERS)
+                .child(getCurrentUser())
+                .child(FIREBASE_DB_CHILD_USER_LOG)
+                .child(FIREBASE_DB_CHILD_USER_LOG_INITIAL).setValue(initialLog);
 
     }
 
     public void addEventUserLog(final EventLog eventLog){
 
-        DatabaseReference reference = databaseReference
+        final DatabaseReference reference = databaseReference
                 .child(FIREBASE_DB_CHILD_USERS)
                 .child(getCurrentUser())
                 .child(FIREBASE_DB_CHILD_USER_LOG)
-                .child("Event")
+                .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
                 .child(eventLog.getActivityType())
                 .child(eventLog.getEventType())
                 .child(eventLog.getActivityId());
 
         if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_LIKE)){
+            final Boolean[] isLiked = new Boolean[1];
+            isLiked(eventLog.getActivityType(), eventLog.getActivityId(), isLiked, new OnTaskCompletedListener() {
+                @Override
+                public void onTaskCompleted() {
+                    if(isLiked[0]){
+                        databaseReference
+                                .child(FIREBASE_DB_CHILD_USERS)
+                                .child(getCurrentUser())
+                                .child(FIREBASE_DB_CHILD_USER_LOG)
+                                .child("Event")
+                                .child(eventLog.getActivityType())
+                                .child(EventLog.EVENT_TYPE_LIKE)
+                                .child(eventLog.getActivityId()).removeValue();
+                    }else {
+                        reference.child("id").setValue(eventLog.getId());
+                        reference.child("date").setValue(eventLog.getDate());
+                        reference.child("activity-id").setValue(eventLog.getActivityId());
+                    }
+                }
+            });
             databaseReference
                     .child(FIREBASE_DB_CHILD_USERS)
                     .child(getCurrentUser())
                     .child(FIREBASE_DB_CHILD_USER_LOG)
-                    .child("Event")
+                    .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
                     .child(eventLog.getActivityType())
                     .child(EventLog.EVENT_TYPE_DISLIKE)
                     .child(eventLog.getActivityId()).removeValue();
         }
 
         if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_DISLIKE)){
+            final Boolean[] isDisliked = new Boolean[1];
+            isDisliked(eventLog.getActivityType(), eventLog.getActivityId(), isDisliked, new OnTaskCompletedListener() {
+                @Override
+                public void onTaskCompleted() {
+                    if(isDisliked[0]){
+                        databaseReference
+                                .child(FIREBASE_DB_CHILD_USERS)
+                                .child(getCurrentUser())
+                                .child(FIREBASE_DB_CHILD_USER_LOG)
+                                .child("Event")
+                                .child(eventLog.getActivityType())
+                                .child(EventLog.EVENT_TYPE_DISLIKE)
+                                .child(eventLog.getActivityId()).removeValue();
+                    }else {
+                        reference.child("id").setValue(eventLog.getId());
+                        reference.child("date").setValue(eventLog.getDate());
+                        reference.child("activity-id").setValue(eventLog.getActivityId());
+                    }
+                }
+            });
         databaseReference
                 .child(FIREBASE_DB_CHILD_USERS)
                 .child(getCurrentUser())
@@ -171,19 +218,42 @@ public class FirebaseDBHelper {
                 .child(eventLog.getActivityType())
                 .child(EventLog.EVENT_TYPE_LIKE)
                 .child(eventLog.getActivityId()).removeValue();
-
         }
-        reference.child("id").setValue(eventLog.getId());
-        reference.child("date").setValue(eventLog.getDate());
-        reference.child("activity-id").setValue(eventLog.getActivityId());
+        if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
+            reference.child("id").setValue(eventLog.getId());
+            reference.child("date").setValue(eventLog.getDate());
+            reference.child("activity-id").setValue(eventLog.getActivityId());
+        }
     }
 
-    /*public void isLiked(final String activityType, final String activityId, final Boolean[] eventTypeStatus){
+    public void isLiked(final String activityType, final String activityId, final Boolean[] eventTypeStatus, final OnTaskCompletedListener listener){
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                if(dataSnapshot.child(FIREBASE_DB_CHILD_USERS)
+                        .child(getCurrentUser())
+                        .child(FIREBASE_DB_CHILD_USER_LOG)
+                        .child("Event")
+                        .child(activityType)
+                        .child(EventLog.EVENT_TYPE_LIKE)
+                        .child(activityId).exists()){
+                    eventTypeStatus[0] = true;
+                }else {
+                    eventTypeStatus[0] = false;
+                }
+                listener.onTaskCompleted();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
     }
 
-    public void isDisliked(final String activityType, final String activityId, final Boolean[] eventTypeStatus){
+    public void isDisliked(final String activityType, final String activityId, final Boolean[] eventTypeStatus, final OnTaskCompletedListener listener){
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -199,6 +269,7 @@ public class FirebaseDBHelper {
                 }else {
                     eventTypeStatus[0] = false;
                 }
+                listener.onTaskCompleted();
             }
 
             @Override
@@ -206,7 +277,7 @@ public class FirebaseDBHelper {
 
             }
         });
-    }*/
+    }
 
 
 //////////////////////////////////////////ADD ACTIVITY//////////////////////////////////////////////
