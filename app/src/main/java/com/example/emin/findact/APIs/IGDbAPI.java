@@ -3,7 +3,6 @@ package com.example.emin.findact.APIs;
 import android.os.AsyncTask;
 
 import com.example.emin.findact.OnTaskCompletedListener;
-import com.google.gson.JsonObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,24 +12,28 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.net.ssl.HttpsURLConnection;
 
 
 public class IGDbAPI {
 
-    String fields = "fields=name,genres.name,platforms.alternative_name,first_release_date,summary,cover.image_id,game_modes.name,total_rating,videos.video_id,popularity";
-    String searchUrl = "https://api-v3.igdb.com/games/?search="; //+game_name+fields
-
-    String limit_offset = "&limit=50&offset=";
-    String order = "&order=popularity:desc";
+    private static String genreUrl = "https://api-v3.igdb.com/genres/";
+    private static String modeUrl = "https://api-v3.igdb.com/game_modes/";
+    private static String gameUrl = "https://api-v3.igdb.com/games/";
+    private static String fields = "fields name,genres.name,platforms.alternative_name,first_release_date,summary,cover.image_id,game_modes.name,total_rating,videos.video_id,popularity;";
+    private static String search = "search "; // request atarken ; koymayı  unutma
+    private static String whereGenres = "where genres = "; // request atarken where Stringleri birleştirilerek kullanılacak
+    private static String whereMode = " game_modes = ";
+    private static String limit_offset = "limit 50;offset "; // request atarken ; koymayı unutma
+    private static String order = "sort popularity desc;";
 
     private static String user_key = "user-key";
     private static String key = "2bd597197d5320a9a882cac6123f52eb";
@@ -41,83 +44,76 @@ public class IGDbAPI {
     private static ArrayList<String> genre_list;
     private static ArrayList<String> platform_list;
 
+    // request atarken genre ve mode id'leri kullanılıyor
+    private static HashMap<String,Integer> genreHashMap = new HashMap<String, Integer>(){{
+        put("Simulator", 13);put("Indie", 32);
+        put("Tactical", 24);put("Quiz/Trivia", 26);
+        put("Fighting", 4);put("Strategy", 15);
+        put("Adventure", 31);put("Role-playing (RPG)", 12);
+        put("Shooter", 5);put("Music", 7);  }};
+    private static HashMap<String,Integer> modeHashMap = new HashMap<String,Integer>(){{
+        put("Co-operative", 3);
+        put("Single player", 1  );
+        put("Multiplayer", 2);
+        put("Massively Multiplayer Online (MMO)", 5);
+        put("Split screen", 4);}};
+
     private static int requestCount;
 
 
     public void getGenres(ArrayList<String> genreList, ArrayList<String> modeList){
-        String genreurl = "https://api-v3.igdb.com/genres/?fields=name";
-        String modeurl = "https://api-v3.igdb.com/game_modes/?fields=name";
         GetGenreList getGenreList = new GetGenreList(genreList);
-        getGenreList.execute(genreurl);
+        getGenreList.execute(genreUrl);
         GetGenreList getModeList = new GetGenreList(modeList);
-        getModeList.execute(modeurl);
+        getModeList.execute(modeUrl);
     }
 
     public void searchGame(String game_name, final ArrayList<GameModel> gameModelArrayList, final OnTaskCompletedListener listener) {
         requestCount = 2;
         gameModelArrayList.clear();
-        DownloadData downloadData = new DownloadData(gameModelArrayList, listener);
-        downloadData.execute(searchUrl + game_name + "&" + fields);
+        String params = fields + search + "\""+game_name+"\";" + order;
+        DownloadData downloadData = new DownloadData(gameModelArrayList, listener, params);
+        downloadData.execute(gameUrl);
 
     }
 
     public void searchByGenreAndModeName(ArrayList<String> selectedGenres, ArrayList<String> selectedMode,final ArrayList<GameModel> gameModelArrayList,final OnTaskCompletedListener listener){
 
+        String params = null;
         String genres;
         String mode;
-        String url;
-        String filterGenre = "&filter[genres.name][any]=";
-        String filterMode = "&filter[game_modes.name][eq]=";
-
-
 
         // Genre seçilmiş ise
-        if (selectedGenres.size()>0){
-            genres = selectedGenres.get(0);
+        if (selectedGenres.size() > 0){
+            genres = genreHashMap.get(selectedGenres.get(0)).toString();
             for (int i = 1; i < selectedGenres.size(); i++){
-                genres = genres+"\",\""+selectedGenres.get(i);
+                genres = genres+"\",\""+genreHashMap.get(selectedGenres.get(0)).toString();
             }
             // mode seçilmiş ise
             if (selectedMode.size() > 0){
-                String[] splitmode = selectedMode.get(0).split(" ");
-                mode = splitmode[0];
-                if (splitmode.length>1){
-                    for (int i = 1; i < splitmode.length; i++){
-                        mode = mode+"+"+splitmode[i];
-                    }
-                }
-                url = "https://api-v3.igdb.com/games/?"+fields+filterGenre+"\""+genres+"\""+filterMode+"\""+mode+"\"";
-
-            } else {    // mode seçilmemiş ise
-                url = "https://api-v3.igdb.com/games/?"+fields+filterGenre+"\""+genres+"\"";
+                mode = modeHashMap.get(selectedMode.get(0)).toString();
+                params = fields + whereGenres + "("+genres+")&" + whereMode +mode+";";
             }
-        } else {    // genre seçilmemiş ise
+            // mode seçilmemiş ise
+            else {
+                params = fields +"where "+ whereGenres + "("+genres+")";
+            }
+        }
+        // genre seçilmemiş ise
+        else {
+            // mode seçilmiş ise
             if (selectedMode.size() > 0){
-                // seçilen mode "Co-operative" ise url ekleme. Çünkü request hata döndürüyor.
-                if (selectedMode.get(0).equals("Co-operative")){
-                    url = "https://api-v3.igdb.com/games/?"+fields;
-                } else {    // seçilen mode "Co-operative" den farklı ise
-                    String[] splitmode = selectedMode.get(0).split(" ");
-                    mode = splitmode[0];
-                    if (splitmode.length>1){
-                        for (int i = 1; i < splitmode.length; i++){
-                            mode = mode+"+"+splitmode[i];
-                        }
-                    }
-                    url = "https://api-v3.igdb.com/games/?"+fields+filterMode+"\""+mode+"\"";
-                }
-
-            } else {    // mode seçilmemiş ise (bu zaten kullanılmayacak çünkü find fragmentta genre veya mode listeleri boş değilse arama yapabilecek)
-                url = "https://api-v3.igdb.com/games/?"+fields;
+                mode = modeHashMap.get(selectedMode.get(0)).toString();
+                params = fields + "where "+ whereMode +mode+";";
             }
         }
 
         gameModelArrayList.clear();
         requestCount = 0;
-        // Co-operative içeren requestler çalışmıyor.
         for (int i =0; i <=3; i++){
-            DownloadData downloadData = new DownloadData(gameModelArrayList,listener );
-            downloadData.execute(url + limit_offset + (i*50) + order);
+            String newParams = params + limit_offset + (i*50) + ";" + order;
+            DownloadData downloadData = new DownloadData(gameModelArrayList,listener, newParams );
+            downloadData.execute(gameUrl);
         }
     }
 
@@ -126,25 +122,35 @@ public class IGDbAPI {
 
         private ArrayList<GameModel> gameModelArrayList;
         private final OnTaskCompletedListener listener;
+        private String params;
 
-        DownloadData(ArrayList<GameModel> gameModelArrayList, OnTaskCompletedListener listener) {
+        DownloadData(ArrayList<GameModel> gameModelArrayList, OnTaskCompletedListener listener, String params) {
             this.gameModelArrayList = gameModelArrayList;
             this.listener = listener;
+            this.params = params;
         }
+
 
         @Override
         protected String doInBackground(String... strings) {
 
-            String result = "";
+            StringBuilder result = new StringBuilder();
             URL url;
-            HttpsURLConnection httpsURLConnection;
+            HttpsURLConnection httpsURLConnection = null;
             try {
+
 
                 url = new URL(strings[0]);
                 httpsURLConnection = (HttpsURLConnection) url.openConnection();
                 httpsURLConnection.setRequestProperty(user_key, key);
                 httpsURLConnection.setRequestProperty(content_type, dataFormat);
-                httpsURLConnection.setRequestProperty("Accept", dataFormat);
+                httpsURLConnection.setRequestMethod("POST");
+                httpsURLConnection.setDoOutput(true);
+                httpsURLConnection.setInstanceFollowRedirects(false);
+
+                OutputStreamWriter writer = new OutputStreamWriter(httpsURLConnection.getOutputStream(),"UTF-8");
+                writer.write(params);
+                writer.close();
 
                 InputStream inputStream;
 
@@ -157,12 +163,10 @@ public class IGDbAPI {
 
                     while (data != null){
 
-                        result += data;
+                        result.append(data);
                         data = bufferedReader.readLine();
                     }
-//                    inputStream.close();
-//                    httpsURLConnection.disconnect();
-                    return result;
+                    return result.toString();
                 }else{
                     return null;
                 }
@@ -173,6 +177,9 @@ public class IGDbAPI {
             } catch (IOException e) {
                 e.printStackTrace();
                 return null;
+            } finally {
+                assert httpsURLConnection != null;
+                httpsURLConnection.disconnect();
             }
         }
 
@@ -211,35 +218,51 @@ public class IGDbAPI {
         protected String doInBackground(String... strings) {
 
             URL url;
-            HttpURLConnection connection;
-            String result="";
+            HttpsURLConnection httpsURLConnection = null;
+            StringBuilder result= new StringBuilder();
 
             try {
                 url = new URL(strings[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestProperty(user_key, key);
-                connection.setRequestProperty(content_type,dataFormat );
+                httpsURLConnection = (HttpsURLConnection) url.openConnection();
+                httpsURLConnection.setRequestProperty(user_key, key);
+                httpsURLConnection.setRequestProperty(content_type, dataFormat);
+                httpsURLConnection.setRequestMethod("POST");
+                httpsURLConnection.setDoOutput(true);
+                httpsURLConnection.setInstanceFollowRedirects(false);
 
-                InputStream inputStream = connection.getInputStream();
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                OutputStreamWriter writer = new OutputStreamWriter(httpsURLConnection.getOutputStream(),"UTF-8");
+                writer.write("fields name;");
+                writer.close();
 
-                String data = bufferedReader.readLine();
+                InputStream inputStream;
 
-                while (data != null){
+                if (httpsURLConnection.getResponseCode() == HttpsURLConnection.HTTP_OK){
+                    inputStream = httpsURLConnection.getInputStream();
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
-                    result += data;
-                    data = bufferedReader.readLine();
+                    String data = bufferedReader.readLine();
+
+                    while (data != null){
+
+                        result.append(data);
+                        data = bufferedReader.readLine();
+                    }
+                    return result.toString();
+                }else{
+                    return null;
                 }
 
-                return result;
             } catch (MalformedURLException e) {
                 e.printStackTrace();
+                return null;
             } catch (IOException e) {
                 e.printStackTrace();
+                return null;
+            } finally {
+                assert httpsURLConnection != null;
+                httpsURLConnection.disconnect();
             }
-
-            return null;
         }
 
         @Override
@@ -251,7 +274,6 @@ public class IGDbAPI {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
 
                     String genreName = jsonObject.getString("name");
-
                     genreList.add(genreName);
                 }
             } catch (JSONException e) {
@@ -260,7 +282,7 @@ public class IGDbAPI {
         }
     }
 
-    public static GameModel parseJSonToGameModel(JSONObject jsonObject) {
+    private static GameModel parseJSonToGameModel(JSONObject jsonObject) {
         GameModel gameModel = null;
         try {
 
