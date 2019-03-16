@@ -31,6 +31,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
     private FirebaseDBHelper firebaseDBHelper;
     private ArrayList<UserData> userDataArrayList;
     private ArrayList<Integer> requestStatus;
+    private ArrayList<String> invitedUserList;
     private Context context;
 
 
@@ -40,6 +41,11 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
         this.requestStatus = requestStatus;
         this.adapterCreatorTag = adapterCreatorTag;
         firebaseDBHelper = FirebaseDBHelper.getInstance();
+        invitedUserList = new ArrayList<>();
+    }
+
+    public void setInvitedUserList(ArrayList<String> invitedUserList) {
+        this.invitedUserList = invitedUserList;
     }
 
     @NonNull
@@ -58,6 +64,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
         userListItemViewHolder.addFriendImageView.setOnClickListener(listener);
         userListItemViewHolder.acceptFriendImageView.setOnClickListener(listener);
         userListItemViewHolder.declineFriendImageView.setOnClickListener(listener);
+        userListItemViewHolder.inviteFriendImageView.setOnClickListener(listener);
         userListItemViewHolder.cardView.setOnClickListener(listener);
 
         Picasso.get()
@@ -67,36 +74,48 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
 
         String name = userData.getFirstname() + " " + userData.getLastname();
         userListItemViewHolder.nameTextView.setText(name);
-        if(!requestStatus.isEmpty()) {
-            userListItemViewHolder.acceptFriendImageView.setVisibility(View.GONE);
-            userListItemViewHolder.declineFriendImageView.setVisibility(View.GONE);
-            userListItemViewHolder.addFriendImageView.setVisibility(View.VISIBLE);
-            switch (requestStatus.get(position)) {
-                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
-                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
-                    break;
-                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING:
-                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
-                    break;
-                //already your friend you can remove your friends
-                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
-                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
-                    break;
-                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING_ANSWER:
-                    userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
-                    userListItemViewHolder.acceptFriendImageView.setVisibility(View.VISIBLE);
-                    userListItemViewHolder.declineFriendImageView.setVisibility(View.VISIBLE);
-                    userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
-                    break;
-                case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
-                    userListItemViewHolder.acceptFriendImageView.setVisibility(View.GONE);
-                    userListItemViewHolder.declineFriendImageView.setVisibility(View.GONE);
-                    userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
-                    break;
+        if(requestStatus != null) {
+            if (!requestStatus.isEmpty()) {
+                userListItemViewHolder.acceptFriendImageView.setVisibility(View.GONE);
+                userListItemViewHolder.declineFriendImageView.setVisibility(View.GONE);
+                userListItemViewHolder.inviteFriendImageView.setVisibility(View.GONE);
+                userListItemViewHolder.addFriendImageView.setVisibility(View.VISIBLE);
+                switch (requestStatus.get(position)) {
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
+                        userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.send_follow_request);
+                        break;
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING:
+                        userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
+                        break;
+                    //already your friend you can remove your friends
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
+                        userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
+                        break;
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_WAITING_ANSWER:
+                        userListItemViewHolder.addFriendImageView.setImageResource(R.drawable.unfollow_user);
+                        userListItemViewHolder.acceptFriendImageView.setVisibility(View.VISIBLE);
+                        userListItemViewHolder.declineFriendImageView.setVisibility(View.VISIBLE);
+                        userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
+                        userListItemViewHolder.inviteFriendImageView.setVisibility(View.GONE);
+                        break;
+                    case FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE:
+                        userListItemViewHolder.acceptFriendImageView.setVisibility(View.GONE);
+                        userListItemViewHolder.declineFriendImageView.setVisibility(View.GONE);
+                        userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
+                        userListItemViewHolder.inviteFriendImageView.setVisibility(View.GONE);
+                        break;
+                }
             }
         }
         else{
-            Log.d(TAG, "onBindViewHolder: reuqest status null");
+            userListItemViewHolder.acceptFriendImageView.setVisibility(View.GONE);
+            userListItemViewHolder.declineFriendImageView.setVisibility(View.GONE);
+            userListItemViewHolder.addFriendImageView.setVisibility(View.GONE);
+            userListItemViewHolder.inviteFriendImageView.setVisibility(View.VISIBLE);
+            userListItemViewHolder.cardView.setOnClickListener(null);
+        }
+        if(invitedUserList == null){
+            userListItemViewHolder.inviteFriendImageView.setVisibility(View.GONE);
         }
     }
 
@@ -113,6 +132,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
         ImageView addFriendImageView;
         ImageView acceptFriendImageView;
         ImageView declineFriendImageView;
+        ImageView inviteFriendImageView;
         CardView cardView;
         UserListItemViewHolder(View v) {
             super(v);
@@ -121,6 +141,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
             addFriendImageView = v.findViewById(R.id.list_item_user_add_friend_iv);
             acceptFriendImageView = v.findViewById(R.id.list_item_user_accept_friend_iv);
             declineFriendImageView = v.findViewById(R.id.list_item_user_decline_friend_iv);
+            inviteFriendImageView = v.findViewById(R.id.list_item_user_invite_iv);
             cardView = v.findViewById(R.id.list_item_user_cv);
         }
     }
@@ -178,6 +199,13 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                     notifyDataSetChanged();
 
                     break;
+
+                case R.id.list_item_user_invite_iv:
+                    //Firebase request yolla. Davet edilen her kullanıcının profiline etkinliği ekle.
+                    invitedUserList.add(userData.getUuidString());
+                    userListItemViewHolder.inviteFriendImageView.setVisibility(View.GONE);
+                    break;
+
                 case R.id.list_item_user_cv:
                     //profil sayfasına geç
                     if(UsersListDialog.getInstance().isAdded()) {

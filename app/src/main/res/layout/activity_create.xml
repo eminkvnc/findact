@@ -86,12 +86,35 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/activity_create_date_et"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="Date"
+                    android:inputType="none" />
+
+                <Button
+                    android:id="@+id/activity_create_invite_tv"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Invite"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Choose Category"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title"/>
+                android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
             <Spinner
                 android:id="@+id/activity_create_category_spinner"
@@ -119,14 +142,6 @@
 
             </GridLayout>
 
-
-            <EditText
-                android:id="@+id/activity_create_date_et"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Date"
-                android:inputType="none"/>
 
             <EditText
                 android:id="@+id/activity_create_description_et"

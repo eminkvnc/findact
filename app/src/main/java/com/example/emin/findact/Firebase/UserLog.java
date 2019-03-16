@@ -2,12 +2,14 @@ package com.example.emin.findact.Firebase;
 
 public class UserLog {
 
+    private String id;
     private String date;
-    private String status;
 
-    UserLog(String date, String status) {
+
+    UserLog(String id, String date) {
+        this.id = id;
         this.date = date;
-        this.status = status;
+
     }
 
     public String getDate() {
@@ -18,11 +20,11 @@ public class UserLog {
         this.date = date;
     }
 
-    public String getStatus() {
-        return status;
+    public String getId() {
+        return id;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setId(String id) {
+        this.id = id;
     }
 }

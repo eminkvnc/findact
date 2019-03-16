@@ -5,8 +5,8 @@ public class InitialLog extends UserLog {
     private String gameGenres;
     private String movieGenres;
 
-    public InitialLog(String gameGenres, String movieGenres, String date, String status) {
-        super(date,status);
+    public InitialLog(String gameGenres, String movieGenres, String id , String date) {
+        super(id,date);
         this.gameGenres = gameGenres;
         this.movieGenres = movieGenres;
     }

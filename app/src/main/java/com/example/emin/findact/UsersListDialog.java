@@ -9,12 +9,9 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-
 import com.example.emin.findact.Adapters.UserListItemAdapter;
 import com.example.emin.findact.Firebase.UserData;
-
 import java.util.ArrayList;
-
 
 
 public class UsersListDialog extends DialogFragment {
@@ -33,12 +30,12 @@ public class UsersListDialog extends DialogFragment {
     private RecyclerView recyclerView;
     private UserListItemAdapter adapter;
     private ArrayList<UserData> userDataArrayList;
+    private ArrayList<String> attendeesArrayList;
     private ArrayList<Integer> requestStatusArrayList;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @NonNull
@@ -46,28 +43,28 @@ public class UsersListDialog extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         userDataArrayList = new ArrayList<>();
         requestStatusArrayList = new ArrayList<>();
+        attendeesArrayList = new ArrayList<>();
         Bundle bundle = getArguments();
         title = bundle.getString("Title");
+        attendeesArrayList = bundle.getStringArrayList("Attendees");
         Bundle userDataBundle = bundle.getBundle("UserDataArrayList");
         if(userDataBundle.isEmpty()){
             Log.d(TAG, "onCreate: bundle Empty");
         }else{
             for(int i = 0; i < userDataBundle.size(); i++){
                 userDataArrayList.add(new UserData(userDataBundle.getBundle(String.valueOf(i))));
-                Log.d(TAG, "onCreate: bundle"+userDataBundle.toString());
             }
             requestStatusArrayList = bundle.getIntegerArrayList("StatusArrayList");
-            Log.d(TAG, "onCreate: "+requestStatusArrayList.toString());
         }
 
         recyclerView = new RecyclerView(getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new UserListItemAdapter(getContext(),userDataArrayList,requestStatusArrayList, TAG);
+        adapter.setInvitedUserList(attendeesArrayList);
         recyclerView.setAdapter(adapter);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(title);
         builder.setView(recyclerView);
         return builder.create();
     }
-
 }

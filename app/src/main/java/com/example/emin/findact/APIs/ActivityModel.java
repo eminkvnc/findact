@@ -15,13 +15,11 @@ public class ActivityModel {
     private String date;
     private String category;
     private ArrayList<String> subCategories;
+    private ArrayList<String> attendees;
     private String description;
-
-
-
     private String owner;
 
-    public ActivityModel(String activityId, String name, Uri imageUri, LatLng location, String date, String category, ArrayList<String> subCategories, String description, String owner) {
+    public ActivityModel(String activityId, String name, Uri imageUri, LatLng location, String date, String category, ArrayList<String> subCategories, ArrayList<String> attendees, String description, String owner) {
         this.activityId = activityId;
         this.name = name;
         this.imageUri = imageUri;
@@ -29,6 +27,7 @@ public class ActivityModel {
         this.date = date;
         this.category = category;
         this.subCategories = subCategories;
+        this.attendees = attendees;
         this.description = description;
         this.owner = owner;
     }
@@ -42,6 +41,7 @@ public class ActivityModel {
         this.date = bundle.getString("date");
         this.category = bundle.getString("category");
         this.subCategories = bundle.getStringArrayList("sub_categories");
+        this.attendees = bundle.getStringArrayList("attendees");
         this.description = bundle.getString("description");
     }
 
@@ -73,6 +73,10 @@ public class ActivityModel {
         return subCategories;
     }
 
+    public ArrayList<String> getAttendees() {
+        return attendees;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -92,6 +96,7 @@ public class ActivityModel {
         bundle.putString("date",this.date);
         bundle.putString("category",this.category);
         bundle.putStringArrayList("sub_categories",this.subCategories);
+        bundle.putStringArrayList("attendees",this.attendees);
         bundle.putString("description",this.description);
 
         return bundle;

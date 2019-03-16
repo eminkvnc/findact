@@ -14,6 +14,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -38,6 +39,7 @@ import android.widget.Toast;
 import com.example.emin.findact.APIs.ActivityModel;
 import com.example.emin.findact.Firebase.FirebaseAsyncTask;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
+import com.example.emin.findact.Firebase.UserData;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -47,7 +49,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -62,7 +63,13 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
     DatePickerDialog datePickerDialog;
     ProgressDialog dialog;
+    UsersListDialog usersListDialog;
 
+
+    private ArrayList<UserData> followerArrayList;
+    private ArrayList<UserData> followingArrayList;
+    private ArrayList<String> invitedArrayList;
+    private ArrayList<Integer> statusList;
     private GoogleMap mMap;
     private LocationManager locationManager;
     private LocationListener locationListener;
@@ -83,6 +90,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     private EditText activityNameEditText;
     private ImageView saveImageView;
     private ImageView imageSelectImageView;
+    private TextView inviteTextView;
     private EditText dateEditText;
     private Spinner categorySpinner;
     private SupportMapFragment mapFragment;
@@ -95,7 +103,13 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
+        followerArrayList = new ArrayList<>();
+        followingArrayList = new ArrayList<>();
+        invitedArrayList = new ArrayList<>();
+        statusList = new ArrayList<>();
+
         dialog = new ProgressDialog(CreateActivity.this);
+        usersListDialog = UsersListDialog.getInstance();
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.activity_create_mv);
         mapFragment.getMapAsync(this);
@@ -107,11 +121,13 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         categorySpinner = findViewById(R.id.activity_create_category_spinner);
         subItemsGridLayout = findViewById(R.id.activity_create_gl);
         descriptionEditText = findViewById(R.id.activity_create_description_et);
+        inviteTextView = findViewById(R.id.activity_create_invite_tv);
         dateEditText.setFocusable(false);
         dateEditText.setClickable(true);
         imageSelectImageView.setOnClickListener(this);
         dateEditText.setOnClickListener(this);
         saveImageView.setOnClickListener(this);
+        inviteTextView.setOnClickListener(this);
         setDateTimeField();
 
         categoryAdapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,categoriesList){
@@ -210,6 +226,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 latLng,dateEditText.getText().toString(),
                 categorySpinner.getSelectedItem().toString(),
                 selectedSubItemsArray,
+                invitedArrayList,
                 descriptionEditText.getText().toString(),
                 FirebaseDBHelper.getInstance().getCurrentUser());
 
@@ -239,6 +256,9 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.activity_create_date_et:
                 datePickerDialog.show();
+                break;
+            case R.id.activity_create_invite_tv:
+                showInviteDialog();
                 break;
             case R.id.activity_create_save_iv:
                 if(activityNameEditText.getText().toString().equals("") ||
@@ -364,7 +384,6 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
             }
         }
 
-
     }
 
     private void croprequest(Uri imageUri) {
@@ -380,7 +399,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
         try {
             fos = new FileOutputStream(myPath);
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 50,fos );
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 30,fos );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -391,4 +410,46 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
             }
         }
     }
+
+    private void showInviteDialog(){
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                FirebaseDBHelper.getInstance().getFollowers(FirebaseDBHelper.getInstance().getCurrentUser(),followerArrayList,statusList);
+                FirebaseDBHelper.getInstance().getFollowing(FirebaseDBHelper.getInstance().getCurrentUser(),followingArrayList,statusList);
+            }
+        };
+        OnTaskCompletedListener onTaskCompletedListener = new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                for(int i = 0; i < followingArrayList.size(); i++){
+                    if(!followingArrayList.contains(followerArrayList.get(i))){
+                        followingArrayList.add(followerArrayList.get(i));
+                    }
+                }
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("Title","Invite");
+                        Bundle followersArrayListBundle = new Bundle();
+                        for(int i = 0; i < followingArrayList.size(); i++){
+                            followersArrayListBundle.putBundle(String.valueOf(i),followingArrayList.get(i).UserDatatoBundle());
+                        }
+                        bundle.putBundle("UserDataArrayList",followersArrayListBundle);
+                        bundle.putStringArrayList("Attendees",invitedArrayList);
+                        bundle.putIntegerArrayList("StatusArrayList",null);
+                        usersListDialog.setArguments(bundle);
+                        usersListDialog.show(getSupportFragmentManager(),"dialog");
+                    }
+                },800);
+
+            }
+        };
+        FirebaseAsyncTask task = new FirebaseAsyncTask(runnable,onTaskCompletedListener);
+        task.execute();
+
+    }
+
 }
