@@ -293,7 +293,6 @@ public class FirebaseDBHelper {
                 subCategories += ",";
             }
         }
-
         final DatabaseReference reference = databaseReference
                 .child(FIREBASE_DB_CHILD_USER_ACTIVITIES)
                 .child(activityModel.getActivityId());
@@ -307,6 +306,11 @@ public class FirebaseDBHelper {
                 reference.child("description").setValue(activityModel.getDescription());
                 reference.child("sub-categories").setValue(subCategories);
                 reference.child("owner").setValue(getCurrentUser());
+                if(activityModel.getAttendees() != null) {
+                    for (int j = 0; j < activityModel.getAttendees().size(); j++) {
+                        reference.child("attendees").child(activityModel.getAttendees().get(j)).setValue(Calendar.getInstance().getTime().toString());
+                    }
+                }
 
 
         final StorageReference mStorageReference = storageReference.child(getCurrentUser()).child(imageName);
@@ -331,9 +335,49 @@ public class FirebaseDBHelper {
 
     }
 
+    public void joinActivity(String activityId, String userId){
+        databaseReference
+                .child(FIREBASE_DB_CHILD_USER_ACTIVITIES)
+                .child(activityId)
+                .child("attendees")
+                .child(userId).setValue(Calendar.getInstance().getTime().toString());
+    }
+
+    public void getAttendees(String activityId, final ArrayList<UserData> attendees, final OnTaskCompletedListener listener){
+
+        databaseReference
+                .child(FIREBASE_DB_CHILD_USER_ACTIVITIES)
+                .child(activityId)
+                .child("attendees").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    databaseReference.child(FIREBASE_DB_CHILD_USERS).child(ds.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            attendees.add(mapUserData(dataSnapshot));
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+                listener.onTaskCompleted();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
 
 ////////////////////////////////////////SEARCH FUNCTIONS////////////////////////////////////////////
-    // MODIFY THIS FUNCTION AND ADD NEW FUNCTIONS WHEN DATA IS READY PROVIDED BY API'S
 
     public void searchUser(final String parameter, final ArrayList<UserData> userDataArrayList, final ArrayList<Integer> requestStatusList){
         Log.d(TAG, "searchUser: ");
@@ -390,11 +434,7 @@ public class FirebaseDBHelper {
 
             }
         });
-
-
-
     }
-
 
 //////////////////////////////////////SENDING REQUESTS//////////////////////////////////////////////
 
@@ -679,10 +719,15 @@ public class FirebaseDBHelper {
                 Double.parseDouble(ds.child("longitude").getValue().toString()));
 
         ArrayList<String> subCategories = new ArrayList<>();
+        ArrayList<String> attendees = new ArrayList<>();
 
         String[] subCategoriesArray = ds.child("sub-categories").getValue().toString().split(",");
         for (int i = 0; i < subCategoriesArray.length; i++){
             subCategories.add(subCategoriesArray[i]);
+        }
+
+        for(DataSnapshot dataSnapshot : ds.child("attendees").getChildren()){
+            attendees.add(dataSnapshot.getKey());
         }
 
         ActivityModel activityModel = new ActivityModel(ds.child("id").getValue().toString(),
@@ -692,6 +737,7 @@ public class FirebaseDBHelper {
                 ds.child("date").getValue().toString(),
                 ds.child("category").getValue().toString(),
                 subCategories,
+                attendees,
                 ds.child("description").getValue().toString(),
                 ds.child("owner").getValue().toString());
 

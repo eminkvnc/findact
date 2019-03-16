@@ -3,6 +3,7 @@ package com.example.emin.findact;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,6 +22,7 @@ import com.example.emin.findact.APIs.GameModel;
 import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.Firebase.EventLog;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
+import com.example.emin.findact.Firebase.UserData;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -28,6 +31,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
 
@@ -69,7 +73,8 @@ public class DisplayActivityFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        //setHasOptionsMenu(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         if (initMode == INIT_MODE_MOVIE_ACTIVITY){
             movieModel = new MovieModel(getArguments().getBundle("MovieData"));
         }
@@ -111,7 +116,7 @@ public class DisplayActivityFragment extends Fragment {
 
         String activityId;
 
-        public EventLogOnClickListener(String activityId) {
+        EventLogOnClickListener(String activityId) {
             this.activityId = activityId;
         }
 
@@ -457,6 +462,8 @@ public class DisplayActivityFragment extends Fragment {
         TextView activityDate = v.findViewById(R.id.fragment_display_group_date_tv);
         TextView activityCategory = v.findViewById(R.id.fragment_display_group_categoty_tv);
         LinearLayout activitySubCategories = v.findViewById(R.id.fragment_display_group_sub_categoty_ll);
+        Button attendeesButton = v.findViewById(R.id.fragment_display_group_attendees_btn);
+        final ImageView joinImageView = v.findViewById(R.id.fragment_display_group_join_iv);
         TextView activityDescription = v.findViewById(R.id.fragment_display_group_description_tv);
 
         activityLikeImageView = v.findViewById(R.id.fragment_display_group_like_iv);
@@ -520,6 +527,47 @@ public class DisplayActivityFragment extends Fragment {
         activityLikeImageView.setOnClickListener(listenerActivity);
         activityDislikeImageView.setOnClickListener(listenerActivity);
         activityShareImageView.setOnClickListener(listenerActivity);
+
+        final String activityId = activityModel.getActivityId();
+        joinImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                firebaseDBHelper.joinActivity(activityId,firebaseDBHelper.getCurrentUser());
+                joinImageView.setVisibility(View.GONE);
+            }
+        });
+
+        attendeesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final ArrayList<UserData> attendees = new ArrayList<>();
+                firebaseDBHelper.getAttendees(activityModel.getActivityId(), attendees, new OnTaskCompletedListener() {
+                    @Override
+                    public void onTaskCompleted() {
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                UsersListDialog dialog = new UsersListDialog();
+                                Bundle bundle = new Bundle();
+                                bundle.putString("Title","Attendees");
+                                Bundle attendeesBundle = new Bundle();
+                                for(int i = 0; i < attendees.size(); i++){
+                                    attendeesBundle.putBundle(String.valueOf(i),attendees.get(i).UserDatatoBundle());
+                                }
+                                bundle.putBundle("UserDataArrayList",attendeesBundle);
+                                bundle.putIntegerArrayList("StatusArrayList",null);
+                                bundle.putIntegerArrayList("Attendees",null);
+                                dialog.setArguments(bundle);
+                                dialog.show(getActivity().getSupportFragmentManager(),"dialog");
+                            }
+                        },500);
+                    }
+                });
+
+            }
+        });
+
     }
     public void setInitMode(int initMode) {
         this.initMode = initMode;

@@ -90,11 +90,12 @@
                 app:layout_constraintTop_toTopOf="@+id/textView6" />
 
             <Button
-                android:id="@+id/fragment_display_group_participants_btn"
+                android:id="@+id/fragment_display_group_attendees_btn"
+                style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Participants"
+                android:text="Attendees"
                 app:layout_constraintStart_toStartOf="@+id/textView6"
                 app:layout_constraintTop_toBottomOf="@+id/textView6" />
 
@@ -134,7 +135,7 @@
 
             <TextView
                 android:id="@+id/fragment_display_group_description_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
@@ -143,6 +144,16 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/textView7"
                 app:layout_constraintTop_toBottomOf="@+id/textView7" />
+
+            <ImageView
+                android:id="@+id/fragment_display_group_join_iv"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/fragment_display_group_attendees_btn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/fragment_display_group_attendees_btn"
+                app:srcCompat="@drawable/join_activity" />
 
         </android.support.constraint.ConstraintLayout>
     </ScrollView>
@@ -181,7 +192,7 @@
     <com.google.android.gms.maps.MapView
         android:id="@+id/fragment_display_group_mapview"
         android:layout_width="0dp"
-        android:layout_height="150dp"
+        android:layout_height="160dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="4dp"
