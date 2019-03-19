@@ -155,7 +155,7 @@
             </LinearLayout>
 
             <TextView
-                android:id="@+id/list_item_home_page_post_description_tv"
+                android:id="@+id/list_item_home_page_post_share_date_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"

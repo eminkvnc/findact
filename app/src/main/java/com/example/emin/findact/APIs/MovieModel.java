@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class MovieModel {
 
+    private String firebaseId;
     private int movieId;
     private String title;
     private String release_date;
@@ -16,7 +17,8 @@ public class MovieModel {
     private String language;
 
 
-    MovieModel(int movieId,String title, String release_date, ArrayList<String> genre, String vote_average, String poster_path, String overview, String language) {
+    public MovieModel(String firebaseId, int movieId, String title, String release_date, ArrayList<String> genre, String vote_average, String poster_path, String overview, String language) {
+        this.firebaseId = firebaseId;
         this.movieId = movieId;
         this.title = title;
         this.release_date = release_date;
@@ -28,6 +30,7 @@ public class MovieModel {
     }
 
     public MovieModel(Bundle bundle){
+        this.firebaseId = bundle.getString("firebase-id");
         this.movieId = bundle.getInt("movie_id");
         this.title = bundle.getString("title");
         this.release_date = bundle.getString("release_date");
@@ -36,6 +39,10 @@ public class MovieModel {
         this.poster_path = bundle.getString("poster_path");
         this.overview = bundle.getString("overview");
         this.language = bundle.getString("language");
+    }
+
+    public String getFirebaseId() {
+        return firebaseId;
     }
 
     public int getMovieId(){
@@ -72,7 +79,7 @@ public class MovieModel {
 
     public Bundle MovieDataToBundle(){
         Bundle bundle = new Bundle();
-
+        bundle.putString("firebase-id", this.firebaseId);
         bundle.putInt("movie_id",this.movieId);
         bundle.putString("title", this.title);
         bundle.putString("release_date", this.release_date);

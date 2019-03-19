@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.example.emin.findact.APIs.ActivityModel;
 import com.example.emin.findact.APIs.GameModel;
 import com.example.emin.findact.APIs.MovieModel;
+import com.example.emin.findact.APIs.PostModel;
 import com.example.emin.findact.Firebase.EventLog;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
@@ -33,6 +34,7 @@ import com.squareup.picasso.Picasso;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class DisplayActivityFragment extends Fragment {
@@ -126,15 +128,16 @@ public class DisplayActivityFragment extends Fragment {
         @Override
         public void onClick(View v) {
             EventLog eventLog;
+            long time = Calendar.getInstance().getTimeInMillis() + (3600*3*1000);
             switch (v.getId()){
                 case R.id.fragment_display_movie_like_iv:
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                    eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
                             EventLog.EVENT_TYPE_LIKE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_MOVIE);
+                            EventLog.ACTIVITY_TYPE_MOVIE,
+                            movieModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper.isLiked(EventLog.ACTIVITY_TYPE_MOVIE, activityId, isLiked, new OnTaskCompletedListener() {
+                    firebaseDBHelper.isLiked(activityId, isLiked, new OnTaskCompletedListener() {
                         @Override
                         public void onTaskCompleted() {
                             if(isLiked[0]){
@@ -150,13 +153,13 @@ public class DisplayActivityFragment extends Fragment {
                 case R.id.fragment_display_movie_dislike_iv:
                     movieDislikeImageView.setImageResource(R.drawable.dislike_green);
                     movieLikeImageView.setImageResource(R.drawable.like);
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                    eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
                             EventLog.EVENT_TYPE_DISLIKE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_MOVIE);
+                            EventLog.ACTIVITY_TYPE_MOVIE,
+                            movieModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper.isDisliked(EventLog.ACTIVITY_TYPE_MOVIE, activityId, isDisliked, new OnTaskCompletedListener() {
+                    firebaseDBHelper.isDisliked(activityId, isDisliked, new OnTaskCompletedListener() {
                         @Override
                         public void onTaskCompleted() {
                             if(isDisliked[0]){
@@ -169,23 +172,23 @@ public class DisplayActivityFragment extends Fragment {
                     });
                     break;
                 case R.id.fragment_display_movie_share_iv:
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
-                            Calendar.getInstance().getTime().toString(),
+                    eventLog = new EventLog(activityId,
+                            Long.valueOf(time).toString(),
                             EventLog.EVENT_TYPE_SHARE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_MOVIE);
+                            EventLog.ACTIVITY_TYPE_MOVIE,
+                            movieModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
                     break;
                 case R.id.fragment_display_game_like_iv:
                     gameLikeImageView.setImageResource(R.drawable.like_green);
                     gameDislikeImageView.setImageResource(R.drawable.dislike);
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                    eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
                             EventLog.EVENT_TYPE_LIKE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_GAME);
+                            EventLog.ACTIVITY_TYPE_GAME,
+                            gameModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper.isLiked(EventLog.ACTIVITY_TYPE_GAME, activityId, isLiked, new OnTaskCompletedListener() {
+                    firebaseDBHelper.isLiked(activityId, isLiked, new OnTaskCompletedListener() {
                         @Override
                         public void onTaskCompleted() {
                             if(isLiked[0]){
@@ -200,13 +203,13 @@ public class DisplayActivityFragment extends Fragment {
                 case R.id.fragment_display_game_dislike_iv:
                     gameDislikeImageView.setImageResource(R.drawable.dislike_green);
                     gameLikeImageView.setImageResource(R.drawable.like);
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                    eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
                             EventLog.EVENT_TYPE_DISLIKE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_GAME);
+                            EventLog.ACTIVITY_TYPE_GAME,
+                            gameModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper.isDisliked(EventLog.ACTIVITY_TYPE_GAME, activityId, isDisliked, new OnTaskCompletedListener() {
+                    firebaseDBHelper.isDisliked(activityId, isDisliked, new OnTaskCompletedListener() {
                         @Override
                         public void onTaskCompleted() {
                             if(isDisliked[0]){
@@ -219,23 +222,23 @@ public class DisplayActivityFragment extends Fragment {
                     });
                     break;
                 case R.id.fragment_display_game_share_iv:
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
-                            Calendar.getInstance().getTime().toString(),
+                    eventLog = new EventLog(activityId,
+                            Long.valueOf(time).toString(),
                             EventLog.EVENT_TYPE_SHARE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_GAME);
+                            EventLog.ACTIVITY_TYPE_GAME,
+                            gameModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
                     break;
                 case R.id.fragment_display_group_like_iv:
                     activityLikeImageView.setImageResource(R.drawable.like_green);
                     activityDislikeImageView.setImageResource(R.drawable.dislike);
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                    eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
                             EventLog.EVENT_TYPE_LIKE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_ACTIVITY);
+                            EventLog.ACTIVITY_TYPE_ACTIVITY,
+                            activityModel); //Like ve dislike oranına göre rating belirlenecek.
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper.isLiked(EventLog.ACTIVITY_TYPE_ACTIVITY, activityId, isLiked, new OnTaskCompletedListener() {
+                    firebaseDBHelper.isLiked(activityId, isLiked, new OnTaskCompletedListener() {
                         @Override
                         public void onTaskCompleted() {
                             if(isLiked[0]){
@@ -250,13 +253,13 @@ public class DisplayActivityFragment extends Fragment {
                 case R.id.fragment_display_group_dislike_iv:
                     activityDislikeImageView.setImageResource(R.drawable.dislike_green);
                     activityLikeImageView.setImageResource(R.drawable.like);
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
+                    eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
                             EventLog.EVENT_TYPE_DISLIKE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_ACTIVITY);
+                            EventLog.ACTIVITY_TYPE_ACTIVITY,
+                            activityModel); //Like ve dislike oranına göre rating belirlenecek.
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper.isDisliked(EventLog.ACTIVITY_TYPE_ACTIVITY, activityId, isDisliked, new OnTaskCompletedListener() {
+                    firebaseDBHelper.isDisliked(activityId, isDisliked, new OnTaskCompletedListener() {
                         @Override
                         public void onTaskCompleted() {
                             if(isDisliked[0]){
@@ -269,11 +272,11 @@ public class DisplayActivityFragment extends Fragment {
                     });
                     break;
                 case R.id.fragment_display_group_share_iv:
-                    eventLog = new EventLog(UUID.randomUUID().toString(),
-                            Calendar.getInstance().getTime().toString(),
+                    eventLog = new EventLog(activityId,
+                            Long.valueOf(time).toString(),
                             EventLog.EVENT_TYPE_SHARE,
-                            activityId,
-                            EventLog.ACTIVITY_TYPE_ACTIVITY);
+                            EventLog.ACTIVITY_TYPE_ACTIVITY,
+                            activityModel); //Like ve dislike oranına göre rating belirlenecek.
                     firebaseDBHelper.addEventUserLog(eventLog);
                     break;
             }
@@ -319,7 +322,7 @@ public class DisplayActivityFragment extends Fragment {
 
 
         final Boolean[] isLiked = new Boolean[1];
-        firebaseDBHelper.isLiked(EventLog.ACTIVITY_TYPE_MOVIE,String.valueOf(movieModel.getMovieId()),isLiked, new OnTaskCompletedListener() {
+        firebaseDBHelper.isLiked(String.valueOf(movieModel.getFirebaseId()),isLiked, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 if(isLiked[0]){
@@ -331,7 +334,7 @@ public class DisplayActivityFragment extends Fragment {
             }
         });
         final Boolean[] isDisliked = new Boolean[1];
-        firebaseDBHelper.isDisliked(EventLog.ACTIVITY_TYPE_MOVIE,String.valueOf(movieModel.getMovieId()),isDisliked, new OnTaskCompletedListener() {
+        firebaseDBHelper.isDisliked(movieModel.getFirebaseId(),isDisliked, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 if(isDisliked[0]){
@@ -343,7 +346,7 @@ public class DisplayActivityFragment extends Fragment {
             }
         });
 
-        EventLogOnClickListener listenerMovie = new EventLogOnClickListener(String.valueOf(movieModel.getMovieId()));
+        EventLogOnClickListener listenerMovie = new EventLogOnClickListener(movieModel.getFirebaseId());
         movieLikeImageView.setOnClickListener(listenerMovie);
         movieDislikeImageView.setOnClickListener(listenerMovie);
         movieShareImageView.setOnClickListener(listenerMovie);
@@ -402,7 +405,7 @@ public class DisplayActivityFragment extends Fragment {
         });
 
         final Boolean[] isLiked = new Boolean[1];
-        firebaseDBHelper.isLiked(EventLog.ACTIVITY_TYPE_GAME,String.valueOf(gameModel.getGameId()),isLiked, new OnTaskCompletedListener() {
+        firebaseDBHelper.isLiked(String.valueOf(gameModel.getFirebaseId()),isLiked, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 if(isLiked[0]){
@@ -414,7 +417,7 @@ public class DisplayActivityFragment extends Fragment {
             }
         });
         final Boolean[] isDisliked = new Boolean[1];
-        firebaseDBHelper.isDisliked(EventLog.ACTIVITY_TYPE_GAME,String.valueOf(gameModel.getGameId()),isDisliked, new OnTaskCompletedListener() {
+        firebaseDBHelper.isDisliked(gameModel.getFirebaseId(),isDisliked, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 if(isDisliked[0]){
@@ -426,7 +429,7 @@ public class DisplayActivityFragment extends Fragment {
             }
         });
 
-        EventLogOnClickListener listenerGame = new EventLogOnClickListener(String.valueOf(gameModel.getGameId()));
+        EventLogOnClickListener listenerGame = new EventLogOnClickListener(gameModel.getFirebaseId());
         gameLikeImageView.setOnClickListener(listenerGame);
         gameDislikeImageView.setOnClickListener(listenerGame);
         gemeShareImageView.setOnClickListener(listenerGame);
@@ -499,7 +502,7 @@ public class DisplayActivityFragment extends Fragment {
         });
 
         final Boolean[] isLiked = new Boolean[1];
-        firebaseDBHelper.isLiked(EventLog.ACTIVITY_TYPE_ACTIVITY,String.valueOf(activityModel.getActivityId()),isLiked, new OnTaskCompletedListener() {
+        firebaseDBHelper.isLiked(activityModel.getActivityId(),isLiked, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 if(isLiked[0]){
@@ -511,7 +514,7 @@ public class DisplayActivityFragment extends Fragment {
             }
         });
         final Boolean[] isDisliked = new Boolean[1];
-        firebaseDBHelper.isDisliked(EventLog.ACTIVITY_TYPE_ACTIVITY,String.valueOf(activityModel.getActivityId()),isDisliked, new OnTaskCompletedListener() {
+        firebaseDBHelper.isDisliked(activityModel.getActivityId(),isDisliked, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 if(isDisliked[0]){

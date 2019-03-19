@@ -1,6 +1,7 @@
 package com.example.emin.findact.Adapters;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
@@ -14,25 +15,51 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.emin.findact.APIs.ActivityModel;
+import com.example.emin.findact.APIs.GameModel;
+import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.APIs.PostModel;
 import com.example.emin.findact.DisplayActivityFragment;
+import com.example.emin.findact.Firebase.UserData;
 import com.example.emin.findact.ProfileFragment;
 import com.example.emin.findact.R;
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapter.PostListItemViewHolder> {
 
 
     private Context context;
     private ArrayList<PostModel> postModelArrayList;
+//    private ArrayList<GameModel> gameModelArrayList;
+//    private ArrayList<MovieModel> movieModelArrayList;
+//    private ArrayList<ActivityModel> activityModelArrayList;
+//    private ArrayList<UserData> userModelArrayList;
     private String TAG = "PostListItemAdapter";
+
+//    public PostListItemAdapter(Context context, ArrayList<GameModel> gameModelArrayList,
+//                               ArrayList<MovieModel> movieModelArrayList,
+//                               ArrayList<ActivityModel> activityModelArrayList,
+//                               ArrayList<UserData> userModelArrayList){
+//
+//        this.context = context;
+//        this.gameModelArrayList = gameModelArrayList;
+//        this.movieModelArrayList = movieModelArrayList;
+//        this.activityModelArrayList = activityModelArrayList;
+//        this.userModelArrayList = userModelArrayList;
+//
+//    }
 
     public PostListItemAdapter(Context context, ArrayList<PostModel> postModelArrayList) {
         this.context = context;
         this.postModelArrayList = postModelArrayList;
+
     }
+
 
     @NonNull
     @Override
@@ -43,17 +70,50 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
 
     @Override
     public void onBindViewHolder(@NonNull PostListItemViewHolder postListItemViewHolder, int i) {
+
         PostModel postModel = postModelArrayList.get(i);
 
-        Picasso.get().load(postModel.getUserPicture()).into(postListItemViewHolder.userPicture);
-        Picasso.get().load(postModel.getPostImageUri()).into(postListItemViewHolder.postImage);
+        CustomListener customListener = new CustomListener(postModel);
+        postListItemViewHolder.postCardview.setOnClickListener(customListener);
+        postListItemViewHolder.userPictureCardview.setOnClickListener(customListener);
 
-        postListItemViewHolder.username.setText(postModel.getUsername());
-        postListItemViewHolder.postTitle.setText(postModel.getPostTitle());
-        postListItemViewHolder.date.setText(postModel.getDate());
-        postListItemViewHolder.rating.setText(postModel.getRating());
-        postListItemViewHolder.category.setText(postModel.getCategory());
-        postListItemViewHolder.description.setText(postModel.getCategory());
+        Date date = new Date(postModel.getShareDate() * 1000L);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm' 'dd.MM.yyyy");
+
+        postListItemViewHolder.username.setText(postModel.getUserModel().getUsername());
+        Picasso.get().load(postModel.getUserModel().getProfilePictureUri()).into(postListItemViewHolder.userPicture);
+        postListItemViewHolder.shareDate.setText(simpleDateFormat.format(date));
+        switch (postModel.getModelType()) {
+            case "Game":
+
+                Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+postModel.getGameModel().getImage_id()+".jpg")).into(postListItemViewHolder.postImage);
+
+                postListItemViewHolder.postTitle.setText(postModel.getGameModel().getName());
+                postListItemViewHolder.date.setText(postModel.getGameModel().getRelease_date());
+                postListItemViewHolder.rating.setText(postModel.getGameModel().getRating().toString());
+                postListItemViewHolder.category.setText(postModel.getModelType());
+                break;
+            case "Movie":
+
+                Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+postModel.getMovieModel().getPoster_path())).into(postListItemViewHolder.postImage);
+
+                postListItemViewHolder.postTitle.setText(postModel.getMovieModel().getTitle());
+                postListItemViewHolder.date.setText(postModel.getMovieModel().getRelease_date());
+                postListItemViewHolder.rating.setText(postModel.getMovieModel().getVote_average());
+                postListItemViewHolder.category.setText(postModel.getModelType());
+
+                break;
+            case "Activity":
+
+                Picasso.get().load(postModel.getActivityModel().getImageUri()).into(postListItemViewHolder.postImage);
+
+                postListItemViewHolder.postTitle.setText(postModel.getMovieModel().getTitle());
+                postListItemViewHolder.date.setText(postModel.getMovieModel().getRelease_date());
+                postListItemViewHolder.rating.setText(postModel.getMovieModel().getVote_average());
+                postListItemViewHolder.category.setText(postModel.getModelType());
+
+                break;
+        }
     }
 
     @Override
@@ -70,7 +130,7 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
         TextView date;
         TextView rating;
         TextView category;
-        TextView description;
+        TextView shareDate;
         CardView userPictureCardview;
         CardView postCardview;
 
@@ -85,7 +145,7 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
             date = view.findViewById(R.id.list_item_home_page_release_date_tv);
             rating = view.findViewById(R.id.list_item_home_page_rating_tv);
             category = view.findViewById(R.id.list_item_home_page_post_category_tv);
-            description = view.findViewById(R.id.list_item_home_page_post_description_tv);
+            shareDate = view.findViewById(R.id.list_item_home_page_post_share_date_tv);
             userPictureCardview = view.findViewById(R.id.list_item_home_page_user_picture_cv);
             postCardview = view.findViewById(R.id.list_item_home_page_cv);
 
@@ -107,16 +167,20 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
             if (view.getId() == R.id.list_item_home_page_cv){
                 displayActivityFragment = new DisplayActivityFragment();
                 Bundle bundle = new Bundle();
-                bundle.putBundle("PostData",postModel.PostDataToBundle() );
-                displayActivityFragment.setArguments(bundle);
-                switch (postModel.getCategory()) {
+                switch (postModel.getModelType()) {
                     case "Game":
+                        bundle.putBundle("GameData",postModel.getGameModel().GameDataToBundle());
+                        displayActivityFragment.setArguments(bundle);
                         displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_GAME_ACTIVITY);
                         break;
                     case "Movie":
+                        bundle.putBundle("MovieData",postModel.getMovieModel().MovieDataToBundle());
+                        displayActivityFragment.setArguments(bundle);
                         displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_MOVIE_ACTIVITY);
                         break;
-                    case "Group":
+                    case "Activity":
+                        bundle.putBundle("ActivityData",postModel.getActivityModel().activityDataToBundle());
+                        displayActivityFragment.setArguments(bundle);
                         displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_GROUP_ACTIVITY);
                         break;
                 }

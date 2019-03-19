@@ -10,6 +10,9 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.example.emin.findact.APIs.ActivityModel;
+import com.example.emin.findact.APIs.GameModel;
+import com.example.emin.findact.APIs.MovieModel;
+import com.example.emin.findact.APIs.PostModel;
 import com.example.emin.findact.OnTaskCompletedListener;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
@@ -34,6 +37,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
+
 import javax.net.ssl.HttpsURLConnection;
 
 
@@ -54,6 +58,12 @@ public class FirebaseDBHelper {
     public static final String FIREBASE_DB_CHILD_USER_LOG = "Logs";
     public static final String FIREBASE_DB_CHILD_USER_LOG_INITIAL = "Initial";
     public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT = "Event";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE = "Share";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_LIKE = "Like";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_DISLIKE = "Dislike";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_MOVIE = "Movie";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_GAME = "Game";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_ACTIVITY = "Activity";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWS = "Follows";
     public static final String FIREBASE_DB_CHILD_USER_REQUESTS = "Requests";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWERS = "Followers";
@@ -80,7 +90,7 @@ public class FirebaseDBHelper {
         storageReference = FirebaseStorage.getInstance().getReference();
     }
 
-/////////////////////////////////////////ADD DATA///////////////////////////////////////////////////
+/////////////////////////////////////////USER DATA//////////////////////////////////////////////////
 
     public void addUserDetail(final UserData userData, boolean isImageUpdated){
 
@@ -135,7 +145,7 @@ public class FirebaseDBHelper {
         });
     }
 
-//////////////////////////////////////////ADD LOG///////////////////////////////////////////////////
+///////////////////////////////////////////LOGS/////////////////////////////////////////////////////
 
     public void addInitialUserLog(InitialLog initialLog){
 
@@ -154,92 +164,150 @@ public class FirebaseDBHelper {
                 .child(getCurrentUser())
                 .child(FIREBASE_DB_CHILD_USER_LOG)
                 .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
-                .child(eventLog.getActivityType())
-                .child(eventLog.getEventType())
-                .child(eventLog.getActivityId());
+                .child(eventLog.getId());
 
-        if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_LIKE)){
-            final Boolean[] isLiked = new Boolean[1];
-            isLiked(eventLog.getActivityType(), eventLog.getActivityId(), isLiked, new OnTaskCompletedListener() {
-                @Override
-                public void onTaskCompleted() {
-                    if(isLiked[0]){
-                        databaseReference
-                                .child(FIREBASE_DB_CHILD_USERS)
-                                .child(getCurrentUser())
-                                .child(FIREBASE_DB_CHILD_USER_LOG)
-                                .child("Event")
-                                .child(eventLog.getActivityType())
-                                .child(EventLog.EVENT_TYPE_LIKE)
-                                .child(eventLog.getActivityId()).removeValue();
-                    }else {
-                        reference.child("id").setValue(eventLog.getId());
-                        reference.child("date").setValue(eventLog.getDate());
-                        reference.child("activity-id").setValue(eventLog.getActivityId());
-                    }
+        switch (eventLog.getActivityType()){
+
+            case EventLog.ACTIVITY_TYPE_MOVIE:
+
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_LIKE)){
+                    final Boolean[] isLiked = new Boolean[1];
+                    isLiked(eventLog.getId(), isLiked, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            if(isLiked[0]){
+                                reference.child("like").setValue(false);
+                                reference.child("dislike").setValue(false);
+                            }else {
+                                addMovieModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getMovieModel() );
+                                reference.child("dislike").setValue(false);
+                            }
+                        }
+                    });
                 }
-            });
-            databaseReference
-                    .child(FIREBASE_DB_CHILD_USERS)
-                    .child(getCurrentUser())
-                    .child(FIREBASE_DB_CHILD_USER_LOG)
-                    .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
-                    .child(eventLog.getActivityType())
-                    .child(EventLog.EVENT_TYPE_DISLIKE)
-                    .child(eventLog.getActivityId()).removeValue();
+
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_DISLIKE)){
+                    final Boolean[] isDisliked = new Boolean[1];
+                    isDisliked(eventLog.getId(), isDisliked, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            if(isDisliked[0]){
+                                reference.child("like").setValue(false);
+                                reference.child("dislike").setValue(false);
+                            }else {
+                                addMovieModelLog(reference, EventLog.EVENT_TYPE_DISLIKE, eventLog.getMovieModel() );
+                                reference.child("like").setValue(false);
+                            }
+                        }
+                    });
+                }
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
+                    addMovieModelLog(reference, EventLog.EVENT_TYPE_SHARE, eventLog.getMovieModel() );
+                }
+
+                break;
+
+            case EventLog.ACTIVITY_TYPE_GAME:
+
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_LIKE)){
+                    final Boolean[] isLiked = new Boolean[1];
+                    isLiked(eventLog.getId(), isLiked, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            if(isLiked[0]){
+                                reference.child("like").setValue(false);
+                                reference.child("dislike").setValue(false);
+                            }else {
+                                addGameModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getGameModel() );
+                                reference.child("dislike").setValue(false);
+                            }
+                        }
+                    });
+                }
+
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_DISLIKE)){
+                    final Boolean[] isDisliked = new Boolean[1];
+                    isDisliked(eventLog.getId(), isDisliked, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            if(isDisliked[0]){
+                                reference.child("like").setValue(false);
+                                reference.child("dislike").setValue(false);
+                            }else {
+                                addGameModelLog(reference, EventLog.EVENT_TYPE_DISLIKE, eventLog.getGameModel() );
+                                reference.child("like").setValue(false);
+                            }
+                        }
+                    });
+                }
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
+                    addGameModelLog(reference, EventLog.EVENT_TYPE_SHARE, eventLog.getGameModel() );
+                }
+
+                break;
+
+            case EventLog.ACTIVITY_TYPE_ACTIVITY:
+
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_LIKE)){
+                    final Boolean[] isLiked = new Boolean[1];
+                    isLiked(eventLog.getId(), isLiked, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            if(isLiked[0]){
+                                reference.child("like").setValue(false);
+                                reference.child("dislike").setValue(false);
+                            }else {
+                                addActivityModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getActivityModel() );
+                                reference.child("dislike").setValue(false);
+                            }
+                        }
+                    });
+                }
+
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_DISLIKE)){
+                    final Boolean[] isDisliked = new Boolean[1];
+                    isDisliked(eventLog.getId(), isDisliked, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            if(isDisliked[0]){
+                                reference.child("like").setValue(false);
+                                reference.child("dislike").setValue(false);
+                            }else {
+                                addActivityModelLog(reference, EventLog.EVENT_TYPE_DISLIKE, eventLog.getActivityModel() );
+                                reference.child("like").setValue(false);
+                            }
+                        }
+                    });
+                }
+                if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
+                    addActivityModelLog(reference, EventLog.EVENT_TYPE_SHARE, eventLog.getActivityModel() );
+                }
+
+                break;
+
         }
 
-        if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_DISLIKE)){
-            final Boolean[] isDisliked = new Boolean[1];
-            isDisliked(eventLog.getActivityType(), eventLog.getActivityId(), isDisliked, new OnTaskCompletedListener() {
-                @Override
-                public void onTaskCompleted() {
-                    if(isDisliked[0]){
-                        databaseReference
-                                .child(FIREBASE_DB_CHILD_USERS)
-                                .child(getCurrentUser())
-                                .child(FIREBASE_DB_CHILD_USER_LOG)
-                                .child("Event")
-                                .child(eventLog.getActivityType())
-                                .child(EventLog.EVENT_TYPE_DISLIKE)
-                                .child(eventLog.getActivityId()).removeValue();
-                    }else {
-                        reference.child("id").setValue(eventLog.getId());
-                        reference.child("date").setValue(eventLog.getDate());
-                        reference.child("activity-id").setValue(eventLog.getActivityId());
-                    }
-                }
-            });
-        databaseReference
-                .child(FIREBASE_DB_CHILD_USERS)
-                .child(getCurrentUser())
-                .child(FIREBASE_DB_CHILD_USER_LOG)
-                .child("Event")
-                .child(eventLog.getActivityType())
-                .child(EventLog.EVENT_TYPE_LIKE)
-                .child(eventLog.getActivityId()).removeValue();
-        }
-        if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
-            reference.child("id").setValue(eventLog.getId());
-            reference.child("date").setValue(eventLog.getDate());
-            reference.child("activity-id").setValue(eventLog.getActivityId());
-        }
     }
 
-    public void isLiked(final String activityType, final String activityId, final Boolean[] eventTypeStatus, final OnTaskCompletedListener listener){
+    public void isLiked(final String firebaseId, final Boolean[] eventTypeStatus, final OnTaskCompletedListener listener){
+        final String path = FIREBASE_DB_CHILD_USERS+"/"+getCurrentUser()+"/"+FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+firebaseId+"/"+"like";
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(dataSnapshot.child(FIREBASE_DB_CHILD_USERS)
-                        .child(getCurrentUser())
-                        .child(FIREBASE_DB_CHILD_USER_LOG)
-                        .child("Event")
-                        .child(activityType)
-                        .child(EventLog.EVENT_TYPE_LIKE)
-                        .child(activityId).exists()){
-                    eventTypeStatus[0] = true;
-                }else {
+                if(dataSnapshot.hasChild(path)){
+                    if( dataSnapshot
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(getCurrentUser())
+                            .child(FIREBASE_DB_CHILD_USER_LOG)
+                            .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
+                            .child(firebaseId).child("like").getValue().equals(true)){
+                        eventTypeStatus[0] = true;
+                    }
+                    else {
+                        eventTypeStatus[0] = false;
+                    }
+                }
+                else {
                     eventTypeStatus[0] = false;
                 }
                 listener.onTaskCompleted();
@@ -253,20 +321,25 @@ public class FirebaseDBHelper {
 
     }
 
-    public void isDisliked(final String activityType, final String activityId, final Boolean[] eventTypeStatus, final OnTaskCompletedListener listener){
+    public void isDisliked(final String firebaseId, final Boolean[] eventTypeStatus, final OnTaskCompletedListener listener){
+        final String path = FIREBASE_DB_CHILD_USERS+"/"+getCurrentUser()+"/"+FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+firebaseId+"/"+"dislike";
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(dataSnapshot.child(FIREBASE_DB_CHILD_USERS)
-                        .child(getCurrentUser())
-                        .child(FIREBASE_DB_CHILD_USER_LOG)
-                        .child("Event")
-                        .child(activityType)
-                        .child(EventLog.EVENT_TYPE_DISLIKE)
-                        .child(activityId).exists()){
-                    eventTypeStatus[0] = true;
-                }else {
+                if(dataSnapshot.hasChild(path)){
+                    if( dataSnapshot
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(getCurrentUser())
+                            .child(FIREBASE_DB_CHILD_USER_LOG)
+                            .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
+                            .child(firebaseId).child("dislike").getValue().equals(true)){
+                        eventTypeStatus[0] = true;
+                    }
+                    else {
+                        eventTypeStatus[0] = false;
+                    }
+                }
+                else {
                     eventTypeStatus[0] = false;
                 }
                 listener.onTaskCompleted();
@@ -279,8 +352,83 @@ public class FirebaseDBHelper {
         });
     }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////BURAYI DÜZENLE + HER REQUEST'TE YENİ LOG EKLENİYOR ///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////ADD ACTIVITY//////////////////////////////////////////////
+
+    public void getPosts(final ArrayList<PostModel> postModelArrayList, OnTaskCompletedListener listener){
+
+        postModelArrayList.clear();
+        final ArrayList<UserData> userDataArrayList = new ArrayList<>();
+        final ArrayList<Integer> requestStatusList = new ArrayList<>();
+        getFollowing(userDataArrayList,requestStatusList, new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                for(int i = 0; i < userDataArrayList.size(); i++){
+                    final UserData userData = userDataArrayList.get(i);
+                    final int requestStatus = requestStatusList.get(i);
+                    databaseReference
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(userDataArrayList.get(i).getUuidString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String moviePath = FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_MOVIE+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE;
+                            String gamePath = FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_GAME+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE;
+                            String activityPath = FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_ACTIVITY+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE;
+                            if(dataSnapshot.hasChild(moviePath)){
+                                for(DataSnapshot dsMovie :dataSnapshot
+                                        .child(FIREBASE_DB_CHILD_USER_LOG)
+                                        .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
+                                        .child(FIREBASE_DB_CHILD_USER_LOG_EVENT_MOVIE)
+                                        .child(FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE)
+                                        .getChildren()){
+
+                                    String firebaseId = dsMovie.child("title").getValue().toString();
+                                    int activityId = Integer.parseInt(dsMovie.child("activity-id").getValue().toString());
+                                    String title = dsMovie.child("title").getValue().toString();
+                                    String releaseDate = dsMovie.child("release-date").getValue().toString();
+
+                                    String[] genre = dsMovie.child("title").getValue().toString().split(",");
+                                    ArrayList<String> genreList = new ArrayList<>();
+                                    for(int j = 0; j < genre.length; j++){
+                                        genreList.add(genre[j]);
+                                    }
+                                    String voteAvarage = dsMovie.child("vote-avarage").getValue().toString();
+                                    String posterPath = dsMovie.child("poster-path").getValue().toString();
+                                    String overview = dsMovie.child("overview").getValue().toString();
+                                    String language = dsMovie.child("language").getValue().toString();
+                                    String shareDate = dsMovie.child("date").getValue().toString();
+                                    MovieModel movieModel = new MovieModel(firebaseId, activityId, title, releaseDate, genreList, voteAvarage, posterPath, overview, language);
+                                    PostModel postModel = new PostModel(userData, null, movieModel, null, requestStatus, PostModel.MODEL_TYPE_MOVIE, Long.getLong(shareDate));
+                                    postModelArrayList.add(postModel);
+                                }
+
+                            }
+                            if(dataSnapshot.hasChild(gamePath)){
+
+
+                            }
+                            if(dataSnapshot.hasChild(activityPath)){
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+                }
+
+            }
+        });
+
+    }
+
+
+/////////////////////////////////////////////ACTIVITY///////////////////////////////////////////////
 
     public void addGroupActivity(final ActivityModel activityModel){
 
@@ -647,6 +795,61 @@ public class FirebaseDBHelper {
 
     }
 
+    public void getFollowing(final ArrayList<UserData> userList, final ArrayList<Integer> requestStatusList,  final OnTaskCompletedListener listener) {
+
+        userList.clear();
+        requestStatusList.clear();
+        DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser());
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_FOLLOWING)){
+                    Log.d(TAG, "onDataChange: has child:");
+                    for(DataSnapshot ds : dataSnapshot.child(FIREBASE_DB_CHILD_USER_FOLLOWS).child(FIREBASE_DB_CHILD_USER_FOLLOWING).getChildren()){
+                        final String username = ds.getKey();
+                        if(username!=null) {
+                            databaseReference
+                                    .child(FIREBASE_DB_CHILD_USERS)
+                                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            for(DataSnapshot ds2 : dataSnapshot.getChildren()){
+                                                if(ds2.getKey().equals(username)) {
+                                                    userList.add(mapUserData(ds2));
+                                                    if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
+                                                        requestStatusList.add(Integer.parseInt(ds2
+                                                                .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                                                                .child(FIREBASE_DB_CHILD_USER_REQUESTS)
+                                                                .child(getCurrentUser())
+                                                                .child("status").getValue().toString()));
+
+                                                    }else{
+                                                        requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
+                                                    }
+
+                                                }
+                                            }
+                                        }
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+    }
+
     public void getFollowers(String user, final ArrayList<UserData> followersList, final ArrayList<Integer> requestStatusList){
         followersList.clear();
         requestStatusList.clear();
@@ -744,6 +947,101 @@ public class FirebaseDBHelper {
         return activityModel;
     }
 
+
+
+    private void addMovieModelLog(DatabaseReference reference, String eventType, MovieModel movieModel){
+        String genres = "";
+        for(int i = 0; i < movieModel.getGenre().size(); i++){
+            genres+=movieModel.getGenre().get(i);
+            if(i != movieModel.getGenre().size()-1){
+                genres+=",";
+            }
+        }
+        reference.child("activity-id").setValue(movieModel.getMovieId());
+        reference.child("title").setValue(movieModel.getTitle());
+        reference.child("release-date").setValue(movieModel.getRelease_date());
+        reference.child("genres").setValue(genres);
+        reference.child("rating").setValue(movieModel.getVote_average());
+        reference.child("image-path").setValue(movieModel.getPoster_path());
+        reference.child("language").setValue(movieModel.getLanguage());
+        reference.child("overview").setValue(movieModel.getOverview());
+
+        if(eventType.equals(EventLog.EVENT_TYPE_LIKE)){
+            reference.child("like").setValue(true);
+        }
+        if(eventType.equals(EventLog.EVENT_TYPE_DISLIKE)){
+            reference.child("dislike").setValue(true);
+        }
+        if(eventType.equals(EventLog.EVENT_TYPE_SHARE)){
+            reference.child("share").setValue(true);
+            reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
+        }
+        reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_MOVIE);
+    }
+
+    private void addGameModelLog(DatabaseReference reference, String eventType, GameModel gameModel){
+        String genres = "";
+        for(int i = 0; i < gameModel.getGenre().size(); i++){
+            genres+=gameModel.getGenre().get(i);
+            if(i != gameModel.getGenre().size()-1){
+                genres+=",";
+            }
+        }
+        String modes = "";
+        for(int i = 0; i < gameModel.getGame_mode_name().size(); i++){
+            modes+=gameModel.getGame_mode_name().get(i);
+            if(i != gameModel.getGame_mode_name().size()-1){
+                modes+=",";
+            }
+        }
+        String platforms = "";
+        for(int i = 0; i < gameModel.getPlatform_name().size(); i++){
+            platforms+=gameModel.getPlatform_name().get(i);
+            if(i != gameModel.getPlatform_name().size()-1){
+                platforms+=",";
+            }
+        }
+
+        reference.child("activity-id").setValue(gameModel.getGameId());
+        reference.child("title").setValue(gameModel.getName());
+        reference.child("release-date").setValue(gameModel.getRelease_date());
+        reference.child("genres").setValue(genres);
+        reference.child("modes").setValue(modes);
+        reference.child("platforms").setValue(platforms);
+        reference.child("rating").setValue(gameModel.getRating());
+        reference.child("image-path").setValue(gameModel.getImage_id());
+        reference.child("video-id").setValue(gameModel.getVideo_id());
+        reference.child("popularity").setValue(gameModel.getPopularity());
+        reference.child("overview").setValue(gameModel.getSummary());
+
+        if(eventType.equals(EventLog.EVENT_TYPE_LIKE)){
+            reference.child("like").setValue(true);
+        }
+        if(eventType.equals(EventLog.EVENT_TYPE_DISLIKE)){
+            reference.child("dislike").setValue(true);
+        }
+        if(eventType.equals(EventLog.EVENT_TYPE_SHARE)){
+            reference.child("share").setValue(true);
+            reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
+        }
+        reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_GAME);
+    }
+
+    private void addActivityModelLog(DatabaseReference reference, String eventType, ActivityModel activityModel){
+
+        reference.child("activity-id").setValue(activityModel.getActivityId());
+        if(eventType.equals(EventLog.EVENT_TYPE_LIKE)){
+            reference.child("like").setValue(true);
+        }
+        if(eventType.equals(EventLog.EVENT_TYPE_DISLIKE)){
+            reference.child("dislike").setValue(true);
+        }
+        if(eventType.equals(EventLog.EVENT_TYPE_SHARE)){
+            reference.child("share").setValue(true);
+            reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
+        }
+        reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_ACTIVITY);
+    }
 
 
     public String getCurrentUser(){

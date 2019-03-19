@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.UUID;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -34,6 +35,8 @@ public class IGDbAPI {
     private static String whereMode = " game_modes = ";
     private static String limit_offset = "limit 50;offset "; // request atarken ; koymayı unutma
     private static String order = "sort popularity desc;";
+
+    private static String whereId = "where id = "; // request atarken sonuna ; koy
 
     private static String user_key = "user-key";
     private static String key = "2bd597197d5320a9a882cac6123f52eb";
@@ -75,6 +78,22 @@ public class IGDbAPI {
         DownloadData downloadData = new DownloadData(gameModelArrayList, listener, params);
         downloadData.execute(gameUrl);
 
+    }
+
+    public void getGamesById(ArrayList<Integer> idList, final ArrayList<GameModel> gameModelArrayList, final OnTaskCompletedListener listener){
+        gameModelArrayList.clear();
+        String ids = "";
+        if (idList.size() < 50){
+            for (int i = 0; i < idList.size(); i++){
+                ids += idList.get(i);
+                if (idList.size()-1 != i){
+                    ids += ",";
+                }
+            }
+        }
+        String params = fields + whereId + "("+ids+");"+ limit_offset + "0";
+        DownloadData downloadData = new DownloadData(gameModelArrayList, listener, params);
+        downloadData.execute(gameUrl);
     }
 
     public void searchByGenreAndModeName(ArrayList<String> selectedGenres, ArrayList<String> selectedMode,final ArrayList<GameModel> gameModelArrayList,final OnTaskCompletedListener listener){
@@ -402,7 +421,7 @@ public class IGDbAPI {
                 popularity = 0.0;
             }
 
-            gameModel = new GameModel(gameId, gameName, genre_list, release_date, summary, image_id, game_mode_name_list,
+            gameModel = new GameModel(UUID.randomUUID().toString(), gameId, gameName, genre_list, release_date, summary, image_id, game_mode_name_list,
                     rating, platform_list, video_id, popularity);
 
 

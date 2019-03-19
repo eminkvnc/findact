@@ -1,95 +1,87 @@
 package com.example.emin.findact.APIs;
 
-import android.net.Uri;
 import android.os.Bundle;
+
+import com.example.emin.findact.Firebase.FirebaseDBHelper;
+import com.example.emin.findact.Firebase.UserData;
 
 public class PostModel {
 
-    private int postId;
-    private String postTitle;
-    private String username;
-    private Uri userPictureUri;
+    public static String MODEL_TYPE_MOVIE = "Movie";
+    public static String MODEL_TYPE_GAME = "Game";
+    public static String MODEL_TYPE_ACTIVTY = "Activity";
 
-    private Uri postImageUri;
-    private String rating;
-    private String description;
-    private String date;
-    private String category;
 
-    public PostModel(int postId, String postTitle, String username, Uri userPictureUri, Uri postImageUri, String rating, String description, String date, String category) {
-        this.postId = postId;
-        this.postTitle = postTitle;
-        this.username = username;
-        this.userPictureUri = userPictureUri;
-        this.postImageUri = postImageUri;
-        this.rating = rating;
-        this.description = description;
-        this.date = date;
-        this.category = category;
+    // #############################    KULLANILMAYABİLİR   ########################
+
+    private UserData userModel;
+    private GameModel gameModel;
+    private MovieModel movieModel;
+    private ActivityModel activityModel;
+    private int requestStatus;
+    private String modelType;
+    private Long shareDate;
+
+    public PostModel(UserData userModel, GameModel gameModel, MovieModel movieModel, ActivityModel activityModel, int requestStatus, String modelType, Long shareDate) {
+        this.userModel = userModel;
+        this.gameModel = gameModel;
+        this.movieModel = movieModel;
+        this.activityModel = activityModel;
+        this.requestStatus = requestStatus;
+        this.modelType = modelType;
+        this.shareDate = shareDate;
     }
 
     public PostModel(Bundle bundle){
-        this.postId = bundle.getInt("postId");
-        this.postTitle = bundle.getString("postTitle");
-        this.username = bundle.getString("username");
-        this.userPictureUri = Uri.parse(bundle.getString("userPictureUri"));
-        this.postImageUri = Uri.parse(bundle.getString("postImageUri"));
-        this.rating = bundle.getString("rating");
-        this.description = bundle.getString("description");
-        this.date = bundle.getString("date");
-        this.category = bundle.getString("category");
+        this.userModel = bundle.getParcelable("UserModel");
+        this.gameModel = bundle.getParcelable("GameData");
+        this.movieModel = bundle.getParcelable("MovieData");
+        this.activityModel = bundle.getParcelable("ActivityData");
+        this.requestStatus = bundle.getInt("RequestStatus");
+        this.modelType = bundle.getString("modelType");
+        this.shareDate = bundle.getLong("shareDate");
     }
 
-    public Bundle PostDataToBundle(){
+    public Bundle PostModelToBundle(){
         Bundle bundle = new Bundle();
 
-        bundle.putInt("postId", this.postId);
-        bundle.putString("postTitle",this.postTitle );
-        bundle.putString("username",this.username );
-        bundle.putString("userPictureUri",this.userPictureUri.toString() );
-        bundle.putString("postImageUri", this.postImageUri.toString());
-        bundle.putString("rating", this.rating );
-        bundle.putString("description",this.description );
-        bundle.putString("date",this.date );
-        bundle.putString("category", this.category);
-
+        bundle.putParcelable("GameData",this.gameModel.GameDataToBundle());
+        bundle.putParcelable("MovieData", this.movieModel.MovieDataToBundle());
+        bundle.putParcelable("ActivityData", this.activityModel.activityDataToBundle());
+        bundle.putParcelable("UserModel", this.userModel.UserDatatoBundle() );
+        bundle.putInt("RequestStatus", this.requestStatus );
+        bundle.putString("modelType",this.modelType);
+        bundle.putLong("shareDate",this.shareDate );
         return bundle;
     }
 
-    public int getPostId() {
-        return postId;
+    public GameModel getGameModel() {
+        return gameModel;
     }
 
-    public String getPostTitle() {
-        return postTitle;
+    public MovieModel getMovieModel() {
+        return movieModel;
     }
 
-    public String getUsername() {
-        return username;
+    public ActivityModel getActivityModel() {
+        return activityModel;
     }
 
-    public Uri getUserPicture() {
-        return userPictureUri;
+    public UserData getUserModel() {
+        return userModel;
     }
 
-    public String getRating() {
-        return rating;
+    public int getRequestStatus() {
+        return requestStatus;
     }
 
-    public String getDescription() {
-        return description;
+    public String getModelType() {
+        return modelType;
     }
 
-    public String getDate() {
-        return date;
+    public Long getShareDate() {
+        return shareDate;
     }
 
-    public String getCategory() {
-        return category;
-    }
-
-    public Uri getPostImageUri() {
-        return postImageUri;
-    }
 
 }

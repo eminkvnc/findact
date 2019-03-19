@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -227,7 +228,7 @@ public class TMDbAPI {
                             release_date = date[2] + "." + date[1] + "." + date[0];
                         }
 
-                        MovieModel movieModel = new MovieModel(movieId, title, release_date, genre, vote_average.toString(), poster_path, overview, language);
+                        MovieModel movieModel = new MovieModel(UUID.randomUUID().toString(), movieId, title, release_date, genre, vote_average.toString(), poster_path, overview, language);
                         mMovieModelArrayList.add(movieModel);
                     }
                 }

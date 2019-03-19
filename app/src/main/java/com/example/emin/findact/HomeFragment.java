@@ -10,9 +10,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.emin.findact.APIs.PostModel;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 public class HomeFragment extends Fragment {
 
     private View v;
+    private ArrayList<PostModel> postModelArrayList;
 
     public HomeFragment() {
 
@@ -21,6 +28,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        postModelArrayList = new ArrayList<>();
         setHasOptionsMenu(true);
     }
 
@@ -37,9 +45,15 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         v = inflater.inflate(R.layout.fragment_home,container,false);
-
+        Collections.sort(postModelArrayList, new Comparator<PostModel>() {
+            @Override
+            public int compare(PostModel postModel, PostModel t1) {
+                return postModel.getShareDate().intValue() - t1.getShareDate().intValue();
+            }
+        });
 
         return v;
     }
+
 
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class GameModel {
 
+    private String firebaseId;
     private int gameId;
     private String name;
     private ArrayList<String> genre;
@@ -18,10 +19,11 @@ public class GameModel {
     private String video_id;
     private Double popularity;
 
-    public GameModel(int gameId,String name,ArrayList<String>  genre, String release_date,
-                     String summary, String image_id, ArrayList<String>  game_mode_name,
-                     Double rating, ArrayList<String>  platform_name, String video_id,
+    public GameModel(String firebaseId, int gameId, String name, ArrayList<String> genre, String release_date,
+                     String summary, String image_id, ArrayList<String> game_mode_name,
+                     Double rating, ArrayList<String> platform_name, String video_id,
                      Double popularity) {
+        this.firebaseId = firebaseId;
         this.gameId = gameId;
         this.name = name;
         this.genre = genre;
@@ -36,6 +38,7 @@ public class GameModel {
     }
 
     public GameModel(Bundle bundle){
+        this.firebaseId = bundle.getString("firebase_id");
         this.gameId = bundle.getInt("game_id");
         this.name = bundle.getString("name");
         this.genre = bundle.getStringArrayList("genre");
@@ -52,7 +55,7 @@ public class GameModel {
 
     public Bundle GameDataToBundle(){
         Bundle bundle = new Bundle();
-
+        bundle.putString("firebase_id", this.firebaseId);
         bundle.putInt("game_id", this.gameId);
         bundle.putString("name", this.name);
         bundle.putStringArrayList("genre",this.genre );
@@ -66,6 +69,10 @@ public class GameModel {
         bundle.putDouble("popularity", this.popularity );
 
         return bundle;
+    }
+
+    public String getFirebaseId() {
+        return firebaseId;
     }
 
     public int getGameId(){

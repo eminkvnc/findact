@@ -1,33 +1,62 @@
 package com.example.emin.findact.Firebase;
 
+import com.example.emin.findact.APIs.ActivityModel;
+import com.example.emin.findact.APIs.GameModel;
+import com.example.emin.findact.APIs.MovieModel;
+
 public class EventLog extends UserLog {
 
-    public static String EVENT_TYPE_LIKE = "Like";
-    public static String EVENT_TYPE_DISLIKE = "Dislike";
-    public static String EVENT_TYPE_SHARE = "Share";
-    public static String EVENT_TYPE_CLICK = "Click";
+    final public static String EVENT_TYPE_LIKE = "Like";
+    final public static String EVENT_TYPE_DISLIKE = "Dislike";
+    final public static String EVENT_TYPE_SHARE = "Share";
+    final public static String EVENT_TYPE_CLICK = "Click";
 
-    public static String ACTIVITY_TYPE_MOVIE = "Movie";
-    public static String ACTIVITY_TYPE_GAME = "Game";
-    public static String ACTIVITY_TYPE_ACTIVITY = "Activity";
+    final public static String ACTIVITY_TYPE_MOVIE = "Movie";
+    final public static String ACTIVITY_TYPE_GAME = "Game";
+    final public static String ACTIVITY_TYPE_ACTIVITY = "Activity";
 
+    private MovieModel movieModel;
+    private GameModel gameModel;
+    private ActivityModel activityModel;
     private String eventType;
-    private String activityId;
     private String activityType;
 
-    public EventLog(String id, String date, String eventType, String activityId, String activityType) {
+    public EventLog(String id, String date, String eventType, String activityType, MovieModel movieModel) {
         super(id,date);
+        this.movieModel = movieModel;
         this.eventType = eventType;
-        this.activityId = activityId;
         this.activityType = activityType;
+    }
+
+    public EventLog(String id, String date, String eventType, String activityType, GameModel gameModel) {
+        super(id,date);
+        this.gameModel = gameModel;
+        this.eventType = eventType;
+        this.activityType = activityType;
+    }
+
+    public EventLog(String id, String date, String eventType, String activityType, ActivityModel activityModel) {
+        super(id,date);
+        this.activityModel = activityModel;
+        this.eventType = eventType;
+        this.activityType = activityType;
+    }
+
+
+    public MovieModel getMovieModel() {
+        return movieModel;
+    }
+
+    public GameModel getGameModel() {
+        return gameModel;
+    }
+
+    public ActivityModel getActivityModel() {
+        return activityModel;
     }
 
     public String getEventType() {
         return eventType;
-    }
-
-    public String getActivityId() {
-        return activityId;
     }
 
     public String getActivityType() {
