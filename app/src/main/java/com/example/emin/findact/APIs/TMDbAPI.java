@@ -23,7 +23,7 @@ public class TMDbAPI {
 
     private static int requestCount;
 
-    // https://api.themoviedb.org/3/discover/movie?api_key=fd50bae5852bf6c2e149317a6e885416&sort_by=popularity.desc&with_genres=// +id%2Cid
+
     private static HashMap<Integer,String> genre_list = new HashMap<Integer, String>(){{put(28, "Action");put(12,"Adventure");
         put(16,"Animation");put(35,"Comedy" );put(80,"Crime");
         put(99, "Documentary");put(18,"Drama" );put(10751,"Family" );
@@ -38,6 +38,9 @@ public class TMDbAPI {
         put("Mystery",9648 );put("Romance",10749 );put("Sci-Fi",878);
         put("TV-Movie",10770 );put("Thriller",53);put("War",10752 );put("Western",37);}};
 
+
+
+    // METHODS
     public void getGenres(ArrayList<String> genreList){
         String url = "https://api.themoviedb.org/3/genre/movie/list?api_key=fd50bae5852bf6c2e149317a6e885416";
         GetMovieGenres getMovieGenres = new GetMovieGenres(genreList);
@@ -73,6 +76,8 @@ public class TMDbAPI {
         }
     }
 
+
+    // ASYNCTASK
     private static class GetMovieGenres extends AsyncTask<String,Void,String>{
         private ArrayList<String> genreList;
 
@@ -208,6 +213,7 @@ public class TMDbAPI {
                         Double vote_average = count.getDouble("vote_average");
                         String overview = count.getString("overview");
                         String genreIds = count.getString("genre_ids");
+                        String popularity = count.getString("popularity");
 
                         ArrayList<String> genre = new ArrayList<>();
                         JSONArray jsonArray1 = new JSONArray(genreIds);
@@ -228,7 +234,7 @@ public class TMDbAPI {
                             release_date = date[2] + "." + date[1] + "." + date[0];
                         }
 
-                        MovieModel movieModel = new MovieModel(UUID.randomUUID().toString(), movieId, title, release_date, genre, vote_average.toString(), poster_path, overview, language);
+                        MovieModel movieModel = new MovieModel(UUID.randomUUID().toString(), movieId, title, release_date, genre, vote_average.toString(),popularity, poster_path, overview, language);
                         mMovieModelArrayList.add(movieModel);
                     }
                 }

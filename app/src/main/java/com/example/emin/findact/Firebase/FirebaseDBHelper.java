@@ -395,11 +395,12 @@ public class FirebaseDBHelper {
                                         genreList.add(genre[j]);
                                     }
                                     String voteAvarage = dsMovie.child("vote-avarage").getValue().toString();
+                                    String popularity = dsMovie.child("popularity").getValue().toString();
                                     String posterPath = dsMovie.child("poster-path").getValue().toString();
                                     String overview = dsMovie.child("overview").getValue().toString();
                                     String language = dsMovie.child("language").getValue().toString();
                                     String shareDate = dsMovie.child("date").getValue().toString();
-                                    MovieModel movieModel = new MovieModel(firebaseId, activityId, title, releaseDate, genreList, voteAvarage, posterPath, overview, language);
+                                    MovieModel movieModel = new MovieModel(firebaseId, activityId, title, releaseDate, genreList, voteAvarage,popularity, posterPath, overview, language);
                                     PostModel postModel = new PostModel(userData, null, movieModel, null, requestStatus, PostModel.MODEL_TYPE_MOVIE, Long.getLong(shareDate));
                                     postModelArrayList.add(postModel);
                                 }
@@ -962,6 +963,7 @@ public class FirebaseDBHelper {
         reference.child("release-date").setValue(movieModel.getRelease_date());
         reference.child("genres").setValue(genres);
         reference.child("rating").setValue(movieModel.getVote_average());
+        reference.child("popularity").setValue(movieModel.getPopularity());
         reference.child("image-path").setValue(movieModel.getPoster_path());
         reference.child("language").setValue(movieModel.getLanguage());
         reference.child("overview").setValue(movieModel.getOverview());
