@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 public class ExploreFragment extends Fragment {
     private View v;
+    public static String TAG = "ExploreFragment";
 
     public ExploreFragment() {
 
@@ -20,12 +21,15 @@ public class ExploreFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MainActivity.setDisplayingFragment(ExploreFragment.TAG);
         setHasOptionsMenu(true);
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        MainActivity.setDisplayingFragment(ExploreFragment.TAG);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
         actionBar.setTitle(R.string.title_explore);

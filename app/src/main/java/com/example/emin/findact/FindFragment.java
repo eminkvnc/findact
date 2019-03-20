@@ -99,6 +99,8 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MainActivity.setDisplayingFragment(FindFragment.TAG);
+
         selectedTab = "Person";
         mode = new String();
 
@@ -120,16 +122,19 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         movieModelArrayList = new ArrayList<>();
         gameModelArrayList = new ArrayList<>();
         activityArrayList = new ArrayList<>();
-
-        if(isOnline()){
-            tmDbAPI.getGenres(movieGenresList);
-            igDbAPI.getGenres(gameGenreList,gameModesList);
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        MainActivity.setDisplayingFragment(FindFragment.TAG);
+        if(MainActivity.isOnline){
+            tmDbAPI.getGenres(movieGenresList);
+            igDbAPI.getGenres(gameGenreList,gameModesList);
+        }
+        else {
+            Toast.makeText(getContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+        }
         ((AppCompatActivity) getActivity()).getSupportActionBar().show();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
@@ -320,7 +325,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 break;
 
             case R.id.fragment_find_search_iv:
-                if (isOnline()) {
+                if (MainActivity.isOnline) {
                     String[] split = searchParameter.split(" ");
                     int i = split.length;
                     sParam = split[0];
@@ -484,20 +489,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 break;
         }
     }
-
-    public boolean isOnline() {
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-            int     exitValue = ipProcess.waitFor();
-            return (exitValue == 0);
-        }
-        catch (IOException e)          { e.printStackTrace(); }
-        catch (InterruptedException e) { e.printStackTrace(); }
-
-        return false;
-    }
-
 
     //ADAPTER
     public class GenreNamesAdapter extends RecyclerView.Adapter<GenreNamesAdapter.CheckboxViewHolder>{

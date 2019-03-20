@@ -56,7 +56,7 @@ import java.util.Objects;
 public class SettingsFragment extends Fragment{
 
     View v;
-
+    public static String TAG = "SettingsFragment";
     ImageView profilePic, changePP;
     EditText fullName;
     static EditText birthdate;
@@ -89,6 +89,7 @@ public class SettingsFragment extends Fragment{
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        MainActivity.setDisplayingFragment(SettingsFragment.TAG);
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
@@ -96,6 +97,7 @@ public class SettingsFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
+        MainActivity.setDisplayingFragment(SettingsFragment.TAG);
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
         actionBar.setTitle(R.string.title_settings);

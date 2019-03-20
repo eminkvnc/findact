@@ -40,7 +40,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     public static final int INIT_MODE_MY_PROFILE_PAGE = 0;
     public static final int INIT_MODE_FRIEND_PROFILE_PAGE = 1;
-    private String TAG = "ProfileFragment";
+    public static String TAG = "ProfileFragment";
     private int initMode;
     private View v;
 
@@ -69,6 +69,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MainActivity.setDisplayingFragment(ProfileFragment.TAG);
         friendsArrayList = new ArrayList<>();
         statusList = new ArrayList<>();
         firebaseDBHelper = FirebaseDBHelper.getInstance();
@@ -93,6 +94,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
+        MainActivity.setDisplayingFragment(ProfileFragment.TAG);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
         switch (initMode){
