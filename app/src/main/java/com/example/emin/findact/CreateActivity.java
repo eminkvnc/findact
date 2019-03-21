@@ -14,7 +14,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -37,7 +36,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.emin.findact.APIs.ActivityModel;
-import com.example.emin.findact.Firebase.FirebaseAsyncTask;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -66,8 +64,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     UsersListDialog usersListDialog;
 
 
-    private ArrayList<UserData> followerArrayList;
-    private ArrayList<UserData> followingArrayList;
+    private ArrayList<UserData> followerAndFollowingArrayList;
     private ArrayList<String> invitedArrayList;
     private ArrayList<Integer> statusList;
     private GoogleMap mMap;
@@ -103,8 +100,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
-        followerArrayList = new ArrayList<>();
-        followingArrayList = new ArrayList<>();
+        followerAndFollowingArrayList = new ArrayList<>();
         invitedArrayList = new ArrayList<>();
         statusList = new ArrayList<>();
 
@@ -231,21 +227,13 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 FirebaseDBHelper.getInstance().getCurrentUser());
 
         dialog.show();
-        final FirebaseDBHelper dbHelper = FirebaseDBHelper.getInstance();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                dbHelper.addGroupActivity(activityModel);
-            }
-        };
-        FirebaseAsyncTask task = new FirebaseAsyncTask(runnable, new OnTaskCompletedListener() {
+        FirebaseDBHelper.getInstance().addGroupActivity(activityModel, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 dialog.dismiss();
                 onBackPressed();
             }
         });
-        task.execute();
     }
 
     @Override
@@ -412,30 +400,29 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void showInviteDialog(){
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                FirebaseDBHelper.getInstance().getFollowers(FirebaseDBHelper.getInstance().getCurrentUser(),followerArrayList,statusList);
-                FirebaseDBHelper.getInstance().getFollowing(FirebaseDBHelper.getInstance().getCurrentUser(),followingArrayList,statusList);
-            }
-        };
+        final Bundle bundle = new Bundle();
+        bundle.putString("Title","Invite");
+        final Bundle followersArrayListBundle = new Bundle();
+        final ArrayList<UserData> followingArrayList = new ArrayList<>();
+        final ArrayList<UserData> followerArrayList = new ArrayList<>();
         OnTaskCompletedListener onTaskCompletedListener = new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
-                for(int i = 0; i < followingArrayList.size(); i++){
-                    if(!followingArrayList.contains(followerArrayList.get(i))){
-                        followingArrayList.add(followerArrayList.get(i));
+                for(int i = 0; i < followerArrayList.size(); i++){
+                    if(!followerAndFollowingArrayList.contains(followerArrayList.get(i))){
+                        followerAndFollowingArrayList.add(followerArrayList.get(i));
                     }
                 }
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
+                FirebaseDBHelper.getInstance().getFollowing(FirebaseDBHelper.getInstance().getCurrentUser(), followingArrayList, statusList, new OnTaskCompletedListener() {
                     @Override
-                    public void run() {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Title","Invite");
-                        Bundle followersArrayListBundle = new Bundle();
+                    public void onTaskCompleted() {
                         for(int i = 0; i < followingArrayList.size(); i++){
-                            followersArrayListBundle.putBundle(String.valueOf(i),followingArrayList.get(i).UserDatatoBundle());
+                            if(!followerAndFollowingArrayList.contains(followingArrayList.get(i))){
+                                followerAndFollowingArrayList.add(followingArrayList.get(i));
+                            }
+                        }
+                        for(int i = 0; i < followingArrayList.size(); i++){
+                            followersArrayListBundle.putBundle(String.valueOf(i),followerAndFollowingArrayList.get(i).UserDatatoBundle());
                         }
                         bundle.putBundle("UserDataArrayList",followersArrayListBundle);
                         bundle.putStringArrayList("Attendees",invitedArrayList);
@@ -443,13 +430,11 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                         usersListDialog.setArguments(bundle);
                         usersListDialog.show(getSupportFragmentManager(),"dialog");
                     }
-                },800);
+                });
 
             }
         };
-        FirebaseAsyncTask task = new FirebaseAsyncTask(runnable,onTaskCompletedListener);
-        task.execute();
-
+        FirebaseDBHelper.getInstance().getFollowers(FirebaseDBHelper.getInstance().getCurrentUser(),followerArrayList,statusList, onTaskCompletedListener);
     }
 
 }

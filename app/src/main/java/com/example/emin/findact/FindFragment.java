@@ -3,7 +3,6 @@ package com.example.emin.findact;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -23,7 +22,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Toast;
-
 import com.example.emin.findact.APIs.ActivityModel;
 import com.example.emin.findact.APIs.GameModel;
 import com.example.emin.findact.APIs.IGDbAPI;
@@ -33,27 +31,17 @@ import com.example.emin.findact.Adapters.ActivityListItemAdapter;
 import com.example.emin.findact.Adapters.GameListItemAdapter;
 import com.example.emin.findact.Adapters.MovieListItemAdapter;
 import com.example.emin.findact.Adapters.UserListItemAdapter;
-import com.example.emin.findact.Firebase.FirebaseAsyncTask;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
-public class FindFragment extends Fragment implements View.OnClickListener, OnTaskCompletedListener {
-
-    public static final String TAB_NAME_PERSON = "Person";
-    public static final String TAB_NAME_MOVIE = "Movie";
-    public static final String TAB_NAME_GAME = "Game";
-    public static final String TAB_NAME_ACTIVITY = "Activity";
+public class FindFragment extends Fragment implements View.OnClickListener {
 
     public static String TAG = "FindFragment";
     public static String selectedTab;
     String sParam;
     FirebaseDBHelper firebaseDBHelper;
-    FirebaseAsyncTask searchTask;
     ProgressDialog progressDialog;
     DisplayActivityFragment displayActivityFragment;
     String oldSearchParameter;
@@ -71,7 +59,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
     ImageView searchImageView;
     RecyclerView genreRecyclerView;
     RecyclerView modeRecyclerView;
-
 
     ArrayList<UserData> userDataArrayList;
     ArrayList<Integer> requestStatus;
@@ -147,7 +134,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
 
         displayActivityFragment = new DisplayActivityFragment();
         View v = inflater.inflate(R.layout.fragment_find, container, false);
-
         movieButton = v.findViewById(R.id.fragment_find_movie_btn);
         gameButton = v.findViewById(R.id.fragment_find_game_btn);
         groupButton = v.findViewById(R.id.fragment_find_group_btn);
@@ -242,7 +228,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     searchImageView.performClick();
                     firstClick.put("Person",false);
                 }
-
                 break;
 
             case R.id.fragment_find_movie_btn:
@@ -254,7 +239,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 selectedGenreList.clear();
                 GenreNamesAdapter adapter = new GenreNamesAdapter(getContext(), movieGenresList, selectedGenreList);
                 genreRecyclerView.setAdapter(adapter);
-
 
                 searchPersonRecyclerView.setVisibility(View.GONE);
                 searchMovieRecyclerView.setVisibility(View.VISIBLE);
@@ -268,7 +252,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     searchImageView.performClick();
                     firstClick.put("Movie",false);
                 }
-
                 break;
 
             case R.id.fragment_find_game_btn:
@@ -284,11 +267,9 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 genreRecyclerView.setVisibility(View.VISIBLE);
                 modeRecyclerView.setVisibility(View.VISIBLE);
 
-
                 selectedGenreList.clear();
                 GenreNamesAdapter adapter2 = new GenreNamesAdapter(getContext(), gameGenreList, selectedGenreList);
                 genreRecyclerView.setAdapter(adapter2);
-
 
                 ModeNamesAdapter modeNamesAdapter = new ModeNamesAdapter(getContext(),gameModesList ,selectedModeList );
                 modeRecyclerView.setAdapter(modeNamesAdapter);
@@ -299,7 +280,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     searchImageView.performClick();
                     firstClick.put("Game",false);
                 }
-
                 break;
 
             case R.id.fragment_find_group_btn:
@@ -315,13 +295,11 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 genreRecyclerView.setVisibility(View.GONE);
                 modeRecyclerView.setVisibility(View.GONE);
 
-
                 selectedTab = "Group";
                 if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Group")){
                     searchImageView.performClick();
                     firstClick.put("Group",false);
                 }
-
                 break;
 
             case R.id.fragment_find_search_iv:
@@ -337,47 +315,46 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     if (!sParam.equals("")) {
                         switch (selectedTab) {
                             case "Person":
-                                //runnable
-                                Runnable searchRunnable = new Runnable() {
+                                progressDialog.show();
+                                firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus, new OnTaskCompletedListener() {
                                     @Override
-                                    public void run() {
-                                        firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus);
+                                    public void onTaskCompleted() {
+                                        findPersonAdapter.notifyDataSetChanged();
+                                        progressDialog.dismiss();
                                     }
-                                };
-                                if(!progressDialog.isShowing()){
-                                    progressDialog.show();
-                                }
-                                searchTask = new FirebaseAsyncTask(searchRunnable, this);
-                                searchTask.execute();
+                                });
                                 break;
 
                             case "Movie":
-                                if(!progressDialog.isShowing()){
-                                    progressDialog.show();
-                                }
-                                tmDbAPI.searchMovie(sParam, movieModelArrayList, this);
+                                progressDialog.show();
+                                tmDbAPI.searchMovie(sParam, movieModelArrayList, new OnTaskCompletedListener() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                        findMovieAdapter.notifyDataSetChanged();
+                                        progressDialog.dismiss();
+                                    }
+                                });
                                 break;
                             case "Game":
-
-                                if(!progressDialog.isShowing()){
-                                    progressDialog.show();
-                                }
-                                igDbAPI.searchGame(sParam, gameModelArrayList, this);
+                                progressDialog.show();
+                                igDbAPI.searchGame(sParam, gameModelArrayList, new OnTaskCompletedListener() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                        findGameAdapter.notifyDataSetChanged();
+                                        progressDialog.dismiss();
+                                    }
+                                });
 
                                 break;
                             case "Group":
-                                //runnable
-                                Runnable searchActivityRunnable = new Runnable() {
+                                progressDialog.show();
+                                firebaseDBHelper.searchActivity(searchParameter, activityArrayList, new OnTaskCompletedListener() {
                                     @Override
-                                    public void run() {
-                                        firebaseDBHelper.searchActivity(searchParameter, activityArrayList);
+                                    public void onTaskCompleted() {
+                                        findActivityAdapter.notifyDataSetChanged();
+                                        progressDialog.dismiss();
                                     }
-                                };
-                                if(!progressDialog.isShowing()){
-                                    progressDialog.show();
-                                }
-                                searchTask = new FirebaseAsyncTask(searchActivityRunnable,this);
-                                searchTask.execute();
+                                });
                                 break;
                         }
                     } else if (sParam.equals("")){
@@ -390,7 +367,13 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                                     if(!progressDialog.isShowing()){
                                         progressDialog.show();
                                     }
-                                    tmDbAPI.searchMovieByGenre(selectedGenreList, movieModelArrayList,this );
+                                    tmDbAPI.searchMovieByGenre(selectedGenreList, movieModelArrayList, new OnTaskCompletedListener() {
+                                        @Override
+                                        public void onTaskCompleted() {
+                                            findMovieAdapter.notifyDataSetChanged();
+                                            progressDialog.dismiss();
+                                        }
+                                    } );
                                 }
                                 break;
                             case "Game":
@@ -398,7 +381,13 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                                     if(!progressDialog.isShowing()){
                                         progressDialog.show();
                                     }
-                                    igDbAPI.searchByGenreAndModeName(selectedGenreList, selectedModeList, gameModelArrayList, this);
+                                    igDbAPI.searchByGenreAndModeName(selectedGenreList, selectedModeList, gameModelArrayList, new OnTaskCompletedListener() {
+                                        @Override
+                                        public void onTaskCompleted() {
+                                            findGameAdapter.notifyDataSetChanged();
+                                            progressDialog.dismiss();
+                                        }
+                                    });
                                 }
                                 break;
                             case "Group":
@@ -423,70 +412,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 } else {
                     Toast.makeText(getContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
                 }
-        }
-    }
-
-    @Override
-    public void onTaskCompleted() {
-        switch (selectedTab){
-            case "Person":
-
-                if(searchTask.isTimeout()){
-                    Toast.makeText(getContext(), "Task Timeout", Toast.LENGTH_SHORT).show();
-                    searchTask.cancel(true);
-                    progressDialog.dismiss();
-                }
-                if(searchTask.isTaskComplete()){
-//                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            findPersonAdapter.notifyDataSetChanged();
-                            progressDialog.dismiss();
-                        }
-                    },1000);
-                }
-
-                break;
-            case "Movie":
-
-//                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
-                findMovieAdapter.notifyDataSetChanged();
-                if(progressDialog.isShowing()){
-                    progressDialog.dismiss();
-                }
-                break;
-            case "Game":
-//                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
-                findGameAdapter.notifyDataSetChanged();
-                if(progressDialog.isShowing()){
-                    progressDialog.dismiss();
-                }
-
-                break;
-            case "Group":
-                if(searchTask.isTimeout()){
-                    Toast.makeText(getContext(), "Task Timeout", Toast.LENGTH_SHORT).show();
-                    searchTask.cancel(true);
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
-                    }
-                }
-                if(searchTask.isTaskComplete()) {
-//                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            findActivityAdapter.notifyDataSetChanged();
-                            if(progressDialog.isShowing()){
-                                progressDialog.dismiss();
-                            }
-                        }
-                    }, 1000);
-                }
-                break;
         }
     }
 

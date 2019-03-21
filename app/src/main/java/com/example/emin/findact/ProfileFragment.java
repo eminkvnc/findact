@@ -256,49 +256,57 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
             case R.id.fragment_profile_following_tv:
                 progressDialog.show();
-                firebaseDBHelper.getFollowing(currentUsername, friendsArrayList, statusList);
-                showListDialog("Following");
+                firebaseDBHelper.getFollowing(currentUsername, friendsArrayList, statusList, new OnTaskCompletedListener() {
+                    @Override
+                    public void onTaskCompleted() {
+                        showListDialog("Following");
+                    }
+                });
                 break;
 
             case R.id.fragment_profile_followers_tv:
                 progressDialog.show();
-                firebaseDBHelper.getFollowers(currentUsername, friendsArrayList, statusList);
-                showListDialog("Followers");
+                firebaseDBHelper.getFollowers(currentUsername, friendsArrayList, statusList, new OnTaskCompletedListener() {
+                    @Override
+                    public void onTaskCompleted() {
+                        showListDialog("Followers");
+                    }
+                });
                 break;
 
 
             case R.id.fragment_profile_requests_iv:
                 progressDialog.show();
-                firebaseDBHelper.getFollowRequests(friendsArrayList, statusList);
-                showListDialog("Requests");
+                firebaseDBHelper.getFollowRequests(friendsArrayList, statusList, new OnTaskCompletedListener() {
+                    @Override
+                    public void onTaskCompleted() {
+                        showListDialog("Requests");
+                    }
+                });
                 break;
         }
     }
 
     private void showListDialog(final String dialogTitle){
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Bundle bundle = new Bundle();
-                bundle.putString("Title",dialogTitle);
-                Bundle followersArrayListBundle = new Bundle();
-                if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals("Followers")){
-                    statusList.clear();
-                }
-                for(int i = 0; i < friendsArrayList.size(); i++){
-                    followersArrayListBundle.putBundle(String.valueOf(i),friendsArrayList.get(i).UserDatatoBundle());
-                    if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals("Followers")){
-                        statusList.add(i,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
-                    }
-                }
-                bundle.putBundle("UserDataArrayList",followersArrayListBundle);
-                bundle.putIntegerArrayList("StatusArrayList",statusList);
-                progressDialog.dismiss();
-                listDialog.setArguments(bundle);
-                listDialog.show(getActivity().getSupportFragmentManager(),"dialog");
+
+        Bundle bundle = new Bundle();
+        bundle.putString("Title",dialogTitle);
+        Bundle followersArrayListBundle = new Bundle();
+        if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals("Followers")){
+            statusList.clear();
+        }
+        for(int i = 0; i < friendsArrayList.size(); i++){
+            followersArrayListBundle.putBundle(String.valueOf(i),friendsArrayList.get(i).UserDatatoBundle());
+            if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals("Followers")){
+                statusList.add(i,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
             }
-        },800);
+        }
+        bundle.putBundle("UserDataArrayList",followersArrayListBundle);
+        bundle.putIntegerArrayList("StatusArrayList",statusList);
+        progressDialog.dismiss();
+        listDialog.setArguments(bundle);
+        listDialog.show(getActivity().getSupportFragmentManager(),"dialog");
+
     }
     public static void dismissListDialog(){
         if(listDialog != null && listDialog.isAdded()) {
