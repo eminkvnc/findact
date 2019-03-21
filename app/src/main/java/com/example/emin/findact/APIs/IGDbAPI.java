@@ -62,10 +62,10 @@ public class IGDbAPI {
     private static int requestCount;
 
 
-    public void getGenres(ArrayList<String> genreList, ArrayList<String> modeList){
-        GetGenreList getGenreList = new GetGenreList(genreList);
+    public void getGenres(ArrayList<String> genreList, ArrayList<String> modeList, OnTaskCompletedListener onTaskCompletedListener){
+        GetGenreList getGenreList = new GetGenreList(genreList, onTaskCompletedListener);
         getGenreList.execute(genreUrl);
-        GetGenreList getModeList = new GetGenreList(modeList);
+        GetGenreList getModeList = new GetGenreList(modeList, null);
         getModeList.execute(modeUrl);
     }
 
@@ -225,9 +225,11 @@ public class IGDbAPI {
     public class GetGenreList extends AsyncTask<String,Void,String>{
 
         private ArrayList<String> genreList;
+        private OnTaskCompletedListener listener;
 
-        public GetGenreList(ArrayList<String> genreList) {
+        public GetGenreList(ArrayList<String> genreList, OnTaskCompletedListener onTaskCompletedListener) {
             this.genreList = genreList;
+            this.listener = onTaskCompletedListener;
         }
 
         @Override
@@ -294,6 +296,9 @@ public class IGDbAPI {
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+            }
+            if(listener != null){
+                listener.onTaskCompleted();
             }
         }
     }

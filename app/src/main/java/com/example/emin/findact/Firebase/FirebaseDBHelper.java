@@ -355,6 +355,9 @@ public class FirebaseDBHelper {
         OnTaskCompletedListener onTaskCompletedListener = new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
+                if(userDataArrayList.isEmpty()){
+                    listener.onTaskCompleted();
+                }
                 for(int i = 0; i < userDataArrayList.size(); i++){
                     final UserData userData = userDataArrayList.get(i);
                     final int requestStatus = requestStatusList.get(i);

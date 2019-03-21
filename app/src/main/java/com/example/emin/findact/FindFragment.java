@@ -116,11 +116,11 @@ public class FindFragment extends Fragment implements View.OnClickListener {
         super.onResume();
         MainActivity.setDisplayingFragment(FindFragment.TAG);
         if(MainActivity.isOnline){
-            tmDbAPI.getGenres(movieGenresList);
-            igDbAPI.getGenres(gameGenreList,gameModesList);
+            tmDbAPI.getGenres(movieGenresList,null);
+            igDbAPI.getGenres(gameGenreList,gameModesList,null);
         }
         else {
-            Toast.makeText(getContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
         }
         ((AppCompatActivity) getActivity()).getSupportActionBar().show();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
@@ -410,7 +410,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                     }
                     break;
                 } else {
-                    Toast.makeText(getContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
                 }
         }
     }

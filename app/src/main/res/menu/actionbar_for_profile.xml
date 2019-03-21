@@ -20,19 +20,19 @@
             <item
                 android:id="@+id/profile_fragment_actionbar_edit_profile"
                 android:icon="@drawable/menu_edit"
-                android:title="Edit Profile"
+                android:title="@string/profile_fragment_menu_edit_profile"
                 app:showAsAction="withText"></item>
 
             <item
                 android:id="@+id/profile_fragment_actionbar_settings"
                 android:icon="@drawable/menu_settings"
-                android:title="Settings"
+                android:title="@string/profile_fragment_menu_settings"
                 app:showAsAction="withText"></item>
 
             <item
                 android:id="@+id/profile_fragment_actionbar_logout"
                 android:icon="@drawable/menu_logout"
-                android:title="Logout"
+                android:title="@string/profile_fragment_menu_logout"
                 app:showAsAction="withText"></item>
 
         </menu>

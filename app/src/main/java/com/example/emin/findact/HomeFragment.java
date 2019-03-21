@@ -89,20 +89,24 @@ public class HomeFragment extends Fragment {
                 @Override
                 public void onTaskCompleted() {
 
-                    Collections.sort(postModelArrayList, new Comparator<PostModel>() {
-                        @Override
-                        public int compare(PostModel postModel, PostModel t1) {
-                            return t1.getShareDate().intValue() - postModel.getShareDate().intValue();
+                    if(!postModelArrayList.isEmpty()) {
+                        Collections.sort(postModelArrayList, new Comparator<PostModel>() {
+                            @Override
+                            public int compare(PostModel postModel, PostModel t1) {
+                                return t1.getShareDate().intValue() - postModel.getShareDate().intValue();
+                            }
+                        });
+                        postListItemAdapter.notifyDataSetChanged();
+                        if (progressDialog.isShowing()) {
+                            progressDialog.dismiss();
                         }
-                    });
-                    postListItemAdapter.notifyDataSetChanged();
-                    if(progressDialog.isShowing()){
+                    }else {
                         progressDialog.dismiss();
                     }
                 }
             });
         }else {
-            Toast.makeText(getContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
         }
 
     }

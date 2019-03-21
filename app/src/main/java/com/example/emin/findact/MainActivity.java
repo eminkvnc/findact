@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 }
             });
         } else {
-            Toast.makeText(getApplicationContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
             progressDialog.dismiss();
         }
 
@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 super.onBackPressed();
                 finishAffinity();
             } else {
-                Toast.makeText(this, "Çıkmak için geri tuşuna iki defa basınız.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getResources().getText(R.string.toast_tap_twice_to_exit), Toast.LENGTH_SHORT).show();
                 doubleBackTab = true;
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {

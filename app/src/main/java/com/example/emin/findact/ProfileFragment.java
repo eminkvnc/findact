@@ -36,14 +36,11 @@ import java.util.ArrayList;
 
 public class ProfileFragment extends Fragment implements View.OnClickListener {
 
-
-
     public static final int INIT_MODE_MY_PROFILE_PAGE = 0;
     public static final int INIT_MODE_FRIEND_PROFILE_PAGE = 1;
     public static String TAG = "ProfileFragment";
     private int initMode;
     private View v;
-
 
     public static UsersListDialog listDialog;
     ProgressDialog progressDialog;
@@ -69,13 +66,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MainActivity.setDisplayingFragment(ProfileFragment.TAG);
         friendsArrayList = new ArrayList<>();
         statusList = new ArrayList<>();
         firebaseDBHelper = FirebaseDBHelper.getInstance();
         progressDialog = new ProgressDialog(getContext());
         listDialog = UsersListDialog.getInstance();
         if(initMode == INIT_MODE_FRIEND_PROFILE_PAGE) {
+            MainActivity.setDisplayingFragment(DisplayActivityFragment.TAG);
             userData = new UserData(getArguments().getBundle("UserData"));
             currentUsername = userData.getUuidString();
             if(userData.getUuidString().equals(firebaseDBHelper.getCurrentUser())){
@@ -83,9 +80,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 currentUsername = firebaseDBHelper.getCurrentUser();
             }
             requestStatus = getArguments().getInt("RequestStatus");
-
         }
         else{
+            MainActivity.setDisplayingFragment(ProfileFragment.TAG);
             currentUsername= firebaseDBHelper.getCurrentUser();
         }
         setHasOptionsMenu(true);
@@ -94,15 +91,16 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-        MainActivity.setDisplayingFragment(ProfileFragment.TAG);
         ((AppCompatActivity) getActivity()).getSupportActionBar().show();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
         switch (initMode){
             case INIT_MODE_MY_PROFILE_PAGE:
+                MainActivity.setDisplayingFragment(ProfileFragment.TAG);
                 actionBar.setTitle(user.getUsername());
                 break;
             case INIT_MODE_FRIEND_PROFILE_PAGE:
+                MainActivity.setDisplayingFragment(DisplayActivityFragment.TAG);
                 actionBar.setTitle(userData.getUsername());
                 break;
         }
@@ -176,11 +174,11 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 settingsFragment = new SettingsFragment();
                 user = UserDatabase.getInstance(getContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
                 Log.d("onCreateView", "onCreateView: "+ user.getFirstname()+ user.getCity() +user.getBirthday());
-                nameTextView.setText(user.getFirstname()+" "+ user.getLastname());
+                String fullName =user.getFirstname()+" "+ user.getLastname();
+                nameTextView.setText(fullName);
                 cityTextView.setText(user.getCity());
                 String birthday = user.getBirthday();
-                String [] birthdaySplit = birthday.split("/");
-                ageTextView.setText(birthdaySplit[0]+"/"+birthdaySplit[1]);
+                ageTextView.setText(birthday);
                 try{
                     File file = new File("/data/user/0/com.example.emin.findact/app_imageDir",
                             firebaseDBHelper.getCurrentUser()+".jpg" );
@@ -208,8 +206,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
                nameTextView.setText(userData.getFirstname()+" "+userData.getLastname());
                cityTextView.setText(userData.getCity());
-               String [] birthdaySplit1 = userData.getBirthdate().split("/");
-               ageTextView.setText(birthdaySplit1[0]+"/"+birthdaySplit1[1]);
+               ageTextView.setText(userData.getBirthdate());
                break;
        }
         return v;
@@ -259,7 +256,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 firebaseDBHelper.getFollowing(currentUsername, friendsArrayList, statusList, new OnTaskCompletedListener() {
                     @Override
                     public void onTaskCompleted() {
-                        showListDialog("Following");
+                        showListDialog(getResources().getText(R.string.profile_fragment_following).toString());
                     }
                 });
                 break;
@@ -269,7 +266,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 firebaseDBHelper.getFollowers(currentUsername, friendsArrayList, statusList, new OnTaskCompletedListener() {
                     @Override
                     public void onTaskCompleted() {
-                        showListDialog("Followers");
+                        showListDialog(getResources().getText(R.string.profile_fragment_followers).toString());
                     }
                 });
                 break;
@@ -280,7 +277,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 firebaseDBHelper.getFollowRequests(friendsArrayList, statusList, new OnTaskCompletedListener() {
                     @Override
                     public void onTaskCompleted() {
-                        showListDialog("Requests");
+                        showListDialog(getResources().getText(R.string.profile_fragment_requests).toString());
                     }
                 });
                 break;
@@ -292,12 +289,12 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         Bundle bundle = new Bundle();
         bundle.putString("Title",dialogTitle);
         Bundle followersArrayListBundle = new Bundle();
-        if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals("Followers")){
+        if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals(getResources().getText(R.string.profile_fragment_followers).toString())){
             statusList.clear();
         }
         for(int i = 0; i < friendsArrayList.size(); i++){
             followersArrayListBundle.putBundle(String.valueOf(i),friendsArrayList.get(i).UserDatatoBundle());
-            if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals("Followers")){
+            if(initMode == INIT_MODE_MY_PROFILE_PAGE && dialogTitle.equals(getResources().getText(R.string.profile_fragment_followers).toString())){
                 statusList.add(i,FirebaseDBHelper.FRIEND_REQUEST_STATUS_NONE);
             }
         }

@@ -255,7 +255,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 selectedSubItemsArray.isEmpty() ||
                 dateEditText.getText().toString().equals("") ||
                 descriptionEditText.getText().toString().equals("")){
-                    Toast.makeText(this, "Please fill the blanks.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getResources().getText(R.string.toast_fill_blanks), Toast.LENGTH_SHORT).show();
                 }else {
                     saveActivity();
                 }
@@ -401,7 +401,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
     private void showInviteDialog(){
         final Bundle bundle = new Bundle();
-        bundle.putString("Title","Invite");
+        bundle.putString("Title",getResources().getText(R.string.activity_create_invite).toString());
         final Bundle followersArrayListBundle = new Bundle();
         final ArrayList<UserData> followingArrayList = new ArrayList<>();
         final ArrayList<UserData> followerArrayList = new ArrayList<>();
