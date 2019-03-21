@@ -74,7 +74,7 @@ public class IGDbAPI {
     public void searchGame(String game_name, final ArrayList<GameModel> gameModelArrayList, final OnTaskCompletedListener listener) {
         requestCount = 2;
         gameModelArrayList.clear();
-        String params = fields + search + "\""+game_name+"\";" + order;
+        String params = fields + search + "\""+game_name+"\";";
         DownloadData downloadData = new DownloadData(gameModelArrayList, listener, params);
         downloadData.execute(gameUrl);
 
@@ -99,23 +99,23 @@ public class IGDbAPI {
     public void searchByGenreAndModeName(ArrayList<String> selectedGenres, ArrayList<String> selectedMode,final ArrayList<GameModel> gameModelArrayList,final OnTaskCompletedListener listener){
 
         String params = null;
-        String genres;
+        String genres = "";
         String mode;
 
         // Genre seçilmiş ise
         if (selectedGenres.size() > 0){
-            genres = genreHashMap.get(selectedGenres.get(0)).toString();
-            for (int i = 1; i < selectedGenres.size(); i++){
-                genres = genres+"\",\""+genreHashMap.get(selectedGenres.get(0)).toString();
+            for (int i = 0; i < selectedGenres.size(); i++){
+                genres += genreHashMap.get(selectedGenres.get(i));
+                if (i != selectedGenres.size()-1){
+                    genres += ",";
+                }
             }
+
+            params = fields + whereGenres + "("+genres+");";
             // mode seçilmiş ise
             if (selectedMode.size() > 0){
                 mode = modeHashMap.get(selectedMode.get(0)).toString();
                 params = fields + whereGenres + "("+genres+")&" + whereMode +mode+";";
-            }
-            // mode seçilmemiş ise
-            else {
-                params = fields +"where "+ whereGenres + "("+genres+")";
             }
         }
         // genre seçilmemiş ise
