@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -9,8 +9,8 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import com.example.emin.findact.Adapters.UserListItemAdapter;
-import com.example.emin.findact.Firebase.UserData;
+import com.findact.Adapters.UserListItemAdapter;
+import com.findact.Firebase.UserData;
 import java.util.ArrayList;
 
 

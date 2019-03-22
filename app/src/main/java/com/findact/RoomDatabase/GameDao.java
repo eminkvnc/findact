@@ -1,4 +1,4 @@
-package com.example.emin.findact.RoomDatabase;
+package com.findact.RoomDatabase;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
@@ -12,7 +12,7 @@ public interface GameDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Game game);
 
-    @Query("SELECT firebaseId FROM game_post_detail WHERE firebaseId =:firebaseId LIMIT 1")
+    @Query("SELECT EXISTS(SELECT firebaseId FROM game_post_detail WHERE firebaseId=:firebaseId)")
     boolean getItemId(String firebaseId);
 
     @Update

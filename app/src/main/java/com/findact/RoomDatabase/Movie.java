@@ -1,4 +1,4 @@
-package com.example.emin.findact.RoomDatabase;
+package com.findact.RoomDatabase;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;

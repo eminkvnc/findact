@@ -1,4 +1,4 @@
-package com.example.emin.findact.APIs;
+package com.findact.APIs;
 
 import android.net.Uri;
 import android.os.Bundle;

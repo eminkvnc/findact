@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import android.Manifest;
 import android.app.Activity;
@@ -28,11 +28,11 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
-import com.example.emin.findact.Firebase.InitialLog;
-import com.example.emin.findact.Firebase.UserData;
-import com.example.emin.findact.RoomDatabase.User;
-import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.findact.Firebase.FirebaseDBHelper;
+import com.findact.Firebase.InitialLog;
+import com.findact.Firebase.UserData;
+import com.findact.RoomDatabase.User;
+import com.findact.RoomDatabase.UserDatabase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;

@@ -1,8 +1,8 @@
-package com.example.emin.findact.APIs;
+package com.findact.APIs;
 
 import android.os.Bundle;
 
-import com.example.emin.findact.Firebase.UserData;
+import com.findact.Firebase.UserData;
 
 public class PostModel {
 

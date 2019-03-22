@@ -1,4 +1,4 @@
-package com.example.emin.findact.Firebase;
+package com.findact.Firebase;
 
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -9,16 +9,16 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.example.emin.findact.APIs.ActivityModel;
-import com.example.emin.findact.APIs.GameModel;
-import com.example.emin.findact.APIs.MovieModel;
-import com.example.emin.findact.APIs.PostModel;
-import com.example.emin.findact.OnTaskCompletedListener;
-import com.example.emin.findact.RoomDatabase.Activity;
-import com.example.emin.findact.RoomDatabase.Game;
-import com.example.emin.findact.RoomDatabase.Movie;
-import com.example.emin.findact.RoomDatabase.User;
-import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.findact.APIs.ActivityModel;
+import com.findact.APIs.GameModel;
+import com.findact.APIs.MovieModel;
+import com.findact.APIs.PostModel;
+import com.findact.OnTaskCompletedListener;
+import com.findact.RoomDatabase.Activity;
+import com.findact.RoomDatabase.Game;
+import com.findact.RoomDatabase.Movie;
+import com.findact.RoomDatabase.User;
+import com.findact.RoomDatabase.UserDatabase;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;

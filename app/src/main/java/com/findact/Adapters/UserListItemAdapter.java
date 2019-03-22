@@ -1,4 +1,4 @@
-package com.example.emin.findact.Adapters;
+package com.findact.Adapters;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -8,18 +8,17 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
-import com.example.emin.findact.Firebase.UserData;
-import com.example.emin.findact.ProfileFragment;
-import com.example.emin.findact.R;
-import com.example.emin.findact.UsersListDialog;
+import com.findact.Firebase.FirebaseDBHelper;
+import com.findact.Firebase.UserData;
+import com.findact.ProfileFragment;
+import com.findact.R;
+import com.findact.UsersListDialog;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

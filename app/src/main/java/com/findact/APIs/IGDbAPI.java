@@ -1,8 +1,8 @@
-package com.example.emin.findact.APIs;
+package com.findact.APIs;
 
 import android.os.AsyncTask;
 
-import com.example.emin.findact.OnTaskCompletedListener;
+import com.findact.OnTaskCompletedListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;

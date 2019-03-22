@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -24,23 +24,21 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
-import com.example.emin.findact.APIs.ActivityModel;
-import com.example.emin.findact.APIs.GameModel;
-import com.example.emin.findact.APIs.IGDbAPI;
-import com.example.emin.findact.APIs.MovieModel;
-import com.example.emin.findact.APIs.TMDbAPI;
-import com.example.emin.findact.Adapters.ActivityListItemAdapter;
-import com.example.emin.findact.Adapters.GameListItemAdapter;
-import com.example.emin.findact.Adapters.MovieListItemAdapter;
-import com.example.emin.findact.Adapters.UserListItemAdapter;
-import com.example.emin.findact.Firebase.FirebaseAsyncTask;
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
-import com.example.emin.findact.Firebase.UserData;
+import com.findact.APIs.ActivityModel;
+import com.findact.APIs.GameModel;
+import com.findact.APIs.IGDbAPI;
+import com.findact.APIs.MovieModel;
+import com.findact.APIs.TMDbAPI;
+import com.findact.Adapters.ActivityListItemAdapter;
+import com.findact.Adapters.GameListItemAdapter;
+import com.findact.Adapters.MovieListItemAdapter;
+import com.findact.Adapters.UserListItemAdapter;
+import com.findact.Firebase.FirebaseAsyncTask;
+import com.findact.Firebase.FirebaseDBHelper;
+import com.findact.Firebase.UserData;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class FindFragment extends Fragment implements View.OnClickListener, OnTaskCompletedListener {
 

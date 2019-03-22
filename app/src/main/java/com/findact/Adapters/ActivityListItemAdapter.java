@@ -1,4 +1,4 @@
-package com.example.emin.findact.Adapters;
+package com.findact.Adapters;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -14,9 +14,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.emin.findact.APIs.ActivityModel;
-import com.example.emin.findact.DisplayActivityFragment;
-import com.example.emin.findact.R;
+import com.findact.APIs.ActivityModel;
+import com.findact.DisplayActivityFragment;
+import com.findact.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;

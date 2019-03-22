@@ -1,4 +1,4 @@
-package com.example.emin.findact.Adapters;
+package com.findact.Adapters;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.CardView;
@@ -7,8 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.example.emin.findact.InfoCheckboxData;
-import com.example.emin.findact.R;
+import com.findact.InfoCheckboxData;
+import com.findact.R;
 
 import java.util.ArrayList;
 

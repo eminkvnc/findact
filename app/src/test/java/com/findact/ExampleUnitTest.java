@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -24,10 +24,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
-import com.example.emin.findact.Firebase.UserData;
-import com.example.emin.findact.RoomDatabase.User;
-import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.findact.Firebase.FirebaseDBHelper;
+import com.findact.Firebase.UserData;
+import com.findact.RoomDatabase.User;
+import com.findact.RoomDatabase.UserDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -182,7 +182,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 String [] birthdaySplit = birthday.split("/");
                 ageTextView.setText(birthdaySplit[0]+"/"+birthdaySplit[1]);
                 try{
-                    File file = new File("/data/user/0/com.example.emin.findact/app_imageDir",
+                    File file = new File("/data/user/0/com.findact/app_imageDir",
                             firebaseDBHelper.getCurrentUser()+".jpg" );
                     Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
                     profilePictureImageView.setImageBitmap(b);

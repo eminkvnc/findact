@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import android.Manifest;
 import android.app.Activity;
@@ -13,12 +13,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
@@ -36,10 +34,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
-import com.example.emin.findact.Firebase.UserData;
-import com.example.emin.findact.RoomDatabase.User;
-import com.example.emin.findact.RoomDatabase.UserDatabase;
+import com.findact.Firebase.FirebaseDBHelper;
+import com.findact.Firebase.UserData;
+import com.findact.RoomDatabase.User;
+import com.findact.RoomDatabase.UserDatabase;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -166,7 +164,7 @@ public class SettingsFragment extends Fragment{
         birthdate.setText(user.getBirthday());
         // Load image
         try{
-            file = new File("/data/user/0/com.example.emin.findact/app_imageDir",
+            file = new File("/data/user/0/com.findact/app_imageDir",
                     firebaseDBHelper.getCurrentUser()+".jpg" );
             Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
             profilePic.setImageBitmap(b);
@@ -326,7 +324,7 @@ public class SettingsFragment extends Fragment{
 //        ContextWrapper cw = new ContextWrapper(getContext());
 //        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
 //        File myPath = new File(directory, "profile.jpg");
-        String imageDir = "/data/user/0/com.example.emin.findact/app_imageDir/"+firebaseDBHelper.getCurrentUser()+".jpg";
+        String imageDir = "/data/user/0/com.findact/app_imageDir/"+firebaseDBHelper.getCurrentUser()+".jpg";
         File myPath = new File(imageDir);
 
         FileOutputStream fos = null;

@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -17,12 +17,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.example.emin.findact.APIs.ActivityModel;
-import com.example.emin.findact.APIs.GameModel;
-import com.example.emin.findact.APIs.MovieModel;
-import com.example.emin.findact.Firebase.EventLog;
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
-import com.example.emin.findact.Firebase.UserData;
+import com.findact.APIs.ActivityModel;
+import com.findact.APIs.GameModel;
+import com.findact.APIs.MovieModel;
+import com.findact.Firebase.EventLog;
+import com.findact.Firebase.FirebaseDBHelper;
+import com.findact.Firebase.UserData;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;

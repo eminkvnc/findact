@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,15 +9,14 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.example.emin.findact.APIs.PostModel;
-import com.example.emin.findact.Adapters.PostListItemAdapter;
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
+import com.findact.APIs.PostModel;
+import com.findact.Adapters.PostListItemAdapter;
+import com.findact.Firebase.FirebaseDBHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,4 +1,4 @@
-package com.example.emin.findact.Firebase;
+package com.findact.Firebase;
 
 import android.net.Uri;
 import android.os.Bundle;

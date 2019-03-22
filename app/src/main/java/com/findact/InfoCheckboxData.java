@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 public class InfoCheckboxData {
 

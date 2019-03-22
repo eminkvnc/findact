@@ -1,8 +1,8 @@
-package com.example.emin.findact.APIs;
+package com.findact.APIs;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import com.example.emin.findact.OnTaskCompletedListener;
+import com.findact.OnTaskCompletedListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +15,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
 
 import javax.net.ssl.HttpsURLConnection;
 

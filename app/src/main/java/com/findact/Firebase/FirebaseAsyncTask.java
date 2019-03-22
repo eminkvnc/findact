@@ -1,9 +1,9 @@
-package com.example.emin.findact.Firebase;
+package com.findact.Firebase;
 
 import android.os.AsyncTask;
 import android.os.Handler;
 
-import com.example.emin.findact.OnTaskCompletedListener;
+import com.findact.OnTaskCompletedListener;
 
 
 public class FirebaseAsyncTask extends AsyncTask<Void, Void, Void>{

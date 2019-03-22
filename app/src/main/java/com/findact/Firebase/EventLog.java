@@ -1,8 +1,8 @@
-package com.example.emin.findact.Firebase;
+package com.findact.Firebase;
 
-import com.example.emin.findact.APIs.ActivityModel;
-import com.example.emin.findact.APIs.GameModel;
-import com.example.emin.findact.APIs.MovieModel;
+import com.findact.APIs.ActivityModel;
+import com.findact.APIs.GameModel;
+import com.findact.APIs.MovieModel;
 
 public class EventLog extends UserLog {
 

@@ -1,4 +1,4 @@
-package com.example.emin.findact;
+package com.findact;
 
 import android.app.Dialog;
 import android.content.Context;
