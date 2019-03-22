@@ -7,7 +7,6 @@ import com.example.emin.findact.OnTaskCompletedListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +18,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.UUID;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -105,13 +103,12 @@ public class IGDbAPI {
         // Genre seçilmiş ise
         if (selectedGenres.size() > 0){
             for (int i = 0; i < selectedGenres.size(); i++){
-                genres += genreHashMap.get(selectedGenres.get(i));
-                if (i != selectedGenres.size()-1){
+                genres +=genreHashMap.get(selectedGenres.get(i));
+                if(i != selectedGenres.size()-1){
                     genres += ",";
                 }
             }
-
-            params = fields + whereGenres + "("+genres+");";
+            params = fields +"where "+ whereGenres + "("+genres+")";
             // mode seçilmiş ise
             if (selectedMode.size() > 0){
                 mode = modeHashMap.get(selectedMode.get(0)).toString();
@@ -421,7 +418,7 @@ public class IGDbAPI {
                 popularity = 0.0;
             }
 
-            gameModel = new GameModel(UUID.randomUUID().toString(), gameId, gameName, genre_list, release_date, summary, image_id, game_mode_name_list,
+            gameModel = new GameModel("game"+gameId, gameId, gameName, genre_list, release_date, summary, image_id, game_mode_name_list,
                     rating, platform_list, video_id, popularity);
 
 

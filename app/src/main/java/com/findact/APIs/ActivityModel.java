@@ -43,6 +43,7 @@ public class ActivityModel {
         this.subCategories = bundle.getStringArrayList("sub_categories");
         this.attendees = bundle.getStringArrayList("attendees");
         this.description = bundle.getString("description");
+        this.owner = bundle.getString("owner");
     }
 
     public String getActivityId() {
@@ -98,6 +99,7 @@ public class ActivityModel {
         bundle.putStringArrayList("sub_categories",this.subCategories);
         bundle.putStringArrayList("attendees",this.attendees);
         bundle.putString("description",this.description);
+        bundle.putString("owner",this.owner);
 
         return bundle;
     }

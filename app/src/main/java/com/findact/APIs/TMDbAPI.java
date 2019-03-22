@@ -234,7 +234,7 @@ public class TMDbAPI {
                             release_date = date[2] + "." + date[1] + "." + date[0];
                         }
 
-                        MovieModel movieModel = new MovieModel(UUID.randomUUID().toString(), movieId, title, release_date, genre, vote_average.toString(),popularity, poster_path, overview, language);
+                        MovieModel movieModel = new MovieModel("movie"+movieId, movieId, title, release_date, genre, vote_average.toString(),popularity, poster_path, overview, language);
                         mMovieModelArrayList.add(movieModel);
                     }
                 }

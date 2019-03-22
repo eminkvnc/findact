@@ -1,37 +1,33 @@
 package com.example.emin.findact.RoomDatabase;
 
+import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
+import java.sql.Blob;
 
-@Entity(tableName = "post_detail", indices = @Index(value = {"firebaseId"},unique = true))
-public class Post {
+@Entity(tableName = "activity_post_detail", indices = @Index(value = {"firebaseId"},unique = true))
+public class Activity {
 
+    @NonNull
     @PrimaryKey
     private String firebaseId;
-
+    private String senderName;
+    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
+    private byte[] senderImage;
     private String activityId;
     private String overview;
     private String title;
     private String activityType;
     private String releaseDate;
-    private Double rating;
-    private Double popularity;
-    private String imagePath;
+    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
+    private byte[] picturePath;
     private Long logDate;
     private Boolean like;
     private Boolean dislike;
     private Boolean share;
-
-
-    private String genres;
-    private String modes;
-    private String platforms;
-    private String videoId;
-
-    private String language;
-
     private String owner;
     private String attendees;
     private String subCategories;
@@ -39,31 +35,24 @@ public class Post {
     private Double latitude;
     private Double longitude;
 
-
-    public Post(String firebaseId, String activityId, String overview, String title,
-                String activityType, String releaseDate, Double rating, Double popularity,
-                String imagePath, Long logDate, Boolean like, Boolean dislike, Boolean share,
-                String genres, String modes, String platforms, String videoId, String language,
-                String owner, String attendees, String subCategories, String category, Double latitude, Double longitude) {
-
+    public Activity(@NonNull String firebaseId,String senderName, byte[] senderImage, String activityId, String overview,
+                    String title, String activityType, String releaseDate,
+                    byte[] picturePath, Long logDate, Boolean like, Boolean dislike,
+                    Boolean share, String owner, String attendees, String subCategories,
+                    String category, Double latitude, Double longitude) {
         this.firebaseId = firebaseId;
+        this.senderName = senderName;
+        this.senderImage = senderImage;
         this.activityId = activityId;
         this.overview = overview;
         this.title = title;
         this.activityType = activityType;
         this.releaseDate = releaseDate;
-        this.rating = rating;
-        this.popularity = popularity;
-        this.imagePath = imagePath;
+        this.picturePath = picturePath;
         this.logDate = logDate;
         this.like = like;
         this.dislike = dislike;
         this.share = share;
-        this.genres = genres;
-        this.modes = modes;
-        this.platforms = platforms;
-        this.videoId = videoId;
-        this.language = language;
         this.owner = owner;
         this.attendees = attendees;
         this.subCategories = subCategories;
@@ -72,8 +61,17 @@ public class Post {
         this.longitude = longitude;
     }
 
+    @NonNull
     public String getFirebaseId() {
         return firebaseId;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public byte[] getSenderImage() {
+        return senderImage;
     }
 
     public String getActivityId() {
@@ -82,6 +80,10 @@ public class Post {
 
     public String getOverview() {
         return overview;
+    }
+
+    public byte[] getPicturePath() {
+        return picturePath;
     }
 
     public String getTitle() {
@@ -96,17 +98,6 @@ public class Post {
         return releaseDate;
     }
 
-    public Double getRating() {
-        return rating;
-    }
-
-    public Double getPopularity() {
-        return popularity;
-    }
-
-    public String getImagePath() {
-        return imagePath;
-    }
 
     public Long getLogDate() {
         return logDate;
@@ -122,26 +113,6 @@ public class Post {
 
     public Boolean getShare() {
         return share;
-    }
-
-    public String getGenres() {
-        return genres;
-    }
-
-    public String getModes() {
-        return modes;
-    }
-
-    public String getPlatforms() {
-        return platforms;
-    }
-
-    public String getVideoId() {
-        return videoId;
-    }
-
-    public String getLanguage() {
-        return language;
     }
 
     public String getOwner() {

@@ -1,7 +1,10 @@
 package com.example.emin.findact;
 
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -9,6 +12,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.net.ConnectivityManagerCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
@@ -31,8 +35,9 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
+    public static boolean isOnline;
     final String TAG = "MainActivity";
-
+    public static String displayingFragment = "";
     public ProgressDialog progressDialog;
     HomeFragment homeFragment;
     FindFragment findFragment;
@@ -41,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     FirebaseUser firebaseUser;
     FirebaseDBHelper firebaseDBHelper;
     User user;
+
+    public static NetworkStateBroadcastReciever reciever;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,64 +67,78 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         navigation.setSelectedItemId(R.id.navigation_home);
         progressDialog.show();
 
-        if (!isOnline()){
+        NetworkStateBroadcastReciever.NetworkStateListener networkListener = new NetworkStateBroadcastReciever.NetworkStateListener() {
+            @Override
+            public void OnNetworkConnected() {
+                isOnline = true;
+            }
+
+            @Override
+            public void OnNetworkDisconnected() {
+                isOnline = false;
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        reciever = new NetworkStateBroadcastReciever(networkListener);
+        registerReceiver(reciever,intentFilter);
+        reciever.onReceive(this,null);
+        if(isOnline){
+            firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+            reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String path = FirebaseDBHelper.FIREBASE_DB_CHILD_USERS+"/"+firebaseUser.getUid();
+                    if(!dataSnapshot.hasChild(path)){
+                        progressDialog.dismiss();
+                        Intent intent = new Intent(getApplicationContext(), GetUserDetailActivity.class);
+                        startActivity(intent);
+                    }else{
+                        firebaseDBHelper = FirebaseDBHelper.getInstance();
+                        user = UserDatabase.getInstance(getApplicationContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
+
+                        final ArrayList<UserData> userDatas = new ArrayList<>();
+
+                        if (user == null){
+                            firebaseDBHelper.getUserData(firebaseDBHelper.getCurrentUser(),userDatas);
+
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    firebaseDBHelper.saveImageToLocal(getApplicationContext(),user,userDatas.get(0));
+                                }
+                            },500);
+                            Handler handler1 = new Handler();
+                            handler1.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressDialog.dismiss();
+                                }
+                            },3000);
+                        }
+                        progressDialog.dismiss();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toast.makeText(MainActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
             Toast.makeText(getApplicationContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
             progressDialog.dismiss();
-            navigation.setSelectedItemId(R.id.navigation_profile);
-            profileFragment.setInitMode(ProfileFragment.INIT_MODE_MY_PROFILE_PAGE);
-            setMainFragment(profileFragment);
         }
 
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String path = FirebaseDBHelper.FIREBASE_DB_CHILD_USERS+"/"+firebaseUser.getUid();
-                if(!dataSnapshot.hasChild(path)){
-                    progressDialog.dismiss();
-                    Intent intent = new Intent(getApplicationContext(), GetUserDetailActivity.class);
-                    startActivity(intent);
-                }else{
-                    firebaseDBHelper = FirebaseDBHelper.getInstance();
-                    user = UserDatabase.getInstance(getApplicationContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
-
-                    final ArrayList<UserData> userDatas = new ArrayList<>();
-
-                    if (user == null){
-                        firebaseDBHelper.getUserData(firebaseDBHelper.getCurrentUser(),userDatas);
-
-                        Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                firebaseDBHelper.saveImageToLocal(getApplicationContext(),user,userDatas.get(0));
-                            }
-                        },500);
-                        Handler handler1 = new Handler();
-                        handler1.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressDialog.dismiss();
-                            }
-                        },3000);
-                    }
-                    progressDialog.dismiss();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(MainActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
 
     }
 
 
     private void setMainFragment(Fragment fragment){
-                getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                //getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.replace(R.id.main_frame,fragment);
                 fragmentTransaction.commit();
     }
@@ -149,9 +170,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onBackPressed() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        int count = fragmentManager.getBackStackEntryCount();
-        if (count > 0)//İf user is using inner screens back button works,otherwise ask to close app.
+
+        if (displayingFragment.equals(DisplayActivityFragment.TAG )|| displayingFragment.equals(SettingsFragment.TAG))//İf user is using inner screens back button works,otherwise ask to close app.
             super.onBackPressed();
         else {
             if (doubleBackTab) {
@@ -171,16 +191,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
-    public boolean isOnline() {
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-            int     exitValue = ipProcess.waitFor();
-            return (exitValue == 0);
-        }
-        catch (IOException e)          { e.printStackTrace(); }
-        catch (InterruptedException e) { e.printStackTrace(); }
 
-        return false;
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(reciever);
     }
+
+    public static void setDisplayingFragment(String displayingFragment) {
+        MainActivity.displayingFragment = displayingFragment;
+    }
+
 }

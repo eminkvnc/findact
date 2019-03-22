@@ -14,6 +14,9 @@ import com.example.emin.findact.APIs.GameModel;
 import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.APIs.PostModel;
 import com.example.emin.findact.OnTaskCompletedListener;
+import com.example.emin.findact.RoomDatabase.Activity;
+import com.example.emin.findact.RoomDatabase.Game;
+import com.example.emin.findact.RoomDatabase.Movie;
 import com.example.emin.findact.RoomDatabase.User;
 import com.example.emin.findact.RoomDatabase.UserDatabase;
 import com.google.android.gms.maps.model.LatLng;
@@ -30,13 +33,17 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.concurrent.ExecutionException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -61,9 +68,6 @@ public class FirebaseDBHelper {
     public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE = "Share";
     public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_LIKE = "Like";
     public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_DISLIKE = "Dislike";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_MOVIE = "Movie";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_GAME = "Game";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_ACTIVITY = "Activity";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWS = "Follows";
     public static final String FIREBASE_DB_CHILD_USER_REQUESTS = "Requests";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWERS = "Followers";
@@ -352,80 +356,55 @@ public class FirebaseDBHelper {
         });
     }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////BURAYI DÜZENLE + HER REQUEST'TE YENİ LOG EKLENİYOR ///////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-    public void getPosts(final ArrayList<PostModel> postModelArrayList, OnTaskCompletedListener listener){
+    public void getPosts(final Context context, final ArrayList<PostModel> postModelArrayList, final OnTaskCompletedListener listener){
 
         postModelArrayList.clear();
         final ArrayList<UserData> userDataArrayList = new ArrayList<>();
         final ArrayList<Integer> requestStatusList = new ArrayList<>();
-        getFollowing(userDataArrayList,requestStatusList, new OnTaskCompletedListener() {
+        final Integer[] check = new Integer[1];
+        check[0] = 0;
+
+        OnTaskCompletedListener onTaskCompletedListener = new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 for(int i = 0; i < userDataArrayList.size(); i++){
                     final UserData userData = userDataArrayList.get(i);
                     final int requestStatus = requestStatusList.get(i);
-                    databaseReference
-                            .child(FIREBASE_DB_CHILD_USERS)
-                            .child(userDataArrayList.get(i).getUuidString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    DatabaseReference reference = databaseReference
+                            .child(FIREBASE_DB_CHILD_USERS);
+                    reference.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            String moviePath = FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_MOVIE+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE;
-                            String gamePath = FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_GAME+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE;
-                            String activityPath = FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_ACTIVITY+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE;
-                            if(dataSnapshot.hasChild(moviePath)){
-                                for(DataSnapshot dsMovie :dataSnapshot
-                                        .child(FIREBASE_DB_CHILD_USER_LOG)
-                                        .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
-                                        .child(FIREBASE_DB_CHILD_USER_LOG_EVENT_MOVIE)
-                                        .child(FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE)
-                                        .getChildren()){
-
-                                    String firebaseId = dsMovie.child("title").getValue().toString();
-                                    int activityId = Integer.parseInt(dsMovie.child("activity-id").getValue().toString());
-                                    String title = dsMovie.child("title").getValue().toString();
-                                    String releaseDate = dsMovie.child("release-date").getValue().toString();
-
-                                    String[] genre = dsMovie.child("title").getValue().toString().split(",");
-                                    ArrayList<String> genreList = new ArrayList<>();
-                                    for(int j = 0; j < genre.length; j++){
-                                        genreList.add(genre[j]);
+                                String path = userData.getUuidString()+"/"+FIREBASE_DB_CHILD_USER_LOG +"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT;
+                                if(dataSnapshot.hasChild(path)){
+                                    for(DataSnapshot ds :dataSnapshot.child(userData.getUuidString()).child(FIREBASE_DB_CHILD_USER_LOG).child(FIREBASE_DB_CHILD_USER_LOG_EVENT).getChildren()){
+                                        if(ds.hasChild("share")) {
+                                            mapPost(context,ds, userData, requestStatus, postModelArrayList);
+                                        }else{
+                                            Log.d(TAG, "onDataChange: if1");
+                                        }
                                     }
-                                    String voteAvarage = dsMovie.child("vote-avarage").getValue().toString();
-                                    String popularity = dsMovie.child("popularity").getValue().toString();
-                                    String posterPath = dsMovie.child("poster-path").getValue().toString();
-                                    String overview = dsMovie.child("overview").getValue().toString();
-                                    String language = dsMovie.child("language").getValue().toString();
-                                    String shareDate = dsMovie.child("date").getValue().toString();
-                                    MovieModel movieModel = new MovieModel(firebaseId, activityId, title, releaseDate, genreList, voteAvarage,popularity, posterPath, overview, language);
-                                    PostModel postModel = new PostModel(userData, null, movieModel, null, requestStatus, PostModel.MODEL_TYPE_MOVIE, Long.getLong(shareDate));
-                                    postModelArrayList.add(postModel);
                                 }
-
+                                else{
+                                    Log.d(TAG, "onDataChange: if2");
+                                }
+                                check[0] += 1;
+                                if(check[0] == userDataArrayList.size()){
+                                    listener.onTaskCompleted();
+                                }
                             }
-                            if(dataSnapshot.hasChild(gamePath)){
 
-
-                            }
-                            if(dataSnapshot.hasChild(activityPath)){
-
-                            }
-                        }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
 
                         }
                     });
-
                 }
-
             }
-        });
-
+        };
+        getFollowing(userDataArrayList,requestStatusList,onTaskCompletedListener);
     }
 
 
@@ -801,44 +780,35 @@ public class FirebaseDBHelper {
         userList.clear();
         requestStatusList.clear();
         DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser());
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+        final String path2 = FIREBASE_DB_CHILD_USERS+"/"+getCurrentUser()+"/";
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_FOLLOWING)){
-                    Log.d(TAG, "onDataChange: has child:");
-                    for(DataSnapshot ds : dataSnapshot.child(FIREBASE_DB_CHILD_USER_FOLLOWS).child(FIREBASE_DB_CHILD_USER_FOLLOWING).getChildren()){
+                if(dataSnapshot.hasChild(path2+FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_FOLLOWING)){
+                    Log.d(TAG, "onDataChange: has child: following");
+                    for(DataSnapshot ds : dataSnapshot
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(getCurrentUser())
+                            .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                            .child(FIREBASE_DB_CHILD_USER_FOLLOWING).getChildren()){
                         final String username = ds.getKey();
                         if(username!=null) {
-                            databaseReference
-                                    .child(FIREBASE_DB_CHILD_USERS)
-                                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for(DataSnapshot ds2 : dataSnapshot.getChildren()){
-                                                if(ds2.getKey().equals(username)) {
-                                                    userList.add(mapUserData(ds2));
-                                                    if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
-                                                        requestStatusList.add(Integer.parseInt(ds2
-                                                                .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
-                                                                .child(FIREBASE_DB_CHILD_USER_REQUESTS)
-                                                                .child(getCurrentUser())
-                                                                .child("status").getValue().toString()));
+                            DataSnapshot ds2 = dataSnapshot.child(FIREBASE_DB_CHILD_USERS).child(username);
+                                userList.add(mapUserData(ds2));
+                                if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
+                                    requestStatusList.add(Integer.parseInt(ds2
+                                            .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                                            .child(FIREBASE_DB_CHILD_USER_REQUESTS)
+                                            .child(getCurrentUser())
+                                            .child("status").getValue().toString()));
 
-                                                    }else{
-                                                        requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
-                                                    }
-
-                                                }
-                                            }
-                                        }
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                        }
-                                    });
+                                }else{
+                                    requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
+                                }
                         }
                     }
                 }
+                listener.onTaskCompleted();
             }
 
             @Override
@@ -979,6 +949,7 @@ public class FirebaseDBHelper {
             reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
         }
         reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_MOVIE);
+
     }
 
     private void addGameModelLog(DatabaseReference reference, String eventType, GameModel gameModel){
@@ -990,29 +961,29 @@ public class FirebaseDBHelper {
             }
         }
         String modes = "";
-        for(int i = 0; i < gameModel.getGame_mode_name().size(); i++){
-            modes+=gameModel.getGame_mode_name().get(i);
-            if(i != gameModel.getGame_mode_name().size()-1){
+        for(int i = 0; i < gameModel.getGameModeList().size(); i++){
+            modes+=gameModel.getGameModeList().get(i);
+            if(i != gameModel.getGameModeList().size()-1){
                 modes+=",";
             }
         }
         String platforms = "";
-        for(int i = 0; i < gameModel.getPlatform_name().size(); i++){
-            platforms+=gameModel.getPlatform_name().get(i);
-            if(i != gameModel.getPlatform_name().size()-1){
+        for(int i = 0; i < gameModel.getPlatformList().size(); i++){
+            platforms+=gameModel.getPlatformList().get(i);
+            if(i != gameModel.getPlatformList().size()-1){
                 platforms+=",";
             }
         }
 
         reference.child("activity-id").setValue(gameModel.getGameId());
         reference.child("title").setValue(gameModel.getName());
-        reference.child("release-date").setValue(gameModel.getRelease_date());
+        reference.child("release-date").setValue(gameModel.getReleaseDate());
         reference.child("genres").setValue(genres);
         reference.child("modes").setValue(modes);
         reference.child("platforms").setValue(platforms);
         reference.child("rating").setValue(gameModel.getRating());
-        reference.child("image-path").setValue(gameModel.getImage_id());
-        reference.child("video-id").setValue(gameModel.getVideo_id());
+        reference.child("image-path").setValue(gameModel.getImageId());
+        reference.child("video-id").setValue(gameModel.getVideoId());
         reference.child("popularity").setValue(gameModel.getPopularity());
         reference.child("overview").setValue(gameModel.getSummary());
 
@@ -1027,11 +998,40 @@ public class FirebaseDBHelper {
             reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
         }
         reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_GAME);
+
     }
 
     private void addActivityModelLog(DatabaseReference reference, String eventType, ActivityModel activityModel){
 
-        reference.child("activity-id").setValue(activityModel.getActivityId());
+
+        String subCategories = "";
+        for(int i = 0; i < activityModel.getSubCategories().size(); i++){
+            subCategories += activityModel.getSubCategories().get(i);
+            if(i != activityModel.getSubCategories().size()-1){
+                subCategories += ",";
+            }
+        }
+
+        String attendees = "";
+        for(int j = 0; j < activityModel.getAttendees().size(); j++){
+            attendees += activityModel.getAttendees().get(j);
+            if(j != activityModel.getAttendees().size()-1){
+                attendees += ",";
+            }
+        }
+
+        reference.child("sub-categories").setValue(subCategories);
+        reference.child("attendees").setValue(attendees);
+        reference.child("id").setValue(activityModel.getActivityId());
+        reference.child("name").setValue(activityModel.getName());
+        reference.child("image").setValue(activityModel.getImageUri().toString());
+        reference.child("latitude").setValue(activityModel.getLocation().latitude);
+        reference.child("longitude").setValue(activityModel.getLocation().longitude);
+        reference.child("category").setValue(activityModel.getCategory());
+        reference.child("description").setValue(activityModel.getDescription());
+        reference.child("owner").setValue(activityModel.getOwner());
+        reference.child("date").setValue(activityModel.getDate());
+
         if(eventType.equals(EventLog.EVENT_TYPE_LIKE)){
             reference.child("like").setValue(true);
         }
@@ -1043,7 +1043,313 @@ public class FirebaseDBHelper {
             reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
         }
         reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_ACTIVITY);
+
+
+
     }
+
+    private void mapPost(final Context context, final DataSnapshot ds, final UserData userData, final int requestStatus, final ArrayList<PostModel> postModelArrayList){
+
+        if(ds.hasChild("share") && ds.child("activity-type").getValue() != null){
+            final Long shareDate = (Long) ds.child("log-date").getValue();
+
+            switch (ds.child("activity-type").getValue().toString()){
+
+                case EventLog.ACTIVITY_TYPE_MOVIE:
+
+                    String movieGenresString =  ds.child("genres").getValue().toString();
+                    String[] movieGenres =movieGenresString.split(",");
+                    ArrayList<String> movieGenreList = new ArrayList<>();
+                    for(int j = 0; j < movieGenres.length; j++){
+                        movieGenreList.add(movieGenres[j]);
+                    }
+
+                    MovieModel movieModel = new MovieModel(
+                            ds.getKey(),
+                            Integer.parseInt(ds.child("activity-id").getValue().toString()),
+                            ds.child("title").getValue().toString(),
+                            ds.child("release-date").getValue().toString(),
+                            movieGenreList,
+                            ds.child("rating").getValue().toString(),
+                            ds.child("popularity").getValue().toString(),
+                            ds.child("image-path").getValue().toString(),
+                            ds.child("overview").getValue().toString(),
+                            ds.child("language").getValue().toString());
+                    postModelArrayList.add(new PostModel(userData, null, movieModel, null, requestStatus, PostModel.MODEL_TYPE_MOVIE, shareDate));
+
+
+                    // For Room Database
+                    if (!UserDatabase.getInstance(context).getMovieDao().getItemId(ds.getKey())){
+                        Thread thread = new Thread(){
+                            @Override
+                            public void run() {
+                                boolean like = false;
+                                boolean dislike = false;
+                                if (ds.hasChild("like")){
+                                    like = Boolean.getBoolean(ds.child("like").toString());
+                                }
+                                if (ds.hasChild("dislike")){
+                                    dislike = Boolean.getBoolean(ds.child("dislike").toString());
+                                }
+
+
+                                // For Sender Image
+                                ImageDownload imageDownload5 = new ImageDownload();
+                                Bitmap bitmap5 = null;
+                                try {
+                                    bitmap5 = imageDownload5.execute(userData.getProfilePictureUri().toString()).get();
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                ByteArrayOutputStream outputStream5 = new ByteArrayOutputStream();
+                                bitmap5.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream5 );
+                                byte[] senderImage3 = outputStream5.toByteArray();
+
+
+                                // For Post Image
+                                ImageDownload imageDownload6 = new ImageDownload();
+                                Bitmap bitmap6 = null;
+                                try {
+                                    bitmap6 = imageDownload6.execute("http://image.tmdb.org/t/p/w185/"+ds.child("image-path").getValue().toString()).get();
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                ByteArrayOutputStream outputStream6 = new ByteArrayOutputStream();
+                                bitmap6.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream6);
+                                byte[] postImage3 = outputStream6.toByteArray();
+                                // Room Database
+                                Movie movie = new Movie(ds.getKey(),
+                                        Integer.parseInt(ds.child("activity-id").getValue().toString()),
+                                        userData.getUsername(),
+                                        senderImage3,
+                                        ds.child("overview").getValue().toString(),
+                                        ds.child("title").getValue().toString(),
+                                        EventLog.ACTIVITY_TYPE_MOVIE,
+                                        ds.child("release-date").getValue().toString(),
+                                        postImage3 ,
+                                        Long.valueOf(ds.child("log-date").getValue().toString()),
+                                        like,
+                                        dislike,
+                                        Boolean.getBoolean(ds.child("share").getValue().toString()),
+                                        ds.child("genres").getValue().toString(),
+                                        Double.valueOf(ds.child("rating").getValue().toString()),
+                                        Double.valueOf(ds.child("popularity").getValue().toString()) ,
+                                        ds.child("language").getValue().toString() );
+
+                                UserDatabase.getInstance(context).getMovieDao().insert(movie);
+                            }
+                        };
+                        thread.start();
+                    }
+
+                    break;
+                case EventLog.ACTIVITY_TYPE_GAME:
+
+                    final String gameGenresString = ds.child("genres").getValue().toString();
+                    String[] gameGenres = gameGenresString.split(",");
+                    ArrayList<String> gameGenreList = new ArrayList<>();
+                    for(int j = 0; j < gameGenres.length; j++){
+                        gameGenreList.add(gameGenres[j]);
+                    }
+
+                    final String gameModesString = ds.child("modes").getValue().toString();
+                    String[] gameModes = gameModesString.split(",");
+                    ArrayList<String> gameModeList = new ArrayList<>();
+                    for(int j = 0; j < gameModes.length; j++){
+                        gameModeList.add(gameModes[j]);
+                    }
+
+                    final String gamePlatformsString = ds.child("platforms").getValue().toString();
+                    String[] gamePlatforms = gamePlatformsString.split(",");
+                    ArrayList<String> gamePlatformList = new ArrayList<>();
+                    for(int j = 0; j < gamePlatforms.length; j++){
+                        gamePlatformList.add(gamePlatforms[j]);
+                    }
+
+                    final GameModel gameModel = new GameModel(
+                            ds.getKey(),
+                            Integer.parseInt(ds.child("activity-id").getValue().toString()),
+                            ds.child("title").getValue().toString(),
+                            gameGenreList,ds.child("release-date").getValue().toString(),
+                            ds.child("overview").getValue().toString(),
+                            ds.child("image-path").getValue().toString(),
+                            gameModeList,
+                            Double.parseDouble(ds.child("rating").getValue().toString()),
+                            gamePlatformList,
+                            ds.child("video-id").getValue().toString(),
+                            Double.parseDouble(ds.child("popularity").getValue().toString()));
+
+                    postModelArrayList.add(new PostModel(userData, gameModel, null, null, requestStatus, PostModel.MODEL_TYPE_GAME, shareDate));
+
+
+                    // For Room Database
+                    if (!UserDatabase.getInstance(context).getGameDao().getItemId(ds.getKey())) {
+                        Thread thread = new Thread(){
+                            @Override
+                            public void run() {
+
+                                boolean like2 = false;
+                                boolean dislike2 = false;
+                                if (ds.hasChild("like")){
+                                    like2 = Boolean.getBoolean(ds.child("like").toString());
+                                }
+                                if (ds.hasChild("dislike")){
+                                    dislike2 = Boolean.getBoolean(ds.child("dislike").toString());
+                                }
+
+                                // For Sender Image
+                                ImageDownload imageDownload3 = new ImageDownload();
+                                Bitmap bitmap3 = null;
+                                try {
+                                    bitmap3 = imageDownload3.execute(userData.getProfilePictureUri().toString()).get();
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                ByteArrayOutputStream outputStream3 = new ByteArrayOutputStream();
+                                bitmap3.compress(Bitmap.CompressFormat.JPEG, 100, outputStream3);
+                                byte[] senderImage2 = outputStream3.toByteArray();
+
+                                // For Post Image
+                                ImageDownload imageDownload4 = new ImageDownload();
+                                Bitmap bitmap4 = null;
+                                try {
+                                    bitmap4 = imageDownload4.execute("https://images.igdb.com/igdb/image/upload/t_cover_big/" + ds.child("image-path").getValue().toString() + ".jpg").get();
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                ByteArrayOutputStream outputStream4 = new ByteArrayOutputStream();
+                                bitmap4.compress(Bitmap.CompressFormat.JPEG, 100, outputStream4);
+                                byte[] postImage2 = outputStream4.toByteArray();
+
+                                // Room Database
+                                Game game = new Game(ds.getKey(),
+                                        userData.getUsername(),
+                                        senderImage2,
+                                        Integer.parseInt(ds.child("activity-id").getValue().toString()),
+                                        ds.child("overview").getValue().toString(),
+                                        ds.child("title").getValue().toString(),
+                                        EventLog.ACTIVITY_TYPE_GAME,
+                                        ds.child("release-date").getValue().toString(),
+                                        postImage2,
+                                        Long.valueOf(ds.child("log-date").getValue().toString()),
+                                        like2,
+                                        dislike2,
+                                        Boolean.getBoolean(ds.child("share").getValue().toString()),
+                                        ds.child("genres").getValue().toString(),
+                                        ds.child("video-id").getValue().toString(),
+                                        Double.parseDouble(ds.child("rating").getValue().toString()),
+                                        Double.parseDouble(ds.child("popularity").getValue().toString()),
+                                        ds.child("platforms").getValue().toString(),
+                                        ds.child("modes").getValue().toString()
+                                );
+                                UserDatabase.getInstance(context).getGameDao().insert(game);
+                            }
+                        };
+                        thread.start();
+
+                    }
+                    break;
+                case EventLog.ACTIVITY_TYPE_ACTIVITY:
+                    ActivityModel activityModel = mapActivity(ds);
+                    postModelArrayList.add(new PostModel(userData, null, null, activityModel, requestStatus, PostModel.MODEL_TYPE_ACTIVTY, shareDate));
+
+                    // For Room Database
+                    if (!UserDatabase.getInstance(context).getActivityDao().getItemId(ds.getKey())){
+                        Thread thread = new Thread(){
+
+                            @Override
+                            public void run() {
+
+                                boolean like3 = false;
+                                boolean dislike3 = false;
+                                if (ds.hasChild("like")){
+                                    like3 = Boolean.getBoolean(ds.child("like").toString());
+                                }
+                                if (ds.hasChild("dislike")){
+                                    dislike3 = Boolean.getBoolean(ds.child("dislike").toString());
+                                }
+
+                                ArrayList<String> attendeesArrayList = new ArrayList<>();
+                                for (DataSnapshot dataSnapshot : ds.child("attendees").getChildren()){
+                                    attendeesArrayList.add(dataSnapshot.getKey());
+                                }
+
+                                String attendees ="";
+                                for (int i = 0; i < attendeesArrayList.size(); i++){
+                                    attendees += attendeesArrayList.get(i);
+                                    if (i != attendeesArrayList.size()-1){
+                                        attendees += ",";
+                                    }
+                                }
+
+                                // For Sender Image
+                                ImageDownload imageDownload = new ImageDownload();
+                                Bitmap bitmap = null;
+                                try {
+                                    bitmap = imageDownload.execute(userData.getProfilePictureUri().toString()).get();
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                bitmap.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream );
+                                byte[] senderImage = outputStream.toByteArray();
+
+                                // For Post Image
+                                ImageDownload imageDownload2 = new ImageDownload();
+                                Bitmap bitmap2 = null;
+                                try {
+                                    bitmap2 = imageDownload2.execute(ds.child("image").getValue().toString()).get();
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+                                bitmap2.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream2);
+                                byte[] postImage = outputStream2.toByteArray();
+
+                                // Room Database
+                                Activity activity = new Activity(ds.getKey(),
+                                        userData.getUsername(),
+                                        senderImage,ds.child("id").getValue().toString(),
+                                        ds.child("description").getValue().toString(),
+                                        ds.child("name").getValue().toString(),
+                                        EventLog.ACTIVITY_TYPE_ACTIVITY,
+                                        ds.child("date").getValue().toString(),
+                                        postImage,
+                                        Long.valueOf(ds.child("log-date").getValue().toString()),
+                                        like3,
+                                        dislike3,
+                                        Boolean.getBoolean(ds.child("share").getValue().toString()),
+                                        ds.child("owner").getValue().toString() ,attendees ,
+                                        ds.child("sub-categories").getValue().toString(),
+                                        ds.child("category").getValue().toString(),
+                                        Double.valueOf(ds.child("latitude").getValue().toString()),
+                                        Double.valueOf(ds.child("longitude").getValue().toString())
+                                );
+                                UserDatabase.getInstance(context).getActivityDao().insert(activity);
+                            }
+                        };
+                        thread.start();
+                    }
+
+                    break;
+            }
+        }else {
+            Log.d(TAG, "mapPost: no post for user: "+userData.getUsername());
+        }
+    }
+
 
 
     public String getCurrentUser(){
@@ -1065,6 +1371,7 @@ public class FirebaseDBHelper {
         task.execute();
 
     }
+
     public class ImageDownloaderTask extends AsyncTask<Void, Void, Void> {
 
 
@@ -1120,4 +1427,34 @@ public class FirebaseDBHelper {
         }
 
     }
+
+    public class ImageDownload extends AsyncTask<String,Void,Bitmap>{
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+
+            Bitmap bitmap = null;
+            URL url;
+            HttpURLConnection connection;
+
+            try {
+                url = new URL(strings[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                InputStream stream = connection.getInputStream();
+                bitmap = BitmapFactory.decodeStream(stream);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+        }
+    }
+
 }

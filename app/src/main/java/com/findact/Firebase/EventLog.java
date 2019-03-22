@@ -11,9 +11,9 @@ public class EventLog extends UserLog {
     final public static String EVENT_TYPE_SHARE = "Share";
     final public static String EVENT_TYPE_CLICK = "Click";
 
-    final public static String ACTIVITY_TYPE_MOVIE = "Movie";
-    final public static String ACTIVITY_TYPE_GAME = "Game";
-    final public static String ACTIVITY_TYPE_ACTIVITY = "Activity";
+    public static final String ACTIVITY_TYPE_MOVIE = "Movie";
+    public static final String ACTIVITY_TYPE_GAME = "Game";
+    public static final String ACTIVITY_TYPE_ACTIVITY = "Activity";
 
     private MovieModel movieModel;
     private GameModel gameModel;

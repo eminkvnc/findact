@@ -20,7 +20,6 @@ import android.widget.TextView;
 import com.example.emin.findact.APIs.ActivityModel;
 import com.example.emin.findact.APIs.GameModel;
 import com.example.emin.findact.APIs.MovieModel;
-import com.example.emin.findact.APIs.PostModel;
 import com.example.emin.findact.Firebase.EventLog;
 import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
@@ -34,8 +33,6 @@ import com.squareup.picasso.Picasso;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.UUID;
 
 public class DisplayActivityFragment extends Fragment {
 
@@ -47,7 +44,7 @@ public class DisplayActivityFragment extends Fragment {
 
     private int initMode;
     private View v;
-    private String TAG = "DisplayActivityFragment";
+    public static String TAG = "DisplayActivityFragment";
     MovieModel movieModel;
     GameModel gameModel;
     ActivityModel activityModel;
@@ -75,6 +72,7 @@ public class DisplayActivityFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MainActivity.setDisplayingFragment(DisplayActivityFragment.TAG);
         //setHasOptionsMenu(true);
         ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         if (initMode == INIT_MODE_MOVIE_ACTIVITY){
@@ -378,15 +376,15 @@ public class DisplayActivityFragment extends Fragment {
         gameDislikeImageView = v.findViewById(R.id.fragment_display_game_dislike_iv);
         gemeShareImageView = v.findViewById(R.id.fragment_display_game_share_iv);
 
-        if (gameModel.getImage_id() != null){
-            Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImage_id()+".jpg")).into(gamePoster);
+        if (gameModel.getImageId() != null){
+            Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImageId()+".jpg")).into(gamePoster);
         } else {
             gamePoster.setImageResource(R.drawable.default_game);
         }
 
 
         gameTitle.setText(gameModel.getName());
-        gameReleaseDate.setText(gameModel.getRelease_date());
+        gameReleaseDate.setText(gameModel.getReleaseDate());
         gameRating.setText(new DecimalFormat ("##.#").format(gameModel.getRating()));
         gameOverview.setText(gameModel.getSummary());
         gamePopularity.setText(new DecimalFormat ("##.#").format(gameModel.getPopularity()));
@@ -394,8 +392,8 @@ public class DisplayActivityFragment extends Fragment {
         gameTrailer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (gameModel.getVideo_id() != null){
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:"+gameModel.getVideo_id()));
+                if (gameModel.getVideoId() != null){
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:"+gameModel.getVideoId()));
                     startActivity(intent);
                 } else {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query="+gameModel.getName()+" trailer"));
@@ -443,17 +441,17 @@ public class DisplayActivityFragment extends Fragment {
         }
 
         gameModeName.removeAllViews();
-        for (int i = 0; i < gameModel.getGame_mode_name().size(); i++){
+        for (int i = 0; i < gameModel.getGameModeList().size(); i++){
             TextView textView = new TextView(getContext());
-            textView.setText(gameModel.getGame_mode_name().get(i));
+            textView.setText(gameModel.getGameModeList().get(i));
             textView.setTextSize(18);
             gameModeName.addView(textView);
         }
 
         gamePlatform.removeAllViews();
-        for (int i = 0; i < gameModel.getPlatform_name().size(); i++){
+        for (int i = 0; i < gameModel.getPlatformList().size(); i++){
             TextView textView = new TextView(getContext());
-            textView.setText(gameModel.getPlatform_name().get(i));
+            textView.setText(gameModel.getPlatformList().get(i));
             textView.setTextSize(18);
             gamePlatform.addView(textView);
         }
@@ -579,6 +577,7 @@ public class DisplayActivityFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        MainActivity.setDisplayingFragment(DisplayActivityFragment.TAG);
         if(initMode == INIT_MODE_GROUP_ACTIVITY){
             activityMap.onResume();
         }

@@ -51,10 +51,10 @@ public class GameListItemAdapter extends RecyclerView.Adapter<GameListItemAdapte
         gameListItemViewHolder.cardView.setOnClickListener(customListener);
 
         gameListItemViewHolder.name.setText(gameModel.getName());
-        gameListItemViewHolder.releaseDate.setText(gameModel.getRelease_date());
+        gameListItemViewHolder.releaseDate.setText(gameModel.getReleaseDate());
 
-        if (gameModel.getImage_id() != null){
-            Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImage_id()+".jpg")).into(gameListItemViewHolder.poster);
+        if (gameModel.getImageId() != null){
+            Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImageId()+".jpg")).into(gameListItemViewHolder.poster);
         } else {
             gameListItemViewHolder.poster.setImageResource(R.drawable.default_game);
         }

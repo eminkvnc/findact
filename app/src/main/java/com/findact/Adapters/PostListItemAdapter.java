@@ -15,18 +15,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.emin.findact.APIs.ActivityModel;
-import com.example.emin.findact.APIs.GameModel;
-import com.example.emin.findact.APIs.MovieModel;
 import com.example.emin.findact.APIs.PostModel;
 import com.example.emin.findact.DisplayActivityFragment;
-import com.example.emin.findact.Firebase.UserData;
+import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.ProfileFragment;
 import com.example.emin.findact.R;
 import com.squareup.picasso.Picasso;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -75,9 +72,9 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
 
         CustomListener customListener = new CustomListener(postModel);
         postListItemViewHolder.postCardview.setOnClickListener(customListener);
-        postListItemViewHolder.userPictureCardview.setOnClickListener(customListener);
+        postListItemViewHolder.userCardView.setOnClickListener(customListener);
 
-        Date date = new Date(postModel.getShareDate() * 1000L);
+        Date date = new Date(postModel.getShareDate());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm' 'dd.MM.yyyy");
 
         postListItemViewHolder.username.setText(postModel.getUserModel().getUsername());
@@ -86,11 +83,15 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
         switch (postModel.getModelType()) {
             case "Game":
 
-                Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+postModel.getGameModel().getImage_id()+".jpg")).into(postListItemViewHolder.postImage);
+                Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+postModel.getGameModel().getImageId()+".jpg")).into(postListItemViewHolder.postImage);
 
                 postListItemViewHolder.postTitle.setText(postModel.getGameModel().getName());
-                postListItemViewHolder.date.setText(postModel.getGameModel().getRelease_date());
-                postListItemViewHolder.rating.setText(postModel.getGameModel().getRating().toString());
+                postListItemViewHolder.date.setText(postModel.getGameModel().getReleaseDate());
+                if(postModel.getGameModel().getRating() != null) {
+                    postListItemViewHolder.rating.setText(new DecimalFormat("##.#").format(postModel.getGameModel().getRating()));
+                }else {
+                    postListItemViewHolder.rating.setText(postModel.getGameModel().getRating().toString());
+                }
                 postListItemViewHolder.category.setText(postModel.getModelType());
                 break;
             case "Movie":
@@ -99,17 +100,20 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
 
                 postListItemViewHolder.postTitle.setText(postModel.getMovieModel().getTitle());
                 postListItemViewHolder.date.setText(postModel.getMovieModel().getRelease_date());
-                postListItemViewHolder.rating.setText(postModel.getMovieModel().getVote_average());
+                if(postModel.getMovieModel().getVote_average() != null) {
+                    postListItemViewHolder.rating.setText(new DecimalFormat("##.#").format(Double.parseDouble(postModel.getMovieModel().getVote_average())));
+                }else {
+                    postListItemViewHolder.rating.setText(postModel.getMovieModel().getVote_average());
+                }
                 postListItemViewHolder.category.setText(postModel.getModelType());
 
                 break;
             case "Activity":
 
                 Picasso.get().load(postModel.getActivityModel().getImageUri()).into(postListItemViewHolder.postImage);
-
-                postListItemViewHolder.postTitle.setText(postModel.getMovieModel().getTitle());
-                postListItemViewHolder.date.setText(postModel.getMovieModel().getRelease_date());
-                postListItemViewHolder.rating.setText(postModel.getMovieModel().getVote_average());
+                postListItemViewHolder.postTitle.setText(postModel.getActivityModel().getName());
+                postListItemViewHolder.date.setText(postModel.getActivityModel().getDate());
+                postListItemViewHolder.rating.setText(new DecimalFormat("##.#").format(0));
                 postListItemViewHolder.category.setText(postModel.getModelType());
 
                 break;
@@ -131,8 +135,8 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
         TextView rating;
         TextView category;
         TextView shareDate;
-        CardView userPictureCardview;
         CardView postCardview;
+        CardView userCardView;
 
 
         PostListItemViewHolder(@NonNull View view) {
@@ -146,8 +150,8 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
             rating = view.findViewById(R.id.list_item_home_page_rating_tv);
             category = view.findViewById(R.id.list_item_home_page_post_category_tv);
             shareDate = view.findViewById(R.id.list_item_home_page_post_share_date_tv);
-            userPictureCardview = view.findViewById(R.id.list_item_home_page_user_picture_cv);
             postCardview = view.findViewById(R.id.list_item_home_page_cv);
+            userCardView = view.findViewById(R.id.list_item_home_page_user_cv);
 
         }
     }
@@ -189,9 +193,24 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.replace(R.id.main_frame,displayActivityFragment);
                 fragmentTransaction.commit();
-            } else if (view.getId() == R.id.list_item_home_page_user_picture_cv){
+            }
+            if (view.getId() == R.id.list_item_home_page_user_cv){
                 profileFragment = new ProfileFragment();
+                Bundle bundle = new Bundle();
+                bundle.putBundle("UserData",postModel.getUserModel().UserDatatoBundle());
+                bundle.putInt("RequestStatus",postModel.getRequestStatus());
                 profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                profileFragment.setArguments(bundle);
+                if(postModel.getUserModel().getUuidString().equals(FirebaseDBHelper.getInstance().getCurrentUser())){
+                    profileFragment.setInitMode(ProfileFragment.INIT_MODE_MY_PROFILE_PAGE);
+                }else {
+                    profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                }
+                FragmentManager fragmentManager = ((FragmentActivity)context).getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.replace(R.id.main_frame, profileFragment);
+                fragmentTransaction.commit();
             }
         }
     }

@@ -2,7 +2,6 @@ package com.example.emin.findact.APIs;
 
 import android.os.Bundle;
 
-import com.example.emin.findact.Firebase.FirebaseDBHelper;
 import com.example.emin.findact.Firebase.UserData;
 
 public class PostModel {
@@ -11,8 +10,6 @@ public class PostModel {
     public static String MODEL_TYPE_GAME = "Game";
     public static String MODEL_TYPE_ACTIVTY = "Activity";
 
-
-    // #############################    KULLANILMAYABİLİR   ########################
 
     private UserData userModel;
     private GameModel gameModel;
