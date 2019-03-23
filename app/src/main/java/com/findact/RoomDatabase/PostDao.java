@@ -6,18 +6,20 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
+import java.util.List;
+
 @Dao
-public interface GameDao {
+public interface PostDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(Game game);
+    void insert(Post post);
 
-    @Query("SELECT EXISTS(SELECT firebaseId FROM game_post_detail WHERE firebaseId=:firebaseId)")
+    @Query("SELECT EXISTS(SELECT firebaseId FROM post_detail WHERE firebaseId=:firebaseId)")
     boolean getItemId(String firebaseId);
 
     @Update
-    void update(Game game);
+    void update(Post post);
 
-    @Query("SELECT * FROM game_post_detail")
-    Game getData();
+    @Query("SELECT * FROM post_detail")
+    List<Post> getData();
 }

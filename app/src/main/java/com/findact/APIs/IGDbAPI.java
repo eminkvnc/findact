@@ -108,11 +108,12 @@ public class IGDbAPI {
                     genres += ",";
                 }
             }
-            params = fields +"where "+ whereGenres + "("+genres+")";
             // mode seçilmiş ise
             if (selectedMode.size() > 0){
                 mode = modeHashMap.get(selectedMode.get(0)).toString();
                 params = fields + whereGenres + "("+genres+")&" + whereMode +mode+";";
+            } else{
+                params = fields + whereGenres + "("+genres+");";
             }
         }
         // genre seçilmemiş ise
@@ -319,7 +320,7 @@ public class IGDbAPI {
                 video_id = videoObject.getString("video_id");
 
             } else {
-                video_id = null;
+                video_id = "NaN";
             }
 
 
@@ -331,7 +332,7 @@ public class IGDbAPI {
                 JSONObject imageObject = new JSONObject(cover);
                 image_id = imageObject.getString("image_id");
             } else {
-                image_id = null;
+                image_id = "NaN";
             }
 
 

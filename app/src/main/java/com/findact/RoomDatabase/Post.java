@@ -6,8 +6,8 @@ import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
-@Entity(tableName = "game_post_detail", indices = @Index(value = {"firebaseId"},unique = true))
-public class Game {
+@Entity(tableName = "post_detail", indices = @Index(value = {"firebaseId"},unique = true))
+public class Post {
 
     @NonNull
     @PrimaryKey
@@ -16,7 +16,7 @@ public class Game {
     private String senderName;
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
     private byte[] senderImage;
-    private int activityId;
+    private String activityId;
     private String overview;
     private String title;
     private String activityType;
@@ -31,14 +31,26 @@ public class Game {
     private String videoId;
     private Double rating;
     private Double popularity;
+
     private String platforms;
     private String modes;
 
-    public Game(@NonNull String firebaseId,String senderName,byte[] senderImage, int activityId, String overview,
-                String title, String activityType, String releaseDate,
-                byte[] picturePath, Long logDate, Boolean like, Boolean dislike,
-                Boolean share, String genres, String videoId, Double rating,
-                Double popularity, String platforms, String modes) {
+    private String language;
+    private String owner;
+    private String attendees;
+    private String subCategories;
+    private String category;
+    private Double latitude;
+    private Double longitude;
+
+    public Post(@NonNull String firebaseId, String senderName, byte[] senderImage,
+                String activityId, String overview, String title, String activityType,
+                String releaseDate, byte[] picturePath, Long logDate, Boolean like,
+                Boolean dislike, Boolean share, String genres, String videoId,
+                Double rating, Double popularity, String platforms, String modes,
+                String language, String owner, String attendees, String subCategories,
+                String category, Double latitude, Double longitude)
+    {
         this.firebaseId = firebaseId;
         this.senderName = senderName;
         this.senderImage = senderImage;
@@ -58,6 +70,13 @@ public class Game {
         this.popularity = popularity;
         this.platforms = platforms;
         this.modes = modes;
+        this.language = language;
+        this.owner = owner;
+        this.attendees = attendees;
+        this.subCategories = subCategories;
+        this.category = category;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     @NonNull
@@ -73,7 +92,7 @@ public class Game {
         return senderImage;
     }
 
-    public int getActivityId() {
+    public String getActivityId() {
         return activityId;
     }
 
@@ -135,5 +154,33 @@ public class Game {
 
     public String getModes() {
         return modes;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public String getAttendees() {
+        return attendees;
+    }
+
+    public String getSubCategories() {
+        return subCategories;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
     }
 }

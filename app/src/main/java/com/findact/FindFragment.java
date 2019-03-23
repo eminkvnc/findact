@@ -44,7 +44,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
 
     public static final String TAB_NAME_PERSON = "Person";
     public static final String TAB_NAME_MOVIE = "Movie";
-    public static final String TAB_NAME_GAME = "Game";
+    public static final String TAB_NAME_GAME = "Post";
     public static final String TAB_NAME_ACTIVITY = "Activity";
 
     public static String TAG = "FindFragment";
@@ -185,7 +185,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         firstClick = new HashMap<>();
         firstClick.put("Person",true);
         firstClick.put("Movie",true);
-        firstClick.put("Game",true);
+        firstClick.put("Post",true);
         firstClick.put("Group",true);
 
         searchImageView.setOnClickListener(this);
@@ -199,7 +199,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 oldSearchParameter = searchEditText.getText().toString();
                 firstClick.put("Person",true);
                 firstClick.put("Movie",true);
-                firstClick.put("Game",true);
+                firstClick.put("Post",true);
                 firstClick.put("Group",true);
             }
 
@@ -292,10 +292,10 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 modeRecyclerView.setAdapter(modeNamesAdapter);
                 modeNamesAdapter.notifyDataSetChanged();
 
-                selectedTab = "Game";
-                if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Game")){
+                selectedTab = "Post";
+                if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Post")){
                     searchImageView.performClick();
-                    firstClick.put("Game",false);
+                    firstClick.put("Post",false);
                 }
 
                 break;
@@ -355,7 +355,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                                 }
                                 tmDbAPI.searchMovie(sParam, movieModelArrayList, this);
                                 break;
-                            case "Game":
+                            case "Post":
 
                                 if(!progressDialog.isShowing()){
                                     progressDialog.show();
@@ -391,7 +391,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                                     tmDbAPI.searchMovieByGenre(selectedGenreList, movieModelArrayList,this );
                                 }
                                 break;
-                            case "Game":
+                            case "Post":
                                 if (!selectedGenreList.isEmpty() || !selectedModeList.isEmpty()){
                                     if(!progressDialog.isShowing()){
                                         progressDialog.show();
@@ -455,7 +455,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     progressDialog.dismiss();
                 }
                 break;
-            case "Game":
+            case "Post":
 //                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                 findGameAdapter.notifyDataSetChanged();
                 if(progressDialog.isShowing()){

@@ -75,7 +75,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     private LocationListener locationListener;
     private LatLng latLng;
 
-    private String[] categoriesList = {"Movie","Game","Music","Trip"};
+    private String[] categoriesList = {"Movie","Post","Music","Trip"};
     private ArrayList<String> selectedSubItemsArray;
     private ArrayList<String> movieCategoriesList;
     private ArrayList<String> gameCategoriesList;
@@ -173,7 +173,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         tripCategoriesList.add("Sea Trip");
 
         subCategoriesHashmap.put("Movie",movieCategoriesList);
-        subCategoriesHashmap.put("Game",gameCategoriesList);
+        subCategoriesHashmap.put("Post",gameCategoriesList);
         subCategoriesHashmap.put("Music",musicCategoriesList);
         subCategoriesHashmap.put("Trip",tripCategoriesList);
 

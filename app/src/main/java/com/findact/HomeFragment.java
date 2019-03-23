@@ -15,12 +15,16 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.findact.APIs.PostModel;
+import com.findact.Adapters.OfflinePostListItemAdapter;
 import com.findact.Adapters.PostListItemAdapter;
 import com.findact.Firebase.FirebaseDBHelper;
+import com.findact.RoomDatabase.Post;
+import com.findact.RoomDatabase.UserDatabase;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class HomeFragment extends Fragment {
 
@@ -29,8 +33,12 @@ public class HomeFragment extends Fragment {
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private PostListItemAdapter postListItemAdapter;
+    private OfflinePostListItemAdapter offlinePostListItemAdapter;
     private ProgressDialog progressDialog;
     private ArrayList<PostModel> postModelArrayList;
+
+    private ArrayList<Post> postArrayList;
+
     private FirebaseDBHelper firebaseDBHelper;
 
     public HomeFragment() {
@@ -44,6 +52,7 @@ public class HomeFragment extends Fragment {
         setHasOptionsMenu(true);
         progressDialog = new ProgressDialog(getContext());
         postModelArrayList = new ArrayList<>();
+        postArrayList = new ArrayList<>();
         firebaseDBHelper = FirebaseDBHelper.getInstance();
         refreshData();
     }
@@ -66,16 +75,23 @@ public class HomeFragment extends Fragment {
         recyclerView = v.findViewById(R.id.home_fragment_rv);
         swipeRefreshLayout = v.findViewById(R.id.home_fragment_srl);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList);
-        recyclerView.setAdapter(postListItemAdapter);
+        if (MainActivity.isOnline){
+            postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList);
+            recyclerView.setAdapter(postListItemAdapter);
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    refreshData();
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            });
+        } else {
 
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshData();
-                swipeRefreshLayout.setRefreshing(false);
-            }
-        });
+            List<Post> postList = UserDatabase.getInstance(getContext()).getPostDao().getData();
+            postArrayList = new ArrayList<>(postList);
+            offlinePostListItemAdapter = new OfflinePostListItemAdapter(getContext(),postArrayList);
+            recyclerView.setAdapter(offlinePostListItemAdapter);
+        }
 
         return v;
     }

@@ -14,9 +14,7 @@ import com.findact.APIs.GameModel;
 import com.findact.APIs.MovieModel;
 import com.findact.APIs.PostModel;
 import com.findact.OnTaskCompletedListener;
-import com.findact.RoomDatabase.Activity;
-import com.findact.RoomDatabase.Game;
-import com.findact.RoomDatabase.Movie;
+import com.findact.RoomDatabase.Post;
 import com.findact.RoomDatabase.User;
 import com.findact.RoomDatabase.UserDatabase;
 import com.google.android.gms.maps.model.LatLng;
@@ -1075,11 +1073,11 @@ public class FirebaseDBHelper {
                             ds.child("image-path").getValue().toString(),
                             ds.child("overview").getValue().toString(),
                             ds.child("language").getValue().toString());
-                    postModelArrayList.add(new PostModel(userData, null, movieModel, null, requestStatus, PostModel.MODEL_TYPE_MOVIE, shareDate));
+                    postModelArrayList.add(new PostModel(userData, null, movieModel, null, requestStatus, EventLog.ACTIVITY_TYPE_MOVIE, shareDate));
 
 
                     // For Room Database
-                    if (!UserDatabase.getInstance(context).getMovieDao().getItemId(ds.getKey())){
+                    if (!UserDatabase.getInstance(context).getPostDao().getItemId(ds.getKey())){
                         Thread thread = new Thread(){
                             @Override
                             public void run() {
@@ -1122,25 +1120,34 @@ public class FirebaseDBHelper {
                                 bitmap6.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream6);
                                 byte[] postImage3 = outputStream6.toByteArray();
                                 // Room Database
-                                Movie movie = new Movie(ds.getKey(),
-                                        Integer.parseInt(ds.child("activity-id").getValue().toString()),
+                                Post movie = new Post(ds.getKey(),
                                         userData.getUsername(),
                                         senderImage3,
+                                        ds.child("activity-id").getValue().toString(),
                                         ds.child("overview").getValue().toString(),
                                         ds.child("title").getValue().toString(),
                                         EventLog.ACTIVITY_TYPE_MOVIE,
                                         ds.child("release-date").getValue().toString(),
-                                        postImage3 ,
+                                        postImage3,
                                         Long.valueOf(ds.child("log-date").getValue().toString()),
                                         like,
                                         dislike,
                                         Boolean.getBoolean(ds.child("share").getValue().toString()),
                                         ds.child("genres").getValue().toString(),
+                                        null,
                                         Double.valueOf(ds.child("rating").getValue().toString()),
-                                        Double.valueOf(ds.child("popularity").getValue().toString()) ,
-                                        ds.child("language").getValue().toString() );
+                                        Double.valueOf(ds.child("popularity").getValue().toString()),
+                                        null,
+                                        null,
+                                        ds.child("language").getValue().toString(),
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null);
 
-                                UserDatabase.getInstance(context).getMovieDao().insert(movie);
+                                UserDatabase.getInstance(context).getPostDao().insert(movie);
                             }
                         };
                         thread.start();
@@ -1183,11 +1190,11 @@ public class FirebaseDBHelper {
                             ds.child("video-id").getValue().toString(),
                             Double.parseDouble(ds.child("popularity").getValue().toString()));
 
-                    postModelArrayList.add(new PostModel(userData, gameModel, null, null, requestStatus, PostModel.MODEL_TYPE_GAME, shareDate));
+                    postModelArrayList.add(new PostModel(userData, gameModel, null, null, requestStatus, EventLog.ACTIVITY_TYPE_GAME, shareDate));
 
 
                     // For Room Database
-                    if (!UserDatabase.getInstance(context).getGameDao().getItemId(ds.getKey())) {
+                    if (!UserDatabase.getInstance(context).getPostDao().getItemId(ds.getKey())) {
                         Thread thread = new Thread(){
                             @Override
                             public void run() {
@@ -1230,10 +1237,10 @@ public class FirebaseDBHelper {
                                 byte[] postImage2 = outputStream4.toByteArray();
 
                                 // Room Database
-                                Game game = new Game(ds.getKey(),
+                                Post game = new Post(ds.getKey(),
                                         userData.getUsername(),
                                         senderImage2,
-                                        Integer.parseInt(ds.child("activity-id").getValue().toString()),
+                                        ds.child("activity-id").getValue().toString(),
                                         ds.child("overview").getValue().toString(),
                                         ds.child("title").getValue().toString(),
                                         EventLog.ACTIVITY_TYPE_GAME,
@@ -1245,12 +1252,19 @@ public class FirebaseDBHelper {
                                         Boolean.getBoolean(ds.child("share").getValue().toString()),
                                         ds.child("genres").getValue().toString(),
                                         ds.child("video-id").getValue().toString(),
-                                        Double.parseDouble(ds.child("rating").getValue().toString()),
-                                        Double.parseDouble(ds.child("popularity").getValue().toString()),
+                                        Double.valueOf(ds.child("rating").getValue().toString()),
+                                        Double.valueOf(ds.child("popularity").getValue().toString()),
                                         ds.child("platforms").getValue().toString(),
-                                        ds.child("modes").getValue().toString()
-                                );
-                                UserDatabase.getInstance(context).getGameDao().insert(game);
+                                        ds.child("modes").getValue().toString(),
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null);
+
+                                UserDatabase.getInstance(context).getPostDao().insert(game);
                             }
                         };
                         thread.start();
@@ -1259,10 +1273,10 @@ public class FirebaseDBHelper {
                     break;
                 case EventLog.ACTIVITY_TYPE_ACTIVITY:
                     ActivityModel activityModel = mapActivity(ds);
-                    postModelArrayList.add(new PostModel(userData, null, null, activityModel, requestStatus, PostModel.MODEL_TYPE_ACTIVTY, shareDate));
+                    postModelArrayList.add(new PostModel(userData, null, null, activityModel, requestStatus, EventLog.ACTIVITY_TYPE_ACTIVITY, shareDate));
 
                     // For Room Database
-                    if (!UserDatabase.getInstance(context).getActivityDao().getItemId(ds.getKey())){
+                    if (!UserDatabase.getInstance(context).getPostDao().getItemId(ds.getKey())){
                         Thread thread = new Thread(){
 
                             @Override
@@ -1319,9 +1333,10 @@ public class FirebaseDBHelper {
                                 byte[] postImage = outputStream2.toByteArray();
 
                                 // Room Database
-                                Activity activity = new Activity(ds.getKey(),
+                                Post activity = new Post(ds.getKey(),
                                         userData.getUsername(),
-                                        senderImage,ds.child("id").getValue().toString(),
+                                        senderImage,
+                                        ds.child("id").getValue().toString(),
                                         ds.child("description").getValue().toString(),
                                         ds.child("name").getValue().toString(),
                                         EventLog.ACTIVITY_TYPE_ACTIVITY,
@@ -1331,13 +1346,20 @@ public class FirebaseDBHelper {
                                         like3,
                                         dislike3,
                                         Boolean.getBoolean(ds.child("share").getValue().toString()),
-                                        ds.child("owner").getValue().toString() ,attendees ,
+                                        null,
+                                        null,
+                                        0.0,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        ds.child("owner").getValue().toString(),
+                                        attendees,
                                         ds.child("sub-categories").getValue().toString(),
                                         ds.child("category").getValue().toString(),
                                         Double.valueOf(ds.child("latitude").getValue().toString()),
-                                        Double.valueOf(ds.child("longitude").getValue().toString())
-                                );
-                                UserDatabase.getInstance(context).getActivityDao().insert(activity);
+                                        Double.valueOf(ds.child("longitude").getValue().toString()));
+                                UserDatabase.getInstance(context).getPostDao().insert(activity);
                             }
                         };
                         thread.start();

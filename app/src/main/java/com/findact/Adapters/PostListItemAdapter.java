@@ -32,24 +32,8 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
 
     private Context context;
     private ArrayList<PostModel> postModelArrayList;
-//    private ArrayList<GameModel> gameModelArrayList;
-//    private ArrayList<MovieModel> movieModelArrayList;
-//    private ArrayList<ActivityModel> activityModelArrayList;
-//    private ArrayList<UserData> userModelArrayList;
     private String TAG = "PostListItemAdapter";
 
-//    public PostListItemAdapter(Context context, ArrayList<GameModel> gameModelArrayList,
-//                               ArrayList<MovieModel> movieModelArrayList,
-//                               ArrayList<ActivityModel> activityModelArrayList,
-//                               ArrayList<UserData> userModelArrayList){
-//
-//        this.context = context;
-//        this.gameModelArrayList = gameModelArrayList;
-//        this.movieModelArrayList = movieModelArrayList;
-//        this.activityModelArrayList = activityModelArrayList;
-//        this.userModelArrayList = userModelArrayList;
-//
-//    }
 
     public PostListItemAdapter(Context context, ArrayList<PostModel> postModelArrayList) {
         this.context = context;
@@ -68,41 +52,44 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
     @Override
     public void onBindViewHolder(@NonNull PostListItemViewHolder postListItemViewHolder, int i) {
 
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm' 'dd.MM.yyyy");
+
         PostModel postModel = postModelArrayList.get(i);
 
         CustomListener customListener = new CustomListener(postModel);
+
         postListItemViewHolder.postCardview.setOnClickListener(customListener);
         postListItemViewHolder.userCardView.setOnClickListener(customListener);
 
         Date date = new Date(postModel.getShareDate());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm' 'dd.MM.yyyy");
+        postListItemViewHolder.shareDate.setText(simpleDateFormat.format(date));
 
         postListItemViewHolder.username.setText(postModel.getUserModel().getUsername());
         Picasso.get().load(postModel.getUserModel().getProfilePictureUri()).into(postListItemViewHolder.userPicture);
-        postListItemViewHolder.shareDate.setText(simpleDateFormat.format(date));
+
         switch (postModel.getModelType()) {
             case "Game":
 
-                Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+postModel.getGameModel().getImageId()+".jpg")).into(postListItemViewHolder.postImage);
+                Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/" + postModel.getGameModel().getImageId() + ".jpg")).into(postListItemViewHolder.postImage);
 
                 postListItemViewHolder.postTitle.setText(postModel.getGameModel().getName());
                 postListItemViewHolder.date.setText(postModel.getGameModel().getReleaseDate());
-                if(postModel.getGameModel().getRating() != null) {
+                if (postModel.getGameModel().getRating() != null) {
                     postListItemViewHolder.rating.setText(new DecimalFormat("##.#").format(postModel.getGameModel().getRating()));
-                }else {
+                } else {
                     postListItemViewHolder.rating.setText(postModel.getGameModel().getRating().toString());
                 }
                 postListItemViewHolder.category.setText(postModel.getModelType());
                 break;
             case "Movie":
 
-                Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+postModel.getMovieModel().getPoster_path())).into(postListItemViewHolder.postImage);
+                Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/" + postModel.getMovieModel().getPoster_path())).into(postListItemViewHolder.postImage);
 
                 postListItemViewHolder.postTitle.setText(postModel.getMovieModel().getTitle());
                 postListItemViewHolder.date.setText(postModel.getMovieModel().getRelease_date());
-                if(postModel.getMovieModel().getVote_average() != null) {
+                if (postModel.getMovieModel().getVote_average() != null) {
                     postListItemViewHolder.rating.setText(new DecimalFormat("##.#").format(Double.parseDouble(postModel.getMovieModel().getVote_average())));
-                }else {
+                } else {
                     postListItemViewHolder.rating.setText(postModel.getMovieModel().getVote_average());
                 }
                 postListItemViewHolder.category.setText(postModel.getModelType());
@@ -118,6 +105,7 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
 
                 break;
         }
+
     }
 
     @Override
