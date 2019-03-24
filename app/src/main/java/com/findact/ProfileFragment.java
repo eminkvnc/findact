@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,6 +25,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.findact.APIs.PostModel;
+import com.findact.Adapters.PostListItemAdapter;
 import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.Firebase.UserData;
 import com.findact.RoomDatabase.User;
@@ -36,7 +40,7 @@ import java.util.ArrayList;
 public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     public static final int INIT_MODE_MY_PROFILE_PAGE = 0;
-    public static final int INIT_MODE_FRIEND_PROFILE_PAGE = 1;
+    public static final int INIT_MODE_DEFAULT_PROFILE_PAGE = 1;
     public static String TAG = "ProfileFragment";
     private int initMode;
     private View v;
@@ -48,9 +52,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     ImageView requestsImageView;
     TextView nameTextView, ageTextView, cityTextView, followersTextView, followingTextView;
     RecyclerView activitiesRecyclerView;
+    SwipeRefreshLayout activitiesSwipeRefreshLayout;
     ArrayList<UserData> friendsArrayList;
     ArrayList<Integer> statusList;
     FirebaseDBHelper firebaseDBHelper;
+
+    private PostListItemAdapter postListItemAdapter;
+    private ArrayList<PostModel> postModelArrayList;
 
     private SettingsFragment settingsFragment;
     User user;
@@ -67,10 +75,11 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         friendsArrayList = new ArrayList<>();
         statusList = new ArrayList<>();
+        postModelArrayList = new ArrayList<>();
         firebaseDBHelper = FirebaseDBHelper.getInstance();
         progressDialog = new ProgressDialog(getContext());
         listDialog = UsersListDialog.getInstance();
-        if(initMode == INIT_MODE_FRIEND_PROFILE_PAGE) {
+        if(initMode == INIT_MODE_DEFAULT_PROFILE_PAGE) {
             MainActivity.setDisplayingFragment(DisplayActivityFragment.TAG);
             userData = new UserData(getArguments().getBundle("UserData"));
             currentUsername = userData.getUuidString();
@@ -83,6 +92,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         else{
             MainActivity.setDisplayingFragment(ProfileFragment.TAG);
             currentUsername= firebaseDBHelper.getCurrentUser();
+            user = UserDatabase.getInstance(getContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
+            userData = user.toUserData();
         }
         setHasOptionsMenu(true);
     }
@@ -98,47 +109,12 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 MainActivity.setDisplayingFragment(ProfileFragment.TAG);
                 actionBar.setTitle(user.getUsername());
                 break;
-            case INIT_MODE_FRIEND_PROFILE_PAGE:
+            case INIT_MODE_DEFAULT_PROFILE_PAGE:
                 MainActivity.setDisplayingFragment(DisplayActivityFragment.TAG);
                 actionBar.setTitle(userData.getUsername());
                 break;
         }
 
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.actionbar_for_profile,menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        switch (item.getItemId()){
-            case R.id.profile_fragment_actionbar_create_activity:
-
-                Intent intent = new Intent(getContext(),CreateActivity.class);
-                startActivity(intent);
-
-                break;
-            case R.id.profile_fragment_actionbar_settings:
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.replace(R.id.main_frame,settingsFragment);
-                fragmentTransaction.commit();
-                break;
-            case R.id.profile_fragment_actionbar_logout:
-                signOut();
-                break;
-            case R.id.profile_fragment_actionbar_edit_profile:
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.replace(R.id.main_frame,settingsFragment);
-                fragmentTransaction.commit();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Nullable
@@ -156,9 +132,19 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         ageTextView = v.findViewById(R.id.fragment_profile_age_tv);
         cityTextView = v.findViewById(R.id.fragment_profile_city_tv);
         activitiesRecyclerView = v.findViewById(R.id.fragment_profile_activities_rv);
+        activitiesSwipeRefreshLayout = v.findViewById(R.id.fragment_profile_activities_srl);
 
         activitiesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        activitiesRecyclerView.setVisibility(View.GONE);
+        postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList,false);
+        activitiesRecyclerView.setAdapter(postListItemAdapter);
+
+        activitiesSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshData();
+                activitiesSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
 
         addFriendImageView.setOnClickListener(this);
         requestsImageView.setOnClickListener(this);
@@ -167,48 +153,67 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
         switch (initMode){
             case INIT_MODE_MY_PROFILE_PAGE:
-                setHasOptionsMenu(true);
-                addFriendImageView.setVisibility(View.GONE);
-                requestsImageView.setVisibility(View.VISIBLE);
-                settingsFragment = new SettingsFragment();
-                user = UserDatabase.getInstance(getContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
-                Log.d("onCreateView", "onCreateView: "+ user.getFirstname()+ user.getCity() +user.getBirthday());
-                String fullName =user.getFirstname()+" "+ user.getLastname();
-                nameTextView.setText(fullName);
-                cityTextView.setText(user.getCity());
-                String birthday = user.getBirthday();
-                ageTextView.setText(birthday);
-                try{
-                    File file = new File("/data/user/0/com.findact/app_imageDir",
-                            firebaseDBHelper.getCurrentUser()+".jpg" );
-                    Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
-                    profilePictureImageView.setImageBitmap(b);
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
+                initMyProfile();
                 break;
-           case INIT_MODE_FRIEND_PROFILE_PAGE:
-               setHasOptionsMenu(false);
-               addFriendImageView.setVisibility(View.VISIBLE);
-               requestsImageView.setVisibility(View.GONE);
-               switch (requestStatus){
-                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
-                       addFriendImageView.setImageResource(R.drawable.send_follow_request);
-                       break;
-                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
-                       addFriendImageView.setImageResource(R.drawable.circle_cancel);
-                       break;
-                   case FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING:
-                       addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
-                       break;
-               }
-               Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
-               nameTextView.setText(userData.getFirstname()+" "+userData.getLastname());
-               cityTextView.setText(userData.getCity());
-               ageTextView.setText(userData.getBirthdate());
+           case INIT_MODE_DEFAULT_PROFILE_PAGE:
+               initDefaultProfile();
                break;
        }
+
+       refreshData();
         return v;
+    }
+
+    private void initMyProfile(){
+        setHasOptionsMenu(true);
+        addFriendImageView.setVisibility(View.GONE);
+        requestsImageView.setVisibility(View.VISIBLE);
+        settingsFragment = new SettingsFragment();
+        String fullName =user.getFirstname()+" "+ user.getLastname();
+        nameTextView.setText(fullName);
+        cityTextView.setText(user.getCity());
+        String birthday = user.getBirthday();
+        ageTextView.setText(birthday);
+        try{
+            File file = new File("/data/user/0/com.findact/app_imageDir",
+                    firebaseDBHelper.getCurrentUser()+".jpg" );
+            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(file));
+            profilePictureImageView.setImageBitmap(b);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void initDefaultProfile(){
+        setHasOptionsMenu(false);
+        addFriendImageView.setVisibility(View.VISIBLE);
+        requestsImageView.setVisibility(View.GONE);
+        switch (requestStatus){
+            case FirebaseDBHelper.FRIEND_REQUEST_STATUS_UNFOLLOWED:
+                addFriendImageView.setImageResource(R.drawable.send_follow_request);
+                break;
+            case FirebaseDBHelper.FRIEND_REQUEST_STATUS_ACCEPTED:
+                addFriendImageView.setImageResource(R.drawable.circle_cancel);
+                break;
+            case FirebaseDBHelper.FRIEND_REQUEST_STATUS_REQUEST_WAITING:
+                addFriendImageView.setImageResource(R.drawable.undo_foolow_request);
+                break;
+        }
+        Picasso.get().load(userData.getProfilePictureUri()).into(profilePictureImageView);
+        nameTextView.setText(userData.getFirstname()+" "+userData.getLastname());
+        cityTextView.setText(userData.getCity());
+        ageTextView.setText(userData.getBirthdate());
+    }
+
+    public void refreshData(){
+        progressDialog.show();
+        firebaseDBHelper.getUserPosts(userData, postModelArrayList, new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                postListItemAdapter.notifyDataSetChanged();
+                progressDialog.dismiss();
+            }
+        });
     }
 
     private void signOut() {
@@ -216,14 +221,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         intent.putExtra("SignOut",true);
         startActivity(intent);
     }
-
     public int getInitMode() {
         return initMode;
     }
-
     public void setInitMode(int initMode) {
         this.initMode = initMode;
     }
+
 
     @Override
     public void onClick(View v) {
@@ -304,9 +308,40 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         listDialog.show(getActivity().getSupportFragmentManager(),"dialog");
 
     }
-    public static void dismissListDialog(){
-        if(listDialog != null && listDialog.isAdded()) {
-            listDialog.dismiss();
-        }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.actionbar_for_profile,menu);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        switch (item.getItemId()){
+            case R.id.profile_fragment_actionbar_create_activity:
+
+                Intent intent = new Intent(getContext(),CreateActivity.class);
+                startActivity(intent);
+
+                break;
+            case R.id.profile_fragment_actionbar_settings:
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.replace(R.id.main_frame,settingsFragment);
+                fragmentTransaction.commit();
+                break;
+            case R.id.profile_fragment_actionbar_logout:
+                signOut();
+                break;
+            case R.id.profile_fragment_actionbar_edit_profile:
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.replace(R.id.main_frame,settingsFragment);
+                fragmentTransaction.commit();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 }

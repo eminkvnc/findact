@@ -81,7 +81,6 @@ public class FindFragment extends Fragment implements View.OnClickListener {
     ArrayList<String> gameGenreList;
     ArrayList<String> movieGenresList;
 
-    String mode;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,7 +88,6 @@ public class FindFragment extends Fragment implements View.OnClickListener {
         MainActivity.setDisplayingFragment(FindFragment.TAG);
 
         selectedTab = "Person";
-        mode = new String();
 
         userDataArrayList = new ArrayList<>();
         requestStatus = new ArrayList<>();
@@ -128,10 +126,17 @@ public class FindFragment extends Fragment implements View.OnClickListener {
         actionBar.setTitle(R.string.title_find);
     }
 
+    @Override
+    public void onPause() {
+        Bundle bundle = new Bundle();
+        bundle.putString("SelectedTab",selectedTab);
+        onSaveInstanceState(bundle);
+        super.onPause();
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         displayActivityFragment = new DisplayActivityFragment();
         View v = inflater.inflate(R.layout.fragment_find, container, false);
         movieButton = v.findViewById(R.id.fragment_find_movie_btn);
@@ -144,6 +149,10 @@ public class FindFragment extends Fragment implements View.OnClickListener {
         searchMovieRecyclerView = v.findViewById(R.id.fragment_find_movie_rv);
         searchGameRecyclerView = v.findViewById(R.id.fragment_find_game_rv);
         searchGroupRecyclerView = v.findViewById(R.id.fragment_find_group_rv);
+
+        if (savedInstanceState != null) {
+            selectedTab = savedInstanceState.getString("SelectedTab");
+        }
 
         genreRecyclerView = v.findViewById(R.id.fragment_find_genre_list_rv);
         LinearLayoutManager manager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
@@ -201,9 +210,23 @@ public class FindFragment extends Fragment implements View.OnClickListener {
 
             }
         });
-        personButton.performClick();
+        switch (selectedTab){
+            case "Person":
+                personButton.performClick();
+                break;
+            case "Movie":
+                movieButton.performClick();
+                break;
+            case "Game":
+                gameButton.performClick();
+                break;
+            case "Group":
+                groupButton.performClick();
+                break;
+        }
         return v;
     }
+
 
     @Override
     public void onClick(View v) {
@@ -226,6 +249,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                 selectedTab = "Person";
                 if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Person")){
                     searchImageView.performClick();
+                    oldSearchParameter = searchEditText.getText().toString();
                     firstClick.put("Person",false);
                 }
                 break;
@@ -250,6 +274,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                 selectedTab = "Movie";
                 if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Movie")){
                     searchImageView.performClick();
+                    oldSearchParameter = searchEditText.getText().toString();
                     firstClick.put("Movie",false);
                 }
                 break;
@@ -278,6 +303,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                 selectedTab = "Game";
                 if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Game")){
                     searchImageView.performClick();
+                    oldSearchParameter = searchEditText.getText().toString();
                     firstClick.put("Game",false);
                 }
                 break;
@@ -298,6 +324,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                 selectedTab = "Group";
                 if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Group")){
                     searchImageView.performClick();
+                    oldSearchParameter = searchEditText.getText().toString();
                     firstClick.put("Group",false);
                 }
                 break;
@@ -312,8 +339,8 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                             sParam = sParam + "+" + split[j];
                         }
                     }
-                    if (!sParam.equals("")) {
-                        switch (selectedTab) {
+                    if (!sParam.equals("") && selectedGenreList.isEmpty() && selectedModeList.isEmpty()) {
+                        switch (selectedTab){
                             case "Person":
                                 progressDialog.show();
                                 firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus, new OnTaskCompletedListener() {
@@ -324,7 +351,6 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                                     }
                                 });
                                 break;
-
                             case "Movie":
                                 progressDialog.show();
                                 tmDbAPI.searchMovie(sParam, movieModelArrayList, new OnTaskCompletedListener() {
@@ -344,7 +370,6 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                                         progressDialog.dismiss();
                                     }
                                 });
-
                                 break;
                             case "Group":
                                 progressDialog.show();
@@ -357,10 +382,10 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                                 });
                                 break;
                         }
-                    } else if (sParam.equals("")){
+                    } else if (!selectedGenreList.isEmpty() || !selectedModeList.isEmpty()){
                         switch (selectedTab){
                             case "Person":
-
+                                //Filter person here
                                 break;
                             case "Movie":
                                 if (!selectedGenreList.isEmpty()){
@@ -377,7 +402,6 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                                 }
                                 break;
                             case "Game":
-                                if (!selectedGenreList.isEmpty() || !selectedModeList.isEmpty()){
                                     if(!progressDialog.isShowing()){
                                         progressDialog.show();
                                     }
@@ -388,10 +412,9 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                                             progressDialog.dismiss();
                                         }
                                     });
-                                }
                                 break;
                             case "Group":
-
+                                //Filter activities here
                                 break;
                         }
 

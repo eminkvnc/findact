@@ -29,15 +29,14 @@ import java.util.Date;
 
 public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapter.PostListItemViewHolder> {
 
-
     private Context context;
     private ArrayList<PostModel> postModelArrayList;
+    private Boolean showUserCard;
 //    private ArrayList<GameModel> gameModelArrayList;
 //    private ArrayList<MovieModel> movieModelArrayList;
 //    private ArrayList<ActivityModel> activityModelArrayList;
 //    private ArrayList<UserData> userModelArrayList;
     private String TAG = "PostListItemAdapter";
-
 //    public PostListItemAdapter(Context context, ArrayList<GameModel> gameModelArrayList,
 //                               ArrayList<MovieModel> movieModelArrayList,
 //                               ArrayList<ActivityModel> activityModelArrayList,
@@ -51,12 +50,11 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
 //
 //    }
 
-    public PostListItemAdapter(Context context, ArrayList<PostModel> postModelArrayList) {
+    public PostListItemAdapter(Context context, ArrayList<PostModel> postModelArrayList, Boolean showUserCard) {
         this.context = context;
         this.postModelArrayList = postModelArrayList;
-
+        this.showUserCard = showUserCard;
     }
-
 
     @NonNull
     @Override
@@ -69,22 +67,27 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
     public void onBindViewHolder(@NonNull PostListItemViewHolder postListItemViewHolder, int i) {
 
         PostModel postModel = postModelArrayList.get(i);
-
         CustomListener customListener = new CustomListener(postModel);
-        postListItemViewHolder.postCardview.setOnClickListener(customListener);
-        postListItemViewHolder.userCardView.setOnClickListener(customListener);
+        //set user cardview
+        if(showUserCard){
+            postListItemViewHolder.userCardView.setVisibility(View.VISIBLE);
+            postListItemViewHolder.userCardView.setOnClickListener(customListener);
+            postListItemViewHolder.username.setText(postModel.getUserModel().getUsername());
+            postListItemViewHolder.username.setText(postModel.getUserModel().getUsername());
+            Picasso.get().load(postModel.getUserModel().getProfilePictureUri()).into(postListItemViewHolder.userPicture);
+        }
+        else{
+            postListItemViewHolder.userCardView.setVisibility(View.GONE);
+        }
 
+        //set activity cardview
+        postListItemViewHolder.postCardview.setOnClickListener(customListener);
         Date date = new Date(postModel.getShareDate());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm' 'dd.MM.yyyy");
-
-        postListItemViewHolder.username.setText(postModel.getUserModel().getUsername());
-        Picasso.get().load(postModel.getUserModel().getProfilePictureUri()).into(postListItemViewHolder.userPicture);
         postListItemViewHolder.shareDate.setText(simpleDateFormat.format(date));
         switch (postModel.getModelType()) {
             case "Game":
-
                 Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+postModel.getGameModel().getImageId()+".jpg")).into(postListItemViewHolder.postImage);
-
                 postListItemViewHolder.postTitle.setText(postModel.getGameModel().getName());
                 postListItemViewHolder.date.setText(postModel.getGameModel().getReleaseDate());
                 if(postModel.getGameModel().getRating() != null) {
@@ -94,10 +97,9 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
                 }
                 postListItemViewHolder.category.setText(postModel.getModelType());
                 break;
+
             case "Movie":
-
                 Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+postModel.getMovieModel().getPoster_path())).into(postListItemViewHolder.postImage);
-
                 postListItemViewHolder.postTitle.setText(postModel.getMovieModel().getTitle());
                 postListItemViewHolder.date.setText(postModel.getMovieModel().getRelease_date());
                 if(postModel.getMovieModel().getVote_average() != null) {
@@ -106,16 +108,14 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
                     postListItemViewHolder.rating.setText(postModel.getMovieModel().getVote_average());
                 }
                 postListItemViewHolder.category.setText(postModel.getModelType());
-
                 break;
-            case "Activity":
 
+            case "Activity":
                 Picasso.get().load(postModel.getActivityModel().getImageUri()).into(postListItemViewHolder.postImage);
                 postListItemViewHolder.postTitle.setText(postModel.getActivityModel().getName());
                 postListItemViewHolder.date.setText(postModel.getActivityModel().getDate());
                 postListItemViewHolder.rating.setText(new DecimalFormat("##.#").format(0));
                 postListItemViewHolder.category.setText(postModel.getModelType());
-
                 break;
         }
     }
@@ -199,12 +199,12 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
                 Bundle bundle = new Bundle();
                 bundle.putBundle("UserData",postModel.getUserModel().UserDatatoBundle());
                 bundle.putInt("RequestStatus",postModel.getRequestStatus());
-                profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                profileFragment.setInitMode(ProfileFragment.INIT_MODE_DEFAULT_PROFILE_PAGE);
                 profileFragment.setArguments(bundle);
                 if(postModel.getUserModel().getUuidString().equals(FirebaseDBHelper.getInstance().getCurrentUser())){
                     profileFragment.setInitMode(ProfileFragment.INIT_MODE_MY_PROFILE_PAGE);
                 }else {
-                    profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                    profileFragment.setInitMode(ProfileFragment.INIT_MODE_DEFAULT_PROFILE_PAGE);
                 }
                 FragmentManager fragmentManager = ((FragmentActivity)context).getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

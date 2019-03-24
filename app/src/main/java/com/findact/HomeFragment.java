@@ -66,7 +66,7 @@ public class HomeFragment extends Fragment {
         recyclerView = v.findViewById(R.id.home_fragment_rv);
         swipeRefreshLayout = v.findViewById(R.id.home_fragment_srl);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList);
+        postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList,true);
         recyclerView.setAdapter(postListItemAdapter);
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {

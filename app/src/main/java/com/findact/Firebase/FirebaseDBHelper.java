@@ -121,7 +121,6 @@ public class FirebaseDBHelper {
     }
 
     public void getUserData(String userId, final ArrayList<UserData> userData){
-
         userData.clear();
         DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(userId);
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -395,6 +394,30 @@ public class FirebaseDBHelper {
             }
         };
         getFollowing(userDataArrayList,requestStatusList,onTaskCompletedListener);
+    }
+
+    public void getUserPosts(final UserData userData, final ArrayList<PostModel> postModelArrayList, final OnTaskCompletedListener onTaskCompletedListener){
+
+        postModelArrayList.clear();
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(userData.getUuidString()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String path = FIREBASE_DB_CHILD_USER_LOG +"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT;
+                if(dataSnapshot.hasChild(path)){
+                    for(DataSnapshot ds : dataSnapshot.child(FIREBASE_DB_CHILD_USER_LOG).child(FIREBASE_DB_CHILD_USER_LOG_EVENT).getChildren()){
+                        if(ds.hasChild("share")){
+                            mapPost(ds,userData,FRIEND_REQUEST_STATUS_NONE,postModelArrayList);
+                        }
+                    }
+                }
+                onTaskCompletedListener.onTaskCompleted();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
 /////////////////////////////////////////////ACTIVITY///////////////////////////////////////////////
@@ -836,15 +859,15 @@ public class FirebaseDBHelper {
 
     private UserData mapUserData(DataSnapshot ds){
 
-            UserData userData = new UserData(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("city").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("username").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("notification").getValue().toString(),
-                    Uri.parse(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").getValue().toString()));
-            return userData;
+        UserData userData = new UserData(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("city").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("username").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("notification").getValue().toString(),
+                Uri.parse(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").getValue().toString()));
+        return userData;
     }
 
     private ActivityModel mapActivity(DataSnapshot ds){

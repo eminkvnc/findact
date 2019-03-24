@@ -4,8 +4,10 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.findact.Firebase.UserData;
 
 
 @Entity(tableName = "user_detail", indices = @Index(value = {"uuid"}, unique = true))
@@ -95,6 +97,10 @@ public class User {
     @NonNull
     public String getUsername() {
         return username;
+    }
+
+    public UserData toUserData(){
+        return new UserData(getFirstname(),getLastname(),getCity(),getBirthday(),getUsername(),getUuid(), getNotification(),Uri.parse(getPictureUri()));
     }
 }
 
