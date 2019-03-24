@@ -1,51 +1,27 @@
 {
   "project_info": {
-    "project_number": "759606393898",
-    "firebase_url": "https://findact-9e977.firebaseio.com",
-    "project_id": "findact-9e977",
-    "storage_bucket": "findact-9e977.appspot.com"
+    "project_number": "322193920906",
+    "firebase_url": "https://findact-12b19.firebaseio.com",
+    "project_id": "findact-12b19",
+    "storage_bucket": "findact-12b19.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:759606393898:android:25be1e3275c76db6",
+        "mobilesdk_app_id": "1:322193920906:android:1dd8b089c11b2102",
         "android_client_info": {
-          "package_name": "com.example.emin.findact"
+          "package_name": "com.findact"
         }
       },
       "oauth_client": [
         {
-          "client_id": "759606393898-npb0btd3tqtfnjh4k6ta1eumrl9bnacc.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.emin.findact",
-            "certificate_hash": "c11b60c9b931424866c60ebfcb2c01cd1ec8f63b"
-          }
-        },
-        {
-          "client_id": "759606393898-iilrvt3n4ipt4pa58dractd129fm71oe.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.emin.findact",
-            "certificate_hash": "d8ca25cda611838dbf4644c66c0c02f4d4b62067"
-          }
-        },
-        {
-          "client_id": "759606393898-ta0gfbuv54df1ougv8hnq40ai5062bbk.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.emin.findact",
-            "certificate_hash": "2d92cc8d3917a26a5cf2c4871436c2b2866ebed4"
-          }
-        },
-        {
-          "client_id": "759606393898-jq6a656f4uhvgloklpk3h5rdqtkchps4.apps.googleusercontent.com",
+          "client_id": "322193920906-0nkrge249ihel9osblcn32h0p886hnbq.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDEgqgu0mdREqwZKeFiocFqhjy_W6emLvE"
+          "current_key": "AIzaSyDMvoXuddS7s5f6h2QZwEYCGdkdMudzI5s"
         }
       ],
       "services": {
@@ -53,13 +29,8 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "759606393898-780fc9dduipijr2l9g3cag7mqe6t01im.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2

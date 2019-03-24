@@ -6,7 +6,7 @@
     <string name="title_profile">Profile</string>
     <string name="title_settings">Settings</string>
     <string name="title_display_activity">Activities</string>
-    <string name="google_maps_key" translatable="false">AIzaSyDEgqgu0mdREqwZKeFiocFqhjy_W6emLvE</string>
+    <string name="google_maps_key" translatable="false">AIzaSyDMvoXuddS7s5f6h2QZwEYCGdkdMudzI5s</string>
     <string name="activity_create_image_location">Select Image and Location</string>
     <string name="activity_create_invite">Invite</string>
     <string name="activity_create_date_hint">Date</string>
