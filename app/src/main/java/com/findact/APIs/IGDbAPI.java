@@ -97,7 +97,7 @@ public class IGDbAPI {
     public void searchByGenreAndModeName(ArrayList<String> selectedGenres, ArrayList<String> selectedMode,final ArrayList<GameModel> gameModelArrayList,final OnTaskCompletedListener listener){
 
         String params = null;
-        String genres="";
+        String genres = "";
         String mode;
 
         // Genre seçilmiş ise
@@ -108,12 +108,11 @@ public class IGDbAPI {
                     genres += ",";
                 }
             }
-            params = fields +"where "+ whereGenres + "("+genres+")";
             // mode seçilmiş ise
             if (selectedMode.size() > 0){
                 mode = modeHashMap.get(selectedMode.get(0)).toString();
                 params = fields + whereGenres + "("+genres+")&" + whereMode +mode+";";
-            }else{
+            } else{
                 params = fields + whereGenres + "("+genres+");";
             }
         }
@@ -326,7 +325,7 @@ public class IGDbAPI {
                 video_id = videoObject.getString("video_id");
 
             } else {
-                video_id = gameName;
+                video_id = "NaN";
             }
 
 
@@ -338,7 +337,7 @@ public class IGDbAPI {
                 JSONObject imageObject = new JSONObject(cover);
                 image_id = imageObject.getString("image_id");
             } else {
-                image_id = null;
+                image_id = "NaN";
             }
 
 

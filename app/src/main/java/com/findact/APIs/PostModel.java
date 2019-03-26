@@ -7,11 +7,9 @@ import com.findact.Firebase.UserData;
 public class PostModel {
 
     public static String MODEL_TYPE_MOVIE = "Movie";
-    public static String MODEL_TYPE_GAME = "Game";
+    public static String MODEL_TYPE_GAME = "Post";
     public static String MODEL_TYPE_ACTIVTY = "Activity";
 
-
-    // #############################    KULLANILMAYABİLİR   ########################
 
     private UserData userModel;
     private GameModel gameModel;
