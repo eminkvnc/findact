@@ -36,6 +36,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.findact.APIs.ActivityModel;
+import com.findact.Firebase.EventLog;
 import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.Firebase.UserData;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -209,7 +210,6 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     public void saveActivity(){
 
         String activityId = UUID.randomUUID().toString();
-
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         File myPath = new File(directory, activityId+".jpg");
@@ -225,8 +225,9 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 invitedArrayList,
                 descriptionEditText.getText().toString(),
                 FirebaseDBHelper.getInstance().getCurrentUser());
-
         dialog.show();
+        EventLog eventLog = new EventLog(activityId,Calendar.getInstance().getTime().toString(),EventLog.EVENT_TYPE_SHARE,EventLog.ACTIVITY_TYPE_ACTIVITY,activityModel);
+        FirebaseDBHelper.getInstance().addEventUserLog(eventLog);
         FirebaseDBHelper.getInstance().addGroupActivity(activityModel, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
@@ -423,9 +424,10 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                                 followerAndFollowingArrayList.add(followingArrayList.get(i));
                             }
                         }
-                        for(int i = 0; i < followingArrayList.size(); i++){
-                            followersArrayListBundle.putBundle(String.valueOf(i),followerAndFollowingArrayList.get(i).UserDatatoBundle());
+                        for(int j = 0; j < followerAndFollowingArrayList.size(); j++){
+                            followersArrayListBundle.putBundle(String.valueOf(j),followerAndFollowingArrayList.get(j).UserDatatoBundle());
                         }
+                        followerAndFollowingArrayList.clear();
                         bundle.putBundle("UserDataArrayList",followersArrayListBundle);
                         bundle.putStringArrayList("Attendees",invitedArrayList);
                         bundle.putIntegerArrayList("StatusArrayList",null);

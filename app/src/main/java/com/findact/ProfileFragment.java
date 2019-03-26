@@ -36,6 +36,8 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ProfileFragment extends Fragment implements View.OnClickListener {
 
@@ -210,6 +212,15 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         firebaseDBHelper.getUserPosts(userData, postModelArrayList, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
+                if(!postModelArrayList.isEmpty()) {
+                    Collections.sort(postModelArrayList, new Comparator<PostModel>() {
+                        @Override
+                        public int compare(PostModel postModel, PostModel t1) {
+                            return t1.getShareDate().intValue() - postModel.getShareDate().intValue();
+                        }
+                    });
+                    postListItemAdapter.notifyDataSetChanged();
+                }
                 postListItemAdapter.notifyDataSetChanged();
                 progressDialog.dismiss();
             }
