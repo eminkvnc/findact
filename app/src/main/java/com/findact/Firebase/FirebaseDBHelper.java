@@ -1,5 +1,6 @@
 package com.findact.Firebase;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Bitmap;
@@ -7,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.findact.APIs.ActivityModel;
@@ -42,6 +44,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -1042,11 +1046,10 @@ public class FirebaseDBHelper {
         }
         reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_ACTIVITY);
 
-
-
     }
 
     private void mapPost(final Context context, final DataSnapshot ds, final UserData userData, final int requestStatus, final ArrayList<PostModel> postModelArrayList){
+
 
         if(ds.hasChild("share") && ds.child("activity-type").getValue() != null){
             final Long shareDate = (Long) ds.child("log-date").getValue();
@@ -1075,82 +1078,78 @@ public class FirebaseDBHelper {
                             ds.child("language").getValue().toString());
                     postModelArrayList.add(new PostModel(userData, null, movieModel, null, requestStatus, EventLog.ACTIVITY_TYPE_MOVIE, shareDate));
 
+                    if (!UserDatabase.getInstance(context).getPostDao().getItemId(ds.getKey())) {
+                        boolean like = false;
+                        boolean dislike = false;
+                        if (ds.hasChild("like")) {
+                            like = Boolean.getBoolean(ds.child("like").toString());
+                        }
+                        if (ds.hasChild("dislike")) {
+                            dislike = Boolean.getBoolean(ds.child("dislike").toString());
+                        }
 
-                    // For Room Database
-                    if (!UserDatabase.getInstance(context).getPostDao().getItemId(ds.getKey())){
-                        Thread thread = new Thread(){
-                            @Override
-                            public void run() {
-                                boolean like = false;
-                                boolean dislike = false;
-                                if (ds.hasChild("like")){
-                                    like = Boolean.getBoolean(ds.child("like").toString());
-                                }
-                                if (ds.hasChild("dislike")){
-                                    dislike = Boolean.getBoolean(ds.child("dislike").toString());
-                                }
-
-
-                                // For Sender Image
-                                ImageDownload imageDownload5 = new ImageDownload();
-                                Bitmap bitmap5 = null;
-                                try {
-                                    bitmap5 = imageDownload5.execute(userData.getProfilePictureUri().toString()).get();
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                ByteArrayOutputStream outputStream5 = new ByteArrayOutputStream();
-                                bitmap5.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream5 );
-                                byte[] senderImage3 = outputStream5.toByteArray();
+                        // For Sender Image
+                        ImageDownload imageDownload5 = new ImageDownload();
+                        Bitmap bitmap5 = null;
+                        try {
+                            bitmap5 = imageDownload5.execute(userData.getProfilePictureUri().toString()).get();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        ByteArrayOutputStream outputStream5 = new ByteArrayOutputStream();
+                        bitmap5.compress(Bitmap.CompressFormat.JPEG, 100, outputStream5);
+                        byte[] senderImage3 = outputStream5.toByteArray();
 
 
-                                // For Post Image
-                                ImageDownload imageDownload6 = new ImageDownload();
-                                Bitmap bitmap6 = null;
-                                try {
-                                    bitmap6 = imageDownload6.execute("http://image.tmdb.org/t/p/w185/"+ds.child("image-path").getValue().toString()).get();
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                ByteArrayOutputStream outputStream6 = new ByteArrayOutputStream();
-                                bitmap6.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream6);
-                                byte[] postImage3 = outputStream6.toByteArray();
-                                // Room Database
-                                Post movie = new Post(ds.getKey(),
-                                        userData.getUsername(),
-                                        senderImage3,
-                                        ds.child("activity-id").getValue().toString(),
-                                        ds.child("overview").getValue().toString(),
-                                        ds.child("title").getValue().toString(),
-                                        EventLog.ACTIVITY_TYPE_MOVIE,
-                                        ds.child("release-date").getValue().toString(),
-                                        postImage3,
-                                        Long.valueOf(ds.child("log-date").getValue().toString()),
-                                        like,
-                                        dislike,
-                                        Boolean.getBoolean(ds.child("share").getValue().toString()),
-                                        ds.child("genres").getValue().toString(),
-                                        null,
-                                        Double.valueOf(ds.child("rating").getValue().toString()),
-                                        Double.valueOf(ds.child("popularity").getValue().toString()),
-                                        null,
-                                        null,
-                                        ds.child("language").getValue().toString(),
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null);
+                        // For Post Image
+                        ImageDownload imageDownload6 = new ImageDownload();
+                        Bitmap bitmap6 = null;
+                        try {
+                            bitmap6 = imageDownload6.execute("http://image.tmdb.org/t/p/w185/" + ds.child("image-path").getValue().toString()).get();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        ByteArrayOutputStream outputStream6 = new ByteArrayOutputStream();
+                        bitmap6.compress(Bitmap.CompressFormat.JPEG, 100, outputStream6);
+                        byte[] postImage3 = outputStream6.toByteArray();
+                        // Room Database
+                        Post movie = new Post(ds.getKey(),
+                                userData.getUsername(),
+                                senderImage3,
+                                ds.child("activity-id").getValue().toString(),
+                                ds.child("overview").getValue().toString(),
+                                ds.child("title").getValue().toString(),
+                                EventLog.ACTIVITY_TYPE_MOVIE,
+                                ds.child("release-date").getValue().toString(),
+                                postImage3,
+                                Long.valueOf(ds.child("log-date").getValue().toString()),
+                                like,
+                                dislike,
+                                Boolean.getBoolean(ds.child("share").getValue().toString()),
+                                ds.child("genres").getValue().toString(),
+                                null,
+                                Double.valueOf(ds.child("rating").getValue().toString()),
+                                Double.valueOf(ds.child("popularity").getValue().toString()),
+                                null,
+                                null,
+                                ds.child("language").getValue().toString(),
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null);
 
-                                UserDatabase.getInstance(context).getPostDao().insert(movie);
-                            }
-                        };
-                        thread.start();
+
+                        Executor myExecutor = Executors.newSingleThreadExecutor();
+                        myExecutor.execute(() -> {
+                            UserDatabase.getInstance(context).getPostDao().insert(movie);
+                        });
+
                     }
 
                     break;
@@ -1192,181 +1191,175 @@ public class FirebaseDBHelper {
 
                     postModelArrayList.add(new PostModel(userData, gameModel, null, null, requestStatus, EventLog.ACTIVITY_TYPE_GAME, shareDate));
 
-
-                    // For Room Database
                     if (!UserDatabase.getInstance(context).getPostDao().getItemId(ds.getKey())) {
-                        Thread thread = new Thread(){
-                            @Override
-                            public void run() {
+                        boolean like2 = false;
+                        boolean dislike2 = false;
+                        if (ds.hasChild("like")) {
+                            like2 = Boolean.getBoolean(ds.child("like").toString());
+                        }
+                        if (ds.hasChild("dislike")) {
+                            dislike2 = Boolean.getBoolean(ds.child("dislike").toString());
+                        }
 
-                                boolean like2 = false;
-                                boolean dislike2 = false;
-                                if (ds.hasChild("like")){
-                                    like2 = Boolean.getBoolean(ds.child("like").toString());
-                                }
-                                if (ds.hasChild("dislike")){
-                                    dislike2 = Boolean.getBoolean(ds.child("dislike").toString());
-                                }
+                        // For Sender Image
+                        ImageDownload imageDownload3 = new ImageDownload();
+                        Bitmap bitmap3 = null;
+                        try {
+                            bitmap3 = imageDownload3.execute(userData.getProfilePictureUri().toString()).get();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        ByteArrayOutputStream outputStream3 = new ByteArrayOutputStream();
+                        bitmap3.compress(Bitmap.CompressFormat.JPEG, 100, outputStream3);
+                        byte[] senderImage2 = outputStream3.toByteArray();
 
-                                // For Sender Image
-                                ImageDownload imageDownload3 = new ImageDownload();
-                                Bitmap bitmap3 = null;
-                                try {
-                                    bitmap3 = imageDownload3.execute(userData.getProfilePictureUri().toString()).get();
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                ByteArrayOutputStream outputStream3 = new ByteArrayOutputStream();
-                                bitmap3.compress(Bitmap.CompressFormat.JPEG, 100, outputStream3);
-                                byte[] senderImage2 = outputStream3.toByteArray();
+                        // For Post Image
+                        ImageDownload imageDownload4 = new ImageDownload();
+                        Bitmap bitmap4 = null;
+                        try {
+                            bitmap4 = imageDownload4.execute("https://images.igdb.com/igdb/image/upload/t_cover_big/" + ds.child("image-path").getValue().toString() + ".jpg").get();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        ByteArrayOutputStream outputStream4 = new ByteArrayOutputStream();
+                        bitmap4.compress(Bitmap.CompressFormat.JPEG, 100, outputStream4);
+                        byte[] postImage2 = outputStream4.toByteArray();
 
-                                // For Post Image
-                                ImageDownload imageDownload4 = new ImageDownload();
-                                Bitmap bitmap4 = null;
-                                try {
-                                    bitmap4 = imageDownload4.execute("https://images.igdb.com/igdb/image/upload/t_cover_big/" + ds.child("image-path").getValue().toString() + ".jpg").get();
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                ByteArrayOutputStream outputStream4 = new ByteArrayOutputStream();
-                                bitmap4.compress(Bitmap.CompressFormat.JPEG, 100, outputStream4);
-                                byte[] postImage2 = outputStream4.toByteArray();
+                        // Room Database
+                        Post game = new Post(ds.getKey(),
+                                userData.getUsername(),
+                                senderImage2,
+                                ds.child("activity-id").getValue().toString(),
+                                ds.child("overview").getValue().toString(),
+                                ds.child("title").getValue().toString(),
+                                EventLog.ACTIVITY_TYPE_GAME,
+                                ds.child("release-date").getValue().toString(),
+                                postImage2,
+                                Long.valueOf(ds.child("log-date").getValue().toString()),
+                                like2,
+                                dislike2,
+                                Boolean.getBoolean(ds.child("share").getValue().toString()),
+                                ds.child("genres").getValue().toString(),
+                                ds.child("video-id").getValue().toString(),
+                                Double.valueOf(ds.child("rating").getValue().toString()),
+                                Double.valueOf(ds.child("popularity").getValue().toString()),
+                                ds.child("platforms").getValue().toString(),
+                                ds.child("modes").getValue().toString(),
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null);
 
-                                // Room Database
-                                Post game = new Post(ds.getKey(),
-                                        userData.getUsername(),
-                                        senderImage2,
-                                        ds.child("activity-id").getValue().toString(),
-                                        ds.child("overview").getValue().toString(),
-                                        ds.child("title").getValue().toString(),
-                                        EventLog.ACTIVITY_TYPE_GAME,
-                                        ds.child("release-date").getValue().toString(),
-                                        postImage2,
-                                        Long.valueOf(ds.child("log-date").getValue().toString()),
-                                        like2,
-                                        dislike2,
-                                        Boolean.getBoolean(ds.child("share").getValue().toString()),
-                                        ds.child("genres").getValue().toString(),
-                                        ds.child("video-id").getValue().toString(),
-                                        Double.valueOf(ds.child("rating").getValue().toString()),
-                                        Double.valueOf(ds.child("popularity").getValue().toString()),
-                                        ds.child("platforms").getValue().toString(),
-                                        ds.child("modes").getValue().toString(),
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        null);
-
-                                UserDatabase.getInstance(context).getPostDao().insert(game);
-                            }
-                        };
-                        thread.start();
+                        Executor myExecutor = Executors.newSingleThreadExecutor();
+                        myExecutor.execute(() -> {
+                            UserDatabase.getInstance(context).getPostDao().insert(game);
+                        });
 
                     }
+
+
                     break;
                 case EventLog.ACTIVITY_TYPE_ACTIVITY:
                     ActivityModel activityModel = mapActivity(ds);
                     postModelArrayList.add(new PostModel(userData, null, null, activityModel, requestStatus, EventLog.ACTIVITY_TYPE_ACTIVITY, shareDate));
 
                     // For Room Database
-                    if (!UserDatabase.getInstance(context).getPostDao().getItemId(ds.getKey())){
-                        Thread thread = new Thread(){
+                        if (!UserDatabase.getInstance(context).getPostDao().getItemId(ds.getKey())) {
 
-                            @Override
-                            public void run() {
 
-                                boolean like3 = false;
-                                boolean dislike3 = false;
-                                if (ds.hasChild("like")){
-                                    like3 = Boolean.getBoolean(ds.child("like").toString());
-                                }
-                                if (ds.hasChild("dislike")){
-                                    dislike3 = Boolean.getBoolean(ds.child("dislike").toString());
-                                }
-
-                                ArrayList<String> attendeesArrayList = new ArrayList<>();
-                                for (DataSnapshot dataSnapshot : ds.child("attendees").getChildren()){
-                                    attendeesArrayList.add(dataSnapshot.getKey());
-                                }
-
-                                String attendees ="";
-                                for (int i = 0; i < attendeesArrayList.size(); i++){
-                                    attendees += attendeesArrayList.get(i);
-                                    if (i != attendeesArrayList.size()-1){
-                                        attendees += ",";
+                                    boolean like3 = false;
+                                    boolean dislike3 = false;
+                                    if (ds.hasChild("like")) {
+                                        like3 = Boolean.getBoolean(ds.child("like").toString());
                                     }
-                                }
+                                    if (ds.hasChild("dislike")) {
+                                        dislike3 = Boolean.getBoolean(ds.child("dislike").toString());
+                                    }
 
-                                // For Sender Image
-                                ImageDownload imageDownload = new ImageDownload();
-                                Bitmap bitmap = null;
-                                try {
-                                    bitmap = imageDownload.execute(userData.getProfilePictureUri().toString()).get();
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                                bitmap.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream );
-                                byte[] senderImage = outputStream.toByteArray();
+                                    ArrayList<String> attendeesArrayList = new ArrayList<>();
+                                    for (DataSnapshot dataSnapshot : ds.child("attendees").getChildren()) {
+                                        attendeesArrayList.add(dataSnapshot.getKey());
+                                    }
 
-                                // For Post Image
-                                ImageDownload imageDownload2 = new ImageDownload();
-                                Bitmap bitmap2 = null;
-                                try {
-                                    bitmap2 = imageDownload2.execute(ds.child("image").getValue().toString()).get();
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
-                                bitmap2.compress(Bitmap.CompressFormat.JPEG,100 ,outputStream2);
-                                byte[] postImage = outputStream2.toByteArray();
+                                    String attendees = "";
+                                    for (int i = 0; i < attendeesArrayList.size(); i++) {
+                                        attendees += attendeesArrayList.get(i);
+                                        if (i != attendeesArrayList.size() - 1) {
+                                            attendees += ",";
+                                        }
+                                    }
 
-                                // Room Database
-                                Post activity = new Post(ds.getKey(),
-                                        userData.getUsername(),
-                                        senderImage,
-                                        ds.child("id").getValue().toString(),
-                                        ds.child("description").getValue().toString(),
-                                        ds.child("name").getValue().toString(),
-                                        EventLog.ACTIVITY_TYPE_ACTIVITY,
-                                        ds.child("date").getValue().toString(),
-                                        postImage,
-                                        Long.valueOf(ds.child("log-date").getValue().toString()),
-                                        like3,
-                                        dislike3,
-                                        Boolean.getBoolean(ds.child("share").getValue().toString()),
-                                        null,
-                                        null,
-                                        0.0,
-                                        null,
-                                        null,
-                                        null,
-                                        null,
-                                        ds.child("owner").getValue().toString(),
-                                        attendees,
-                                        ds.child("sub-categories").getValue().toString(),
-                                        ds.child("category").getValue().toString(),
-                                        Double.valueOf(ds.child("latitude").getValue().toString()),
-                                        Double.valueOf(ds.child("longitude").getValue().toString()));
+                                    // For Sender Image
+                                    ImageDownload imageDownload = new ImageDownload();
+                                    Bitmap bitmap = null;
+                                    try {
+                                        bitmap = imageDownload.execute(userData.getProfilePictureUri().toString()).get();
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                                    byte[] senderImage = outputStream.toByteArray();
+
+                                    // For Post Image
+                                    ImageDownload imageDownload2 = new ImageDownload();
+                                    Bitmap bitmap2 = null;
+                                    try {
+                                        bitmap2 = imageDownload2.execute(ds.child("image").getValue().toString()).get();
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+                                    bitmap2.compress(Bitmap.CompressFormat.JPEG, 100, outputStream2);
+                                    byte[] postImage = outputStream2.toByteArray();
+
+                                    // Room Database
+                                    Post activity = new Post(ds.getKey(),
+                                            userData.getUsername(),
+                                            senderImage,
+                                            ds.child("id").getValue().toString(),
+                                            ds.child("description").getValue().toString(),
+                                            ds.child("name").getValue().toString(),
+                                            EventLog.ACTIVITY_TYPE_ACTIVITY,
+                                            ds.child("date").getValue().toString(),
+                                            postImage,
+                                            Long.valueOf(ds.child("log-date").getValue().toString()),
+                                            like3,
+                                            dislike3,
+                                            Boolean.getBoolean(ds.child("share").getValue().toString()),
+                                            null,
+                                            null,
+                                            0.0,
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            ds.child("owner").getValue().toString(),
+                                            attendees,
+                                            ds.child("sub-categories").getValue().toString(),
+                                            ds.child("category").getValue().toString(),
+                                            Double.valueOf(ds.child("latitude").getValue().toString()),
+                                            Double.valueOf(ds.child("longitude").getValue().toString()));
+
+                            Executor myExecutor = Executors.newSingleThreadExecutor();
+                            myExecutor.execute(() -> {
                                 UserDatabase.getInstance(context).getPostDao().insert(activity);
-                            }
-                        };
-                        thread.start();
-                    }
-
+                            });
+                        }
                     break;
             }
+
         }else {
             Log.d(TAG, "mapPost: no post for user: "+userData.getUsername());
         }
@@ -1478,5 +1471,4 @@ public class FirebaseDBHelper {
             super.onPostExecute(bitmap);
         }
     }
-
 }

@@ -1,5 +1,6 @@
 package com.findact;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class HomeFragment extends Fragment {
 
@@ -84,6 +87,7 @@ public class HomeFragment extends Fragment {
                     refreshData();
                     swipeRefreshLayout.setRefreshing(false);
                 }
+
             });
         } else {
 
@@ -121,6 +125,4 @@ public class HomeFragment extends Fragment {
         }
 
     }
-
-
 }

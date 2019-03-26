@@ -455,7 +455,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     progressDialog.dismiss();
                 }
                 break;
-            case "Post":
+            case "Game":
 //                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
                 findGameAdapter.notifyDataSetChanged();
                 if(progressDialog.isShowing()){
