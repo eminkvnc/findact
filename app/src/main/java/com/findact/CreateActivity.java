@@ -9,7 +9,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -227,8 +230,8 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 FirebaseDBHelper.getInstance().getCurrentUser());
         dialog.show();
         EventLog eventLog = new EventLog(activityId,Calendar.getInstance().getTime().toString(),EventLog.EVENT_TYPE_SHARE,EventLog.ACTIVITY_TYPE_ACTIVITY,activityModel);
-        FirebaseDBHelper.getInstance().addEventUserLog(eventLog);
-        FirebaseDBHelper.getInstance().addGroupActivity(activityModel, new OnTaskCompletedListener() {
+        //FirebaseDBHelper.getInstance().addEventUserLog(eventLog);
+        FirebaseDBHelper.getInstance().addGroupActivity(activityModel, eventLog, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 dialog.dismiss();
@@ -390,7 +393,30 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
         try {
             fos = new FileOutputStream(myPath);
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 30,fos );
+            Bitmap background = Bitmap.createBitmap(375, 500, Bitmap.Config.ARGB_8888);
+
+            float originalWidth = bitmapImage.getWidth();
+            float originalHeight = bitmapImage.getHeight();
+
+            Canvas canvas = new Canvas(background);
+
+            float scale = 375 / originalWidth;
+            //float hScale = 278 / originalHeight;
+
+            float xTranslation = 0.0f;
+            float yTranslation = (500 - originalHeight * scale) / 2.0f;
+
+            Matrix transformation = new Matrix();
+            transformation.postTranslate(xTranslation, yTranslation);
+            transformation.preScale(scale, scale);
+
+            Paint paint = new Paint();
+            paint.setFilterBitmap(true);
+
+
+
+            canvas.drawBitmap(bitmapImage, transformation, paint);
+            background.compress(Bitmap.CompressFormat.JPEG, 100,fos );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {

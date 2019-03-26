@@ -228,6 +228,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     }
 
     private void signOut() {
+        UserDatabase.getInstance(getContext()).getPostDao().deleteAll();
         Intent intent = new Intent(getContext(), LoginActivity.class);
         intent.putExtra("SignOut",true);
         startActivity(intent);

@@ -80,24 +80,27 @@ public class HomeFragment extends Fragment {
         recyclerView = v.findViewById(R.id.home_fragment_rv);
         swipeRefreshLayout = v.findViewById(R.id.home_fragment_srl);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        // isOnline
+        postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList,true);
+        // isOffline
+        List<Post> postList = UserDatabase.getInstance(getContext()).getPostDao().getData();
+        postArrayList = new ArrayList<>(postList);
+        offlinePostListItemAdapter = new OfflinePostListItemAdapter(getContext(),postArrayList);
         if (MainActivity.isOnline){
-            postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList);
             recyclerView.setAdapter(postListItemAdapter);
-            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    refreshData();
-                    swipeRefreshLayout.setRefreshing(false);
-                }
 
-            });
         } else {
 
-            List<Post> postList = UserDatabase.getInstance(getContext()).getPostDao().getData();
-            postArrayList = new ArrayList<>(postList);
-            offlinePostListItemAdapter = new OfflinePostListItemAdapter(getContext(),postArrayList);
             recyclerView.setAdapter(offlinePostListItemAdapter);
         }
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshData();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+
+        });
 
         return v;
     }
@@ -105,11 +108,10 @@ public class HomeFragment extends Fragment {
     private void refreshData(){
         if(MainActivity.isOnline){
             progressDialog.show();
-            firebaseDBHelper.getPosts(getContext(),postModelArrayList, new OnTaskCompletedListener() {
+            firebaseDBHelper.getPosts(postModelArrayList, new OnTaskCompletedListener() {
 
                 @Override
                 public void onTaskCompleted() {
-
                     if(!postModelArrayList.isEmpty()) {
                         Collections.sort(postModelArrayList, new Comparator<PostModel>() {
                             @Override
@@ -121,12 +123,21 @@ public class HomeFragment extends Fragment {
                         if (progressDialog.isShowing()) {
                             progressDialog.dismiss();
                         }
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                for(int i = 0; i < postModelArrayList.size(); i++){
+                                    postModelArrayList.get(i).addPostToRoomDatabase(getContext());
+                                }
+                            }
+                        }).start();
                     }else {
                         progressDialog.dismiss();
                     }
                 }
             });
         }else {
+            progressDialog.dismiss();
             Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
         }
 

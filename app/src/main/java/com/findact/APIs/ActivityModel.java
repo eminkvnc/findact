@@ -58,6 +58,10 @@ public class ActivityModel {
         return imageUri;
     }
 
+    public void setImageUri(Uri imageUri) {
+        this.imageUri = imageUri;
+    }
+
     public LatLng getLocation() {
         return location;
     }

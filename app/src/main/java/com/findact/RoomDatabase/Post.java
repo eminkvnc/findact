@@ -2,15 +2,17 @@ package com.findact.RoomDatabase;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
-@Entity(tableName = "post_detail", indices = @Index(value = {"firebaseId"},unique = true))
+@Entity(tableName = "post_detail")
 public class Post {
 
-    @NonNull
     @PrimaryKey
+    @NonNull
+    String uuid;
+
+    @NonNull
     private String firebaseId;
 
     private String senderName;
@@ -43,7 +45,7 @@ public class Post {
     private Double latitude;
     private Double longitude;
 
-    public Post(@NonNull String firebaseId, String senderName, byte[] senderImage,
+    public Post(@NonNull String uuid,@NonNull String firebaseId, String senderName, byte[] senderImage,
                 String activityId, String overview, String title, String activityType,
                 String releaseDate, byte[] picturePath, Long logDate, Boolean like,
                 Boolean dislike, Boolean share, String genres, String videoId,
@@ -51,6 +53,8 @@ public class Post {
                 String language, String owner, String attendees, String subCategories,
                 String category, Double latitude, Double longitude)
     {
+
+        this.uuid = uuid;
         this.firebaseId = firebaseId;
         this.senderName = senderName;
         this.senderImage = senderImage;
@@ -77,6 +81,11 @@ public class Post {
         this.category = category;
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    @NonNull
+    public String getUuid() {
+        return uuid;
     }
 
     @NonNull
