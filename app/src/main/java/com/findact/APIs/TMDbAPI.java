@@ -75,6 +75,16 @@ public class TMDbAPI {
         }
     }
 
+    public void searchMovieByID(ArrayList<Integer> movieIds, ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener ){
+        movieModelArrayList.clear();
+
+        for(int i = 0; i < movieIds.size(); i++){
+            DownloadData downloadData = new DownloadData(movieModelArrayList,listener );
+            String searchUrl ="https://api.themoviedb.org/3/movie/"+movieIds.get(i)+"?api_key=fd50bae5852bf6c2e149317a6e885416";
+            downloadData.execute(searchUrl);
+        }
+    }
+
 
     // ASYNCTASK
     private static class GetMovieGenres extends AsyncTask<String,Void,String>{

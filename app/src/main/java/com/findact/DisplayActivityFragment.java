@@ -1,11 +1,15 @@
 package com.findact;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import com.findact.APIs.ActivityModel;
 import com.findact.APIs.GameModel;
@@ -65,6 +70,10 @@ public class DisplayActivityFragment extends Fragment {
     ImageView activityLikeImageView;
     ImageView activityDislikeImageView;
     ImageView activityShareImageView;
+
+    TextView userRate;
+    SeekBar rateSeekBar;
+    float userVote;
 
     public  DisplayActivityFragment() {
     }
@@ -293,7 +302,8 @@ public class DisplayActivityFragment extends Fragment {
         movieLikeImageView = v.findViewById(R.id.fragment_display_movie_like_iv);
         movieDislikeImageView = v.findViewById(R.id.fragment_display_movie_dislike_iv);
         movieShareImageView = v.findViewById(R.id.fragment_display_movie_share_iv);
-
+        rateSeekBar = v.findViewById(R.id.fragment_display_movie_rate_seekBar);
+        userRate = v.findViewById(R.id.fragment_display_movie_userVote_tv);
         LinearLayout movieGenre = v.findViewById(R.id.fragment_display_movie_genre_ll);
 
         movieGenre.removeAllViews();
@@ -355,6 +365,24 @@ public class DisplayActivityFragment extends Fragment {
         movieVote_average.setText(movieModel.getVote_average());
         movieLanguage.setText(movieModel.getLanguage());
 
+        rateSeekBar.setMax(10);
+        rateSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                userVote = (float) i / 2;
+                userRate.setText(String.valueOf(userVote));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
     }
 

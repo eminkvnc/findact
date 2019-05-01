@@ -19,6 +19,12 @@ public interface PostDao {
     @Query("SELECT * FROM post_detail")
     List<Post> getData();
 
+    @Query("SELECT EXISTS(SELECT senderName FROM post_detail WHERE senderName=:senderName)")
+    boolean getSenderName(String senderName);
+
+    @Query("DELETE FROM post_detail")
+    void deleteAll();
+
     @Query("DELETE FROM post_detail WHERE firebaseId NOT IN (SELECT firebaseId FROM post_detail ORDER BY logDate DESC LIMIT 15)")
     void deleteOldestPost();
 }
