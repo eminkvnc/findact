@@ -40,9 +40,9 @@ public class TMDbAPI {
 
 
     // METHODS
-    public void getGenres(ArrayList<String> genreList){
+    public void getGenres(ArrayList<String> genreList, OnTaskCompletedListener onTaskCompletedListener){
         String url = "https://api.themoviedb.org/3/genre/movie/list?api_key=fd50bae5852bf6c2e149317a6e885416";
-        GetMovieGenres getMovieGenres = new GetMovieGenres(genreList);
+        GetMovieGenres getMovieGenres = new GetMovieGenres(genreList,onTaskCompletedListener);
         getMovieGenres.execute(url);
     }
 
@@ -89,10 +89,11 @@ public class TMDbAPI {
     // ASYNCTASK
     private static class GetMovieGenres extends AsyncTask<String,Void,String>{
         private ArrayList<String> genreList;
+        private OnTaskCompletedListener listener;
 
-
-        private GetMovieGenres(ArrayList<String> genreList) {
+        private GetMovieGenres(ArrayList<String> genreList, OnTaskCompletedListener onTaskCompletedListener) {
             this.genreList = genreList;
+            this.listener = onTaskCompletedListener;
         }
 
 
@@ -146,7 +147,9 @@ public class TMDbAPI {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
+            if(listener != null){
+                listener.onTaskCompleted();
+            }
         }
     }
 

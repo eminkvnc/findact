@@ -8,50 +8,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:322193920906:android:25be1e3275c76db6",
-        "android_client_info": {
-          "package_name": "com.findact"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "322193920906-rq7234j00qlb50nee8fu68q3fl9pot01.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.findact",
-            "certificate_hash": "2d92cc8d3917a26a5cf2c4871436c2b2866ebed4"
-          }
-        },
-        {
-          "client_id": "322193920906-0nkrge249ihel9osblcn32h0p886hnbq.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDMvoXuddS7s5f6h2QZwEYCGdkdMudzI5s"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "322193920906-0nkrge249ihel9osblcn32h0p886hnbq.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:322193920906:android:1dd8b089c11b2102",
         "android_client_info": {
           "package_name": "com.findact"
@@ -59,38 +15,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "322193920906-41v5m10v1qp1legcvuqaphrdkotgihu7.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.findact",
-            "certificate_hash": "c11b60c9b931424866c60ebfcb2c01cd1ec8f63b"
-          }
-        },
-        {
-          "client_id": "322193920906-ardr7mkdcdvjj2e1b71e9coueuvm928d.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.findact",
-            "certificate_hash": "d8ca25cda611838dbf4644c66c0c02f4d4b62067"
-          }
-        },
-        {
-          "client_id": "322193920906-78cdqgu3srq1g17nek1otj36enukr80e.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.findact",
-            "certificate_hash": "2d92cc8d3917a26a5cf2c4871436c2b2866ebed4"
-          }
-        },
-        {
-          "client_id": "322193920906-8a0ig9e25hblvegken8qkm3hulpt1n0o.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.findact",
-            "certificate_hash": "36c1c2258d2017be88ee4b3c71d3db303dec8927"
-          }
-        },
-        {
           "client_id": "322193920906-0nkrge249ihel9osblcn32h0p886hnbq.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -105,13 +29,8 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "322193920906-0nkrge249ihel9osblcn32h0p886hnbq.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2

@@ -16,11 +16,6 @@ import java.util.UUID;
 
 public class PostModel {
 
-    public static String MODEL_TYPE_MOVIE = "Movie";
-    public static String MODEL_TYPE_GAME = "Post";
-    public static String MODEL_TYPE_ACTIVTY = "Activity";
-
-
     private UserData userModel;
     private GameModel gameModel;
     private MovieModel movieModel;
@@ -90,8 +85,9 @@ public class PostModel {
         return shareDate;
     }
 
-    public void addPostToRoomDatabase(final Context context) {
-        switch (modelType) {
+    // resimler için download task yap
+    public void addPostToRoomDatabase(final Context context){
+        switch (modelType){
             case EventLog.ACTIVITY_TYPE_MOVIE:
 
                 new Thread(new Runnable() {
@@ -102,9 +98,9 @@ public class PostModel {
                                 || !UserDatabase.getInstance(context).getPostDao().getSenderName(userModel.getUsername())) {
 
                             String movieGenres = "";
-                            for (int i = 0; i < movieModel.getGenre().size(); i++) {
+                            for(int i = 0; i < movieModel.getGenre().size(); i++){
                                 movieGenres += movieModel.getGenre().get(i);
-                                if (i != movieModel.getGenre().size() - 1) {
+                                if(i != movieModel.getGenre().size()-1){
                                     movieGenres += ",";
                                 }
                             }
@@ -122,7 +118,7 @@ public class PostModel {
                             Bitmap bitmap6 = null;
                             try {
                                 bitmap6 = Picasso.get().load("http://image.tmdb.org/t/p/w185/" + movieModel.getPoster_path()).get();
-                            } catch (IOException e) {
+                            }catch (IOException e) {
                                 e.printStackTrace();
                             }
                             ByteArrayOutputStream outputStream6 = new ByteArrayOutputStream();
@@ -293,10 +289,11 @@ public class PostModel {
                             }
                             ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
                             byte[] postImage = null;
-                            if (bitmap2 != null) {
+                            if(bitmap2 != null){
                                 bitmap2.compress(Bitmap.CompressFormat.JPEG, 100, outputStream2);
                                 postImage = outputStream2.toByteArray();
                             }
+
 
 
                             Post activity = new Post(UUID.randomUUID().toString(),

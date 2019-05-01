@@ -225,8 +225,9 @@ public class SettingsFragment extends Fragment{
     }
 
     public void pickImage() {
-        CropImage.startPickImageActivity(getActivity(),SettingsFragment.this);
-
+        //CropImage.startPickImageActivity(getActivity(),SettingsFragment.this);
+        Intent intent = CropImage.getPickImageChooserIntent(getContext(),"pickImage",false,false);
+        startActivityForResult(intent,CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE);
         Log.d("pickImage", "pickImage: "+ getActivity());
     }
 

@@ -26,8 +26,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.findact.APIs.IGDbAPI;
+import com.findact.APIs.TMDbAPI;
 import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.Firebase.InitialLog;
 import com.findact.Firebase.UserData;
@@ -44,7 +47,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class GetUserDetailActivity extends AppCompatActivity implements View.OnClickListener {
@@ -60,6 +62,12 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     ImageView profilePicture, saveImageView;
     String name, surname, city, birthday, username, movieGenres, gameGenres;
     Uri selectedImage;
+
+    IGDbAPI igdbApi;
+    TMDbAPI tmDbApi;
+    ArrayList<String> gameGenreList = new ArrayList<>();
+    ArrayList<String> movieGenreList = new ArrayList<>();
+
     private String[] gameGenresList = {"FPS","MOBA","SINGLE PLAYER","MULTIPLAYER","BATTLEROYAL","VR"};
 
     private String[] movieGenresList = {"Action","Adventure","Animation",
@@ -69,7 +77,6 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
             "Sci-Fi","TV-Movie",
             "Thriller","War","Western"};
 
-    HashMap<String,Integer> movieHashMap;
 
     private ArrayAdapter<String> cityAdapter;
     private String[] citiesList = { "Select City","Adana", "Adıyaman","Afyon","Ağrı","Amasya","Ankara","Antalya","Artvin","Aydın","Balıkesir","Bilecik",
@@ -93,50 +100,43 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_user_detail);
 
-        movieHashMap = new HashMap<>();
-        movieHashMap.put(movieGenresList[0],R.drawable.ic_action);
-        movieHashMap.put(movieGenresList[1],R.drawable.ic_fantasy);
-        movieHashMap.put(movieGenresList[2],R.drawable.ic_comedy);
-        movieHashMap.put(movieGenresList[3],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[4],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[5],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[6],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[7],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[8],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[9],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[10],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[11],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[12],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[13],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[14],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[15],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[16],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[17],R.drawable.ic_biography);
-        movieHashMap.put(movieGenresList[18],R.drawable.ic_biography);
-
-
-        gameListView = findViewById(R.id.get_user_detail_game_genres);
-        movieListView = findViewById(R.id.get_user_detail_movie_genres);
-
-        gameInfoData = new ArrayList<>();
-        for (int i = 0; i < gameGenresList.length; i++){
-            gameInfoData.add(new InfoCheckboxData(false, i));
-        }
-
-        gameListView.setAdapter(new GameCheckBoxAdapter());
-
-        movieInfoData = new ArrayList<>();
-        for (int i = 0; i < movieGenresList.length; i++){
-            movieInfoData.add(new InfoCheckboxData(false, i));
-        }
-
-        movieListView.setAdapter(new MovieCheckBoxAdapter());
-
+        profilePicture = findViewById(R.id.get_user_detail_user_image);
         nameET = findViewById(R.id.get_user_detail_firstname);
         surnameET = findViewById(R.id.get_user_detail_lastname);
         citySpinner = findViewById(R.id.get_user_detail_city);
         birthdayET = findViewById(R.id.get_user_detail_birthday);
         saveImageView = findViewById(R.id.get_user_detail_save_icon);
+        gameListView = findViewById(R.id.get_user_detail_game_genres);
+        movieListView = findViewById(R.id.get_user_detail_movie_genres);
+
+        igdbApi = new IGDbAPI();
+        tmDbApi = new TMDbAPI();
+
+        igdbApi.getGenres(gameGenreList, new ArrayList<String>(), new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                tmDbApi.getGenres(movieGenreList, new OnTaskCompletedListener() {
+                    @Override
+                    public void onTaskCompleted() {
+                        gameInfoData = new ArrayList<>();
+                        for (int i = 0; i < gameGenreList.size(); i++){
+                            gameInfoData.add(new InfoCheckboxData(false, i));
+                        }
+                        gameListView.setAdapter(new GameCheckBoxAdapter());
+
+                        movieInfoData = new ArrayList<>();
+                        for (int i = 0; i < movieGenreList.size(); i++){
+                            movieInfoData.add(new InfoCheckboxData(false, i));
+                        }
+                        movieListView.setAdapter(new MovieCheckBoxAdapter());
+                    }
+                });
+            }
+        });
+
+        cityAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, citiesList );
+        cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        citySpinner.setAdapter(cityAdapter);
 
         saveImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,7 +150,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
                         bitmap == null ||
                         selectedGameGenres.isEmpty() ||
                         selectedMovieGenres.isEmpty()){
-                    Toast.makeText(getApplicationContext(), "Please fill your information.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getResources().getText(R.string.toast_fill_blanks), Toast.LENGTH_SHORT).show();
                 }
                 else{
                     saveDetail();
@@ -160,16 +160,8 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         birthdayET.setFocusable(false);
         birthdayET.setClickable(true);
-
         simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-
         setDateTimeField();
-
-        cityAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, citiesList );
-        cityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        citySpinner.setAdapter(cityAdapter);
-
-        profilePicture = findViewById(R.id.get_user_detail_user_image);
 
         profilePicture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -177,6 +169,8 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
                 checkAndroidVersion();
             }
         });
+
+
 
     }
 
@@ -203,7 +197,9 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     }
 
     public void pickImage() {
-        CropImage.startPickImageActivity(this);
+        //CropImage.startPickImageActivity(this);
+        Intent intent = CropImage.getPickImageChooserIntent(this,"pickImage",false,false);
+        startActivityForResult(intent,CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE);
     }
 
     private void croprequest(Uri imageUri) {
@@ -344,7 +340,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         @Override
         public int getCount() {
-            return gameGenresList.length;
+            return gameGenreList.size();
         }
 
         @Override
@@ -362,8 +358,8 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
             View view = View.inflate(getApplicationContext(),R.layout.custom_checkbox_list ,null );
 
-            ImageView imageView = view.findViewById(R.id.imageView3);
-            imageView.setImageResource(R.drawable.ic_action);
+            TextView textView = view.findViewById(R.id.custom_check_list_tv);
+            textView.setText(gameGenreList.get(position));
             final CardView cardView = view.findViewById(R.id.custom_checkbox_list_cv);
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -371,13 +367,13 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
                     if (gameInfoData.get(position).isClicked){
                         gameInfoData.get(position).isClicked = false;
                         cardView.setCardBackgroundColor(Color.TRANSPARENT);
-                        selectedGameGenres.remove(gameGenresList[position]);
+                        selectedGameGenres.remove(gameGenreList.get(position));
 
                     } else {
                         gameInfoData.get(position).isClicked = true;
                         cardView.setCardBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
-                        if (!selectedGameGenres.contains(gameGenresList[position])){
-                            selectedGameGenres.add(gameGenresList[position]);
+                        if (!selectedGameGenres.contains(gameGenreList.get(position))){
+                            selectedGameGenres.add(gameGenreList.get(position));
                         }
                     }
 
@@ -401,7 +397,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         @Override
         public int getCount() {
-            return movieGenresList.length;
+            return movieGenreList.size();
         }
 
         @Override
@@ -419,8 +415,8 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
             View view = View.inflate(getApplicationContext(),R.layout.custom_checkbox_list ,null );
 
-            ImageView imageView = view.findViewById(R.id.imageView3);
-            imageView.setImageResource(movieHashMap.get(movieGenresList[position]));
+            TextView textView = view.findViewById(R.id.custom_check_list_tv);
+            textView.setText(movieGenreList.get(position));
             final CardView cardView = view.findViewById(R.id.custom_checkbox_list_cv);
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -428,13 +424,13 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
                     if (movieInfoData.get(position).isClicked){
                         movieInfoData.get(position).isClicked = false;
                         cardView.setCardBackgroundColor(Color.TRANSPARENT);
-                        selectedMovieGenres.remove(movieGenresList[position]);
+                        selectedMovieGenres.remove(movieGenreList.get(position));
 
                     } else {
                         movieInfoData.get(position).isClicked = true;
                         cardView.setCardBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
-                        if (!selectedMovieGenres.contains(movieGenresList[position])){
-                            selectedMovieGenres.add(movieGenresList[position]);
+                        if (!selectedMovieGenres.contains(movieGenreList.get(position))){
+                            selectedMovieGenres.add(movieGenreList.get(position));
                         }
                     }
                 }
@@ -457,7 +453,7 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
         if (doubleBackTab) {
             finishAffinity();
         } else {
-            Toast.makeText(this, "Please fill your information.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getResources().getText(R.string.toast_fill_blanks), Toast.LENGTH_SHORT).show();
             doubleBackTab = true;
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {

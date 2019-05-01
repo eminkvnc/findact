@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Person" />
+            android:text="@string/find_fragment_person" />
 
         <Button
             android:id="@+id/fragment_find_movie_btn"
@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="MOVIE" />
+            android:text="@string/find_fragment_movie" />
 
         <Button
             android:id="@+id/fragment_find_game_btn"
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Game" />
+            android:text="@string/find_fragment_game" />
 
         <Button
             android:id="@+id/fragment_find_group_btn"
@@ -46,7 +46,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Group" />
+            android:text="@string/find_fragment_activity" />
 
     </LinearLayout>
 
@@ -58,7 +58,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:ems="10"
-        android:hint="Search"
+        android:hint="@string/find_fragment_search_hint"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toStartOf="@+id/fragment_find_search_iv"
         app:layout_constraintStart_toStartOf="parent"

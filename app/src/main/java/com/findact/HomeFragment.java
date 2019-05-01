@@ -1,6 +1,5 @@
 package com.findact;
 
-
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +15,9 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.findact.APIs.PostModel;
+import com.findact.Adapters.PostListItemAdapter;
+import com.findact.Firebase.FirebaseDBHelper;
+import com.findact.APIs.PostModel;
 import com.findact.Adapters.OfflinePostListItemAdapter;
 import com.findact.Adapters.PostListItemAdapter;
 import com.findact.Firebase.FirebaseDBHelper;
@@ -26,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class HomeFragment extends Fragment {
 
@@ -76,24 +80,27 @@ public class HomeFragment extends Fragment {
         recyclerView = v.findViewById(R.id.home_fragment_rv);
         swipeRefreshLayout = v.findViewById(R.id.home_fragment_srl);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        // isOnline
+        postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList,true);
+        // isOffline
+        List<Post> postList = UserDatabase.getInstance(getContext()).getPostDao().getData();
+        postArrayList = new ArrayList<>(postList);
+        offlinePostListItemAdapter = new OfflinePostListItemAdapter(getContext(),postArrayList);
         if (MainActivity.isOnline){
-            postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList);
             recyclerView.setAdapter(postListItemAdapter);
-            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    refreshData();
-                    swipeRefreshLayout.setRefreshing(false);
-                }
 
-            });
         } else {
 
-            List<Post> postList = UserDatabase.getInstance(getContext()).getPostDao().getData();
-            postArrayList = new ArrayList<>(postList);
-            offlinePostListItemAdapter = new OfflinePostListItemAdapter(getContext(),postArrayList);
             recyclerView.setAdapter(offlinePostListItemAdapter);
         }
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshData();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+
+        });
 
         return v;
     }
@@ -101,25 +108,37 @@ public class HomeFragment extends Fragment {
     private void refreshData(){
         if(MainActivity.isOnline){
             progressDialog.show();
-            firebaseDBHelper.getPosts(getContext(),postModelArrayList, new OnTaskCompletedListener() {
+            firebaseDBHelper.getPosts(postModelArrayList, new OnTaskCompletedListener() {
 
                 @Override
                 public void onTaskCompleted() {
-
-                    Collections.sort(postModelArrayList, new Comparator<PostModel>() {
-                        @Override
-                        public int compare(PostModel postModel, PostModel t1) {
-                            return t1.getShareDate().intValue() - postModel.getShareDate().intValue();
+                    if(!postModelArrayList.isEmpty()) {
+                        Collections.sort(postModelArrayList, new Comparator<PostModel>() {
+                            @Override
+                            public int compare(PostModel postModel, PostModel t1) {
+                                return t1.getShareDate().intValue() - postModel.getShareDate().intValue();
+                            }
+                        });
+                        postListItemAdapter.notifyDataSetChanged();
+                        if (progressDialog.isShowing()) {
+                            progressDialog.dismiss();
                         }
-                    });
-                    postListItemAdapter.notifyDataSetChanged();
-                    if(progressDialog.isShowing()){
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                for(int i = 0; i < postModelArrayList.size(); i++){
+                                    postModelArrayList.get(i).addPostToRoomDatabase(getContext());
+                                }
+                            }
+                        }).start();
+                    }else {
                         progressDialog.dismiss();
                     }
                 }
             });
         }else {
-            Toast.makeText(getContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
+            Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
         }
 
     }

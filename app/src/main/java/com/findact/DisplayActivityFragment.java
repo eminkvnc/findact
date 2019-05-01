@@ -579,7 +579,7 @@ public class DisplayActivityFragment extends Fragment {
                             public void run() {
                                 UsersListDialog dialog = new UsersListDialog();
                                 Bundle bundle = new Bundle();
-                                bundle.putString("Title","Attendees");
+                                bundle.putString("Title",getResources().getText(R.string.attendees).toString());
                                 Bundle attendeesBundle = new Bundle();
                                 for(int i = 0; i < attendees.size(); i++){
                                     attendeesBundle.putBundle(String.valueOf(i),attendees.get(i).UserDatatoBundle());

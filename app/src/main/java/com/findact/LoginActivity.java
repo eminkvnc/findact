@@ -30,7 +30,7 @@ import java.io.IOException;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private final String TAG = "Login_Activity";
+    private final String TAG = "LoginActivity";
     private GoogleSignInClient googleSignInClient;
     private SignInButton signInButton;
     private FirebaseAuth mAuth;
@@ -70,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
             } else {
                 User user = UserDatabase.getInstance(getApplicationContext()).getUserDao().getData();
                 if (user != null){
-                    Toast.makeText(getApplicationContext(), "Welcome: "+user.getUsername(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getResources().getText(R.string.toast_welcome)+user.getUsername(), Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
                     finish();
@@ -142,7 +142,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateUI(final FirebaseUser firebaseUser){
 
-        Toast.makeText(getApplicationContext(), "Welcome: "+firebaseUser.getEmail(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), getResources().getText(R.string.toast_welcome)+firebaseUser.getEmail(), Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
         finish();

@@ -9,12 +9,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -37,7 +39,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.findact.APIs.ActivityModel;
-import com.findact.Firebase.FirebaseAsyncTask;
+import com.findact.Firebase.EventLog;
 import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.Firebase.UserData;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -66,8 +68,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     UsersListDialog usersListDialog;
 
 
-    private ArrayList<UserData> followerArrayList;
-    private ArrayList<UserData> followingArrayList;
+    private ArrayList<UserData> followerAndFollowingArrayList;
     private ArrayList<String> invitedArrayList;
     private ArrayList<Integer> statusList;
     private GoogleMap mMap;
@@ -75,7 +76,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     private LocationListener locationListener;
     private LatLng latLng;
 
-    private String[] categoriesList = {"Movie","Post","Music","Trip"};
+    private String[] categoriesList = {"Movie","Game","Music","Trip"};
     private ArrayList<String> selectedSubItemsArray;
     private ArrayList<String> movieCategoriesList;
     private ArrayList<String> gameCategoriesList;
@@ -103,8 +104,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
-        followerArrayList = new ArrayList<>();
-        followingArrayList = new ArrayList<>();
+        followerAndFollowingArrayList = new ArrayList<>();
         invitedArrayList = new ArrayList<>();
         statusList = new ArrayList<>();
 
@@ -173,7 +173,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         tripCategoriesList.add("Sea Trip");
 
         subCategoriesHashmap.put("Movie",movieCategoriesList);
-        subCategoriesHashmap.put("Post",gameCategoriesList);
+        subCategoriesHashmap.put("Game",gameCategoriesList);
         subCategoriesHashmap.put("Music",musicCategoriesList);
         subCategoriesHashmap.put("Trip",tripCategoriesList);
 
@@ -213,7 +213,6 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     public void saveActivity(){
 
         String activityId = UUID.randomUUID().toString();
-
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         File myPath = new File(directory, activityId+".jpg");
@@ -229,30 +228,25 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 invitedArrayList,
                 descriptionEditText.getText().toString(),
                 FirebaseDBHelper.getInstance().getCurrentUser());
-
         dialog.show();
-        final FirebaseDBHelper dbHelper = FirebaseDBHelper.getInstance();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                dbHelper.addGroupActivity(activityModel);
-            }
-        };
-        FirebaseAsyncTask task = new FirebaseAsyncTask(runnable, new OnTaskCompletedListener() {
+        EventLog eventLog = new EventLog(activityId,Calendar.getInstance().getTime().toString(),EventLog.EVENT_TYPE_SHARE,EventLog.ACTIVITY_TYPE_ACTIVITY,activityModel);
+        //FirebaseDBHelper.getInstance().addEventUserLog(eventLog);
+        FirebaseDBHelper.getInstance().addGroupActivity(activityModel, eventLog, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
                 dialog.dismiss();
                 onBackPressed();
             }
         });
-        task.execute();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.activity_create_select_image_iv:
-                CropImage.startPickImageActivity(this);
+                //CropImage.startPickImageActivity(this);
+                Intent intent = CropImage.getPickImageChooserIntent(this,"pickImage",false,false);
+                startActivityForResult(intent,CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE);
                 break;
             case R.id.activity_create_date_et:
                 datePickerDialog.show();
@@ -267,7 +261,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 selectedSubItemsArray.isEmpty() ||
                 dateEditText.getText().toString().equals("") ||
                 descriptionEditText.getText().toString().equals("")){
-                    Toast.makeText(this, "Please fill the blanks.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getResources().getText(R.string.toast_fill_blanks), Toast.LENGTH_SHORT).show();
                 }else {
                     saveActivity();
                 }
@@ -399,7 +393,30 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
         try {
             fos = new FileOutputStream(myPath);
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 30,fos );
+            Bitmap background = Bitmap.createBitmap(375, 500, Bitmap.Config.ARGB_8888);
+
+            float originalWidth = bitmapImage.getWidth();
+            float originalHeight = bitmapImage.getHeight();
+
+            Canvas canvas = new Canvas(background);
+
+            float scale = 375 / originalWidth;
+            //float hScale = 278 / originalHeight;
+
+            float xTranslation = 0.0f;
+            float yTranslation = (500 - originalHeight * scale) / 2.0f;
+
+            Matrix transformation = new Matrix();
+            transformation.postTranslate(xTranslation, yTranslation);
+            transformation.preScale(scale, scale);
+
+            Paint paint = new Paint();
+            paint.setFilterBitmap(true);
+
+
+
+            canvas.drawBitmap(bitmapImage, transformation, paint);
+            background.compress(Bitmap.CompressFormat.JPEG, 100,fos );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -412,44 +429,42 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void showInviteDialog(){
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                FirebaseDBHelper.getInstance().getFollowers(FirebaseDBHelper.getInstance().getCurrentUser(),followerArrayList,statusList);
-                FirebaseDBHelper.getInstance().getFollowing(FirebaseDBHelper.getInstance().getCurrentUser(),followingArrayList,statusList);
-            }
-        };
+        final Bundle bundle = new Bundle();
+        bundle.putString("Title",getResources().getText(R.string.activity_create_invite).toString());
+        final Bundle followersArrayListBundle = new Bundle();
+        final ArrayList<UserData> followingArrayList = new ArrayList<>();
+        final ArrayList<UserData> followerArrayList = new ArrayList<>();
         OnTaskCompletedListener onTaskCompletedListener = new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
-                for(int i = 0; i < followingArrayList.size(); i++){
-                    if(!followingArrayList.contains(followerArrayList.get(i))){
-                        followingArrayList.add(followerArrayList.get(i));
+                for(int i = 0; i < followerArrayList.size(); i++){
+                    if(!followerAndFollowingArrayList.contains(followerArrayList.get(i))){
+                        followerAndFollowingArrayList.add(followerArrayList.get(i));
                     }
                 }
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
+                FirebaseDBHelper.getInstance().getFollowing(FirebaseDBHelper.getInstance().getCurrentUser(), followingArrayList, statusList, new OnTaskCompletedListener() {
                     @Override
-                    public void run() {
-                        Bundle bundle = new Bundle();
-                        bundle.putString("Title","Invite");
-                        Bundle followersArrayListBundle = new Bundle();
+                    public void onTaskCompleted() {
                         for(int i = 0; i < followingArrayList.size(); i++){
-                            followersArrayListBundle.putBundle(String.valueOf(i),followingArrayList.get(i).UserDatatoBundle());
+                            if(!followerAndFollowingArrayList.contains(followingArrayList.get(i))){
+                                followerAndFollowingArrayList.add(followingArrayList.get(i));
+                            }
                         }
+                        for(int j = 0; j < followerAndFollowingArrayList.size(); j++){
+                            followersArrayListBundle.putBundle(String.valueOf(j),followerAndFollowingArrayList.get(j).UserDatatoBundle());
+                        }
+                        followerAndFollowingArrayList.clear();
                         bundle.putBundle("UserDataArrayList",followersArrayListBundle);
                         bundle.putStringArrayList("Attendees",invitedArrayList);
                         bundle.putIntegerArrayList("StatusArrayList",null);
                         usersListDialog.setArguments(bundle);
                         usersListDialog.show(getSupportFragmentManager(),"dialog");
                     }
-                },800);
+                });
 
             }
         };
-        FirebaseAsyncTask task = new FirebaseAsyncTask(runnable,onTaskCompletedListener);
-        task.execute();
-
+        FirebaseDBHelper.getInstance().getFollowers(FirebaseDBHelper.getInstance().getCurrentUser(),followerArrayList,statusList, onTaskCompletedListener);
     }
 
 }

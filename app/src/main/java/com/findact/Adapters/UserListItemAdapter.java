@@ -219,7 +219,7 @@ public class UserListItemAdapter extends RecyclerView.Adapter<UserListItemAdapte
                     if(userData.getUuidString().equals(firebaseDBHelper.getCurrentUser())){
                         profileFragment.setInitMode(ProfileFragment.INIT_MODE_MY_PROFILE_PAGE);
                     }else {
-                        profileFragment.setInitMode(ProfileFragment.INIT_MODE_FRIEND_PROFILE_PAGE);
+                        profileFragment.setInitMode(ProfileFragment.INIT_MODE_DEFAULT_PROFILE_PAGE);
                     }
                     FragmentManager fragmentManager = ((FragmentActivity)context).getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

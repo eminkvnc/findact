@@ -10,15 +10,14 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-
 import com.findact.APIs.ActivityModel;
 import com.findact.APIs.GameModel;
 import com.findact.APIs.MovieModel;
 import com.findact.APIs.PostModel;
 import com.findact.OnTaskCompletedListener;
-import com.findact.RoomDatabase.Post;
 import com.findact.RoomDatabase.User;
 import com.findact.RoomDatabase.UserDatabase;
+import com.findact.RoomDatabase.Post;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -32,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -48,7 +48,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
-
 
 public class FirebaseDBHelper {
 
@@ -67,15 +66,14 @@ public class FirebaseDBHelper {
     public static final String FIREBASE_DB_CHILD_USER_LOG = "Logs";
     public static final String FIREBASE_DB_CHILD_USER_LOG_INITIAL = "Initial";
     public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT = "Event";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE = "Share";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_LIKE = "Like";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_DISLIKE = "Dislike";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE = "share";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_LIKE = "like";
+    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_DISLIKE = "dislike";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWS = "Follows";
     public static final String FIREBASE_DB_CHILD_USER_REQUESTS = "Requests";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWERS = "Followers";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWING = "Following";
     public static final String FIREBASE_DB_CHILD_USER_ACTIVITIES = "Activities";
-
 
     private String TAG = "FirebaseDBHelper";
     private DatabaseReference databaseReference;
@@ -135,7 +133,6 @@ public class FirebaseDBHelper {
     }
 
     public void getUserData(String userId, final ArrayList<UserData> userData){
-
         userData.clear();
         DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(userId);
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -359,7 +356,7 @@ public class FirebaseDBHelper {
     }
 
 
-    public void getPosts(final Context context, final ArrayList<PostModel> postModelArrayList, final OnTaskCompletedListener listener){
+    public void getPosts( final ArrayList<PostModel> postModelArrayList, final OnTaskCompletedListener listener){
 
         postModelArrayList.clear();
         final ArrayList<UserData> userDataArrayList = new ArrayList<>();
@@ -370,6 +367,9 @@ public class FirebaseDBHelper {
         OnTaskCompletedListener onTaskCompletedListener = new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
+                if(userDataArrayList.isEmpty()){
+                    listener.onTaskCompleted();
+                }
                 for(int i = 0; i < userDataArrayList.size(); i++){
                     final UserData userData = userDataArrayList.get(i);
                     final int requestStatus = requestStatusList.get(i);
@@ -382,7 +382,7 @@ public class FirebaseDBHelper {
                                 if(dataSnapshot.hasChild(path)){
                                     for(DataSnapshot ds :dataSnapshot.child(userData.getUuidString()).child(FIREBASE_DB_CHILD_USER_LOG).child(FIREBASE_DB_CHILD_USER_LOG_EVENT).getChildren()){
                                         if(ds.hasChild("share")) {
-                                            mapPost(context,ds, userData, requestStatus, postModelArrayList);
+                                            mapPost(ds, userData, requestStatus, postModelArrayList);
                                         }else{
                                             Log.d(TAG, "onDataChange: if1");
                                         }
@@ -409,10 +409,33 @@ public class FirebaseDBHelper {
         getFollowing(userDataArrayList,requestStatusList,onTaskCompletedListener);
     }
 
+    public void getUserPosts(final UserData userData, final ArrayList<PostModel> postModelArrayList, final OnTaskCompletedListener onTaskCompletedListener){
+
+        postModelArrayList.clear();
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(userData.getUuidString()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String path = FIREBASE_DB_CHILD_USER_LOG +"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT;
+                if(dataSnapshot.hasChild(path)){
+                    for(DataSnapshot ds : dataSnapshot.child(FIREBASE_DB_CHILD_USER_LOG).child(FIREBASE_DB_CHILD_USER_LOG_EVENT).getChildren()){
+                        if(ds.hasChild("share")){
+                            mapPost(ds,userData,FRIEND_REQUEST_STATUS_NONE,postModelArrayList);
+                        }
+                    }
+                }
+                onTaskCompletedListener.onTaskCompleted();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
 
 /////////////////////////////////////////////ACTIVITY///////////////////////////////////////////////
 
-    public void addGroupActivity(final ActivityModel activityModel){
+    public void addGroupActivity(final ActivityModel activityModel, final EventLog eventLog, final OnTaskCompletedListener onTaskCompletedListener){
 
         String imageName = "images/activityImages/"+activityModel.getActivityId();
         ArrayList<String> subCategoriesList = activityModel.getSubCategories();
@@ -442,7 +465,6 @@ public class FirebaseDBHelper {
                     }
                 }
 
-
         final StorageReference mStorageReference = storageReference.child(getCurrentUser()).child(imageName);
         mStorageReference.putFile(activityModel.getImageUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -453,6 +475,9 @@ public class FirebaseDBHelper {
                         String downloadUrl = uri.toString();
                         reference.child("image").setValue(downloadUrl);
                         Log.d("onSuccess", "onSuccess: " + downloadUrl);
+                        eventLog.getActivityModel().setImageUri(uri);
+                        addEventUserLog(eventLog);
+                        onTaskCompletedListener.onTaskCompleted();
                     }
                 });
             }
@@ -460,9 +485,9 @@ public class FirebaseDBHelper {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.d("onFailure", "onFailure: " + e);
+                onTaskCompletedListener.onTaskCompleted();
             }
         });
-
     }
 
     public void joinActivity(String activityId, String userId){
@@ -506,10 +531,9 @@ public class FirebaseDBHelper {
 
     }
 
-
 ////////////////////////////////////////SEARCH FUNCTIONS////////////////////////////////////////////
 
-    public void searchUser(final String parameter, final ArrayList<UserData> userDataArrayList, final ArrayList<Integer> requestStatusList){
+    public void searchUser(final String parameter, final ArrayList<UserData> userDataArrayList, final ArrayList<Integer> requestStatusList, final OnTaskCompletedListener onTaskCompletedListener){
         Log.d(TAG, "searchUser: ");
         userDataArrayList.clear();
         requestStatusList.clear();
@@ -536,6 +560,7 @@ public class FirebaseDBHelper {
                             requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
                         }
                     }
+                    onTaskCompletedListener.onTaskCompleted();
                 }
             }
             @Override
@@ -545,7 +570,7 @@ public class FirebaseDBHelper {
         });
     }
 
-    public void searchActivity(final String parameter, final ArrayList<ActivityModel> activities){
+    public void searchActivity(final String parameter, final ArrayList<ActivityModel> activities, final OnTaskCompletedListener onTaskCompletedListener){
 
         activities.clear();
         DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USER_ACTIVITIES);
@@ -557,6 +582,7 @@ public class FirebaseDBHelper {
                         activities.add(mapActivity(ds));
                     }
                 }
+                onTaskCompletedListener.onTaskCompleted();
             }
 
             @Override
@@ -683,39 +709,30 @@ public class FirebaseDBHelper {
 
     //////////////////////////GETTING FOLLOWERS, FOLLOWINGS AND REQUESTS////////////////////////////
 
-    public void getFollowRequests(final ArrayList<UserData> userDataArrayList, final ArrayList<Integer> statusList){
+    public void getFollowRequests(final ArrayList<UserData> userDataArrayList, final ArrayList<Integer> statusList, final OnTaskCompletedListener taskCompletedListener){
 
         userDataArrayList.clear();
         statusList.clear();
+        final String path = FIREBASE_DB_CHILD_USERS+"/"+getCurrentUser()+"/";
 
-        DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser());
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: ds: "+dataSnapshot.toString());
-                if(dataSnapshot.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS)){
-                    for(DataSnapshot ds : dataSnapshot.child(FIREBASE_DB_CHILD_USER_FOLLOWS).child(FIREBASE_DB_CHILD_USER_REQUESTS).getChildren()){
-                        if(Integer.parseInt(ds.child("status").getValue().toString()) == FRIEND_REQUEST_STATUS_REQUEST_WAITING) {
-                            final String username = ds.getKey();
-                            databaseReference.child(FIREBASE_DB_CHILD_USERS).addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                        if (ds.getKey().equals(username)) {
-                                            userDataArrayList.add(mapUserData(ds));
-                                            statusList.add(FRIEND_REQUEST_STATUS_WAITING_ANSWER);
-                                            Log.d(TAG, "onDataChange: request: "+username);
-                                        }
-                                    }
-                                }
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });
+                if(dataSnapshot.hasChild(path+FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS)){
+                    for(DataSnapshot ds : dataSnapshot
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(getCurrentUser())
+                            .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                            .child(FIREBASE_DB_CHILD_USER_REQUESTS).getChildren()){
+                        if(Integer.parseInt(ds.child("status").getValue().toString()) == FRIEND_REQUEST_STATUS_REQUEST_WAITING){
+                            String username = ds.getKey();
+                            DataSnapshot ds2 = dataSnapshot.child(FIREBASE_DB_CHILD_USERS).child(username);
+                            userDataArrayList.add(mapUserData(ds2));
+                            statusList.add(FRIEND_REQUEST_STATUS_WAITING_ANSWER);
                         }
                     }
                 }
+                taskCompletedListener.onTaskCompleted();
             }
 
             @Override
@@ -723,50 +740,40 @@ public class FirebaseDBHelper {
 
             }
         });
+
     }
 
-    public void getFollowing(String user, final ArrayList<UserData> followingList, final ArrayList<Integer> requestStatusList){
+    public void getFollowing(final String user, final ArrayList<UserData> followingList, final ArrayList<Integer> requestStatusList, final OnTaskCompletedListener taskCompletedListener){
         followingList.clear();
         requestStatusList.clear();
-        DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user);
-            reference.addListenerForSingleValueEvent(new ValueEventListener() {
+        final String path = FIREBASE_DB_CHILD_USERS+"/"+user+"/";
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_FOLLOWING)){
-                    Log.d(TAG, "onDataChange: has child:");
-                    for(DataSnapshot ds : dataSnapshot.child(FIREBASE_DB_CHILD_USER_FOLLOWS).child(FIREBASE_DB_CHILD_USER_FOLLOWING).getChildren()){
+                if(dataSnapshot.hasChild(path+FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_FOLLOWING)){
+                    for(DataSnapshot ds : dataSnapshot
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(user)
+                            .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                            .child(FIREBASE_DB_CHILD_USER_FOLLOWING).getChildren()){
                         final String username = ds.getKey();
                         if(username!=null) {
-                            databaseReference
-                                    .child(FIREBASE_DB_CHILD_USERS)
-                                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    for(DataSnapshot ds2 : dataSnapshot.getChildren()){
-                                        if(ds2.getKey().equals(username)) {
-                                            followingList.add(mapUserData(ds2));
-                                            if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
-                                                requestStatusList.add(Integer.parseInt(ds2
-                                                        .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
-                                                        .child(FIREBASE_DB_CHILD_USER_REQUESTS)
-                                                        .child(getCurrentUser())
-                                                        .child("status").getValue().toString()));
+                            DataSnapshot ds2 = dataSnapshot.child(FIREBASE_DB_CHILD_USERS).child(username);
+                            followingList.add(mapUserData(ds2));
+                            if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
+                                requestStatusList.add(Integer.parseInt(ds2
+                                        .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                                        .child(FIREBASE_DB_CHILD_USER_REQUESTS)
+                                        .child(getCurrentUser())
+                                        .child("status").getValue().toString()));
 
-                                            }else{
-                                                requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
-                                            }
-
-                                        }
-                                    }
-                                }
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                            });
+                            }else{
+                                requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
+                            }
                         }
                     }
                 }
+                taskCompletedListener.onTaskCompleted();
             }
 
             @Override
@@ -777,7 +784,7 @@ public class FirebaseDBHelper {
 
     }
 
-    public void getFollowing(final ArrayList<UserData> userList, final ArrayList<Integer> requestStatusList,  final OnTaskCompletedListener listener) {
+    public void getFollowing(final ArrayList<UserData> userList, final ArrayList<Integer> requestStatusList, final OnTaskCompletedListener taskCompletedListener) {
 
         userList.clear();
         requestStatusList.clear();
@@ -810,7 +817,7 @@ public class FirebaseDBHelper {
                         }
                     }
                 }
-                listener.onTaskCompleted();
+                taskCompletedListener.onTaskCompleted();
             }
 
             @Override
@@ -823,46 +830,37 @@ public class FirebaseDBHelper {
 
     }
 
-    public void getFollowers(String user, final ArrayList<UserData> followersList, final ArrayList<Integer> requestStatusList){
+    public void getFollowers(final String user, final ArrayList<UserData> followersList, final ArrayList<Integer> requestStatusList, final OnTaskCompletedListener taskCompletedListener){
         followersList.clear();
         requestStatusList.clear();
-        DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(user);
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+        final String path = FIREBASE_DB_CHILD_USERS+"/"+user+"/";
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_FOLLOWERS)){
-                    Log.d(TAG, "onDataChange: has child:");
-                    for(DataSnapshot ds : dataSnapshot.child(FIREBASE_DB_CHILD_USER_FOLLOWS).child(FIREBASE_DB_CHILD_USER_FOLLOWERS).getChildren()){
+                if(dataSnapshot.hasChild(path+FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_FOLLOWERS)){
+                    for(DataSnapshot ds : dataSnapshot
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(user)
+                            .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                            .child(FIREBASE_DB_CHILD_USER_FOLLOWERS).getChildren()){
                         final String username = ds.getKey();
                         if(username!=null) {
-                            databaseReference
-                                    .child(FIREBASE_DB_CHILD_USERS)
-                                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for(DataSnapshot ds2 : dataSnapshot.getChildren()){
-                                                if(ds2.getKey().equals(username)) {
-                                                    followersList.add(mapUserData(ds2));
-                                                    if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
-                                                        requestStatusList.add(Integer.parseInt(ds2
-                                                                .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
-                                                                .child(FIREBASE_DB_CHILD_USER_REQUESTS)
-                                                                .child(getCurrentUser())
-                                                                .child("status").getValue().toString()));
-                                                    }else{
-                                                        requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            DataSnapshot ds2 = dataSnapshot.child(FIREBASE_DB_CHILD_USERS).child(username);
+                            followersList.add(mapUserData(ds2));
+                            if(ds2.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
+                                requestStatusList.add(Integer.parseInt(ds2
+                                        .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
+                                        .child(FIREBASE_DB_CHILD_USER_REQUESTS)
+                                        .child(getCurrentUser())
+                                        .child("status").getValue().toString()));
 
-                                        }
-                                    });
+                            }else{
+                                requestStatusList.add(FRIEND_REQUEST_STATUS_UNFOLLOWED);
+                            }
                         }
                     }
                 }
+                taskCompletedListener.onTaskCompleted();
             }
 
             @Override
@@ -874,18 +872,17 @@ public class FirebaseDBHelper {
 
 /////////////////////////////////////MAPPING FUNCTIONS//////////////////////////////////////////////
 
-    //maps dataSnapshot to UserData
     private UserData mapUserData(DataSnapshot ds){
 
-            UserData userData = new UserData(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("city").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("username").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").getValue().toString(),
-                    ds.child(FIREBASE_DB_CHILD_USER_DATA).child("notification").getValue().toString(),
-                    Uri.parse(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").getValue().toString()));
-            return userData;
+        UserData userData = new UserData(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("city").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("username").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").getValue().toString(),
+                ds.child(FIREBASE_DB_CHILD_USER_DATA).child("notification").getValue().toString(),
+                Uri.parse(ds.child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").getValue().toString()));
+        return userData;
     }
 
     private ActivityModel mapActivity(DataSnapshot ds){
@@ -920,8 +917,6 @@ public class FirebaseDBHelper {
         return activityModel;
     }
 
-
-
     private void addMovieModelLog(DatabaseReference reference, String eventType, MovieModel movieModel){
         String genres = "";
         for(int i = 0; i < movieModel.getGenre().size(); i++){
@@ -951,7 +946,6 @@ public class FirebaseDBHelper {
             reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
         }
         reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_MOVIE);
-
     }
 
     private void addGameModelLog(DatabaseReference reference, String eventType, GameModel gameModel){
@@ -1000,7 +994,6 @@ public class FirebaseDBHelper {
             reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
         }
         reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_GAME);
-
     }
 
     private void addActivityModelLog(DatabaseReference reference, String eventType, ActivityModel activityModel){
@@ -1045,17 +1038,13 @@ public class FirebaseDBHelper {
             reference.child("log-date").setValue(Calendar.getInstance().getTimeInMillis());
         }
         reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_ACTIVITY);
-
     }
 
-    private void mapPost(final Context context, final DataSnapshot ds, final UserData userData, final int requestStatus, final ArrayList<PostModel> postModelArrayList){
-
+    private void mapPost(final DataSnapshot ds, final UserData userData, final int requestStatus, final ArrayList<PostModel> postModelArrayList){
 
         if(ds.hasChild("share") && ds.child("activity-type").getValue() != null){
             final Long shareDate = (Long) ds.child("log-date").getValue();
-
             switch (ds.child("activity-type").getValue().toString()){
-
                 case EventLog.ACTIVITY_TYPE_MOVIE:
 
                     String movieGenresString =  ds.child("genres").getValue().toString();
@@ -1064,7 +1053,6 @@ public class FirebaseDBHelper {
                     for(int j = 0; j < movieGenres.length; j++){
                         movieGenreList.add(movieGenres[j]);
                     }
-
                     MovieModel movieModel = new MovieModel(
                             ds.getKey(),
                             Integer.parseInt(ds.child("activity-id").getValue().toString()),
@@ -1078,6 +1066,7 @@ public class FirebaseDBHelper {
                             ds.child("language").getValue().toString());
                     postModelArrayList.add(new PostModel(userData, null, movieModel, null, requestStatus, EventLog.ACTIVITY_TYPE_MOVIE, shareDate));
                     break;
+
                 case EventLog.ACTIVITY_TYPE_GAME:
 
                     final String gameGenresString = ds.child("genres").getValue().toString();
@@ -1101,7 +1090,7 @@ public class FirebaseDBHelper {
                         gamePlatformList.add(gamePlatforms[j]);
                     }
 
-                    final GameModel gameModel = new GameModel(
+                    GameModel gameModel = new GameModel(
                             ds.getKey(),
                             Integer.parseInt(ds.child("activity-id").getValue().toString()),
                             ds.child("title").getValue().toString(),
@@ -1116,18 +1105,18 @@ public class FirebaseDBHelper {
 
                     postModelArrayList.add(new PostModel(userData, gameModel, null, null, requestStatus, EventLog.ACTIVITY_TYPE_GAME, shareDate));
                     break;
+
                 case EventLog.ACTIVITY_TYPE_ACTIVITY:
                     ActivityModel activityModel = mapActivity(ds);
                     postModelArrayList.add(new PostModel(userData, null, null, activityModel, requestStatus, EventLog.ACTIVITY_TYPE_ACTIVITY, shareDate));
                     break;
             }
-
         }else {
             Log.d(TAG, "mapPost: no post for user: "+userData.getUsername());
         }
     }
 
-
+//////////////////////////////////////OTHER FUNCTIONS///////////////////////////////////////////////
 
     public String getCurrentUser(){
         firebaseAuth = FirebaseAuth.getInstance();
@@ -1148,7 +1137,6 @@ public class FirebaseDBHelper {
         task.execute();
 
     }
-
     public class ImageDownloaderTask extends AsyncTask<Void, Void, Void> {
 
 
@@ -1203,34 +1191,5 @@ public class FirebaseDBHelper {
 
         }
 
-    }
-
-    public class ImageDownload extends AsyncTask<String,Void,Bitmap>{
-
-        @Override
-        protected Bitmap doInBackground(String... strings) {
-
-            Bitmap bitmap = null;
-            URL url;
-            HttpURLConnection connection;
-
-            try {
-                url = new URL(strings[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                InputStream stream = connection.getInputStream();
-                bitmap = BitmapFactory.decodeStream(stream);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-        }
     }
 }

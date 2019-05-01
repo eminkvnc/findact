@@ -18,7 +18,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:ems="10"
-        android:hint="Activity Name"
+        android:hint="@string/activity_create_name_hint"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toStartOf="@+id/activity_create_save_iv"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Select Image and Location"
+        android:text="@string/activity_create_image_location"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/activity_create_name_et" />
@@ -59,7 +59,7 @@
             android:id="@+id/activity_create_select_image_iv"
             android:layout_width="120dp"
             android:layout_height="150dp"
-            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
             app:srcCompat="@drawable/default_group" />
 
         <fragment
@@ -96,7 +96,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:hint="Date"
+                    android:hint="@string/activity_create_date_hint"
                     android:inputType="none" />
 
                 <Button
@@ -104,7 +104,7 @@
                     style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Invite"
+                    android:text="@string/activity_create_invite"
                     android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
             </LinearLayout>
@@ -113,7 +113,7 @@
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Choose Category"
+                android:text="@string/activity_create_select_category"
                 android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
             <Spinner
@@ -130,7 +130,7 @@
                 android:id="@+id/activity_create_subcategory_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Choose Sub-Category"
+                android:text="@string/activity_create_sub_category"
                 android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
 
@@ -148,7 +148,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:hint="Description"
+                android:hint="@string/activity_create_description_hint"
                 android:inputType="textMultiLine" />
 
         </LinearLayout>

@@ -3,7 +3,6 @@ package com.findact;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -23,7 +22,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Toast;
-
 import com.findact.APIs.ActivityModel;
 import com.findact.APIs.GameModel;
 import com.findact.APIs.IGDbAPI;
@@ -33,25 +31,17 @@ import com.findact.Adapters.ActivityListItemAdapter;
 import com.findact.Adapters.GameListItemAdapter;
 import com.findact.Adapters.MovieListItemAdapter;
 import com.findact.Adapters.UserListItemAdapter;
-import com.findact.Firebase.FirebaseAsyncTask;
 import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.Firebase.UserData;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class FindFragment extends Fragment implements View.OnClickListener, OnTaskCompletedListener {
-
-    public static final String TAB_NAME_PERSON = "Person";
-    public static final String TAB_NAME_MOVIE = "Movie";
-    public static final String TAB_NAME_GAME = "Post";
-    public static final String TAB_NAME_ACTIVITY = "Activity";
+public class FindFragment extends Fragment implements View.OnClickListener {
 
     public static String TAG = "FindFragment";
     public static String selectedTab;
     String sParam;
     FirebaseDBHelper firebaseDBHelper;
-    FirebaseAsyncTask searchTask;
     ProgressDialog progressDialog;
     DisplayActivityFragment displayActivityFragment;
     String oldSearchParameter;
@@ -69,7 +59,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
     ImageView searchImageView;
     RecyclerView genreRecyclerView;
     RecyclerView modeRecyclerView;
-
 
     ArrayList<UserData> userDataArrayList;
     ArrayList<Integer> requestStatus;
@@ -92,7 +81,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
     ArrayList<String> gameGenreList;
     ArrayList<String> movieGenresList;
 
-    String mode;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -100,7 +88,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         MainActivity.setDisplayingFragment(FindFragment.TAG);
 
         selectedTab = "Person";
-        mode = new String();
 
         userDataArrayList = new ArrayList<>();
         requestStatus = new ArrayList<>();
@@ -127,11 +114,11 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         super.onResume();
         MainActivity.setDisplayingFragment(FindFragment.TAG);
         if(MainActivity.isOnline){
-            tmDbAPI.getGenres(movieGenresList);
-            igDbAPI.getGenres(gameGenreList,gameModesList);
+            tmDbAPI.getGenres(movieGenresList,null);
+            igDbAPI.getGenres(gameGenreList,gameModesList,null);
         }
         else {
-            Toast.makeText(getContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
         }
         ((AppCompatActivity) getActivity()).getSupportActionBar().show();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
@@ -139,13 +126,19 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         actionBar.setTitle(R.string.title_find);
     }
 
+    @Override
+    public void onPause() {
+        Bundle bundle = new Bundle();
+        bundle.putString("SelectedTab",selectedTab);
+        onSaveInstanceState(bundle);
+        super.onPause();
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         displayActivityFragment = new DisplayActivityFragment();
         View v = inflater.inflate(R.layout.fragment_find, container, false);
-
         movieButton = v.findViewById(R.id.fragment_find_movie_btn);
         gameButton = v.findViewById(R.id.fragment_find_game_btn);
         groupButton = v.findViewById(R.id.fragment_find_group_btn);
@@ -156,6 +149,10 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         searchMovieRecyclerView = v.findViewById(R.id.fragment_find_movie_rv);
         searchGameRecyclerView = v.findViewById(R.id.fragment_find_game_rv);
         searchGroupRecyclerView = v.findViewById(R.id.fragment_find_group_rv);
+
+        if (savedInstanceState != null) {
+            selectedTab = savedInstanceState.getString("SelectedTab");
+        }
 
         genreRecyclerView = v.findViewById(R.id.fragment_find_genre_list_rv);
         LinearLayoutManager manager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
@@ -185,7 +182,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
         firstClick = new HashMap<>();
         firstClick.put("Person",true);
         firstClick.put("Movie",true);
-        firstClick.put("Post",true);
+        firstClick.put("Game",true);
         firstClick.put("Group",true);
 
         searchImageView.setOnClickListener(this);
@@ -199,7 +196,7 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 oldSearchParameter = searchEditText.getText().toString();
                 firstClick.put("Person",true);
                 firstClick.put("Movie",true);
-                firstClick.put("Post",true);
+                firstClick.put("Game",true);
                 firstClick.put("Group",true);
             }
 
@@ -213,9 +210,23 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
 
             }
         });
-        personButton.performClick();
+        switch (selectedTab){
+            case "Person":
+                personButton.performClick();
+                break;
+            case "Movie":
+                movieButton.performClick();
+                break;
+            case "Game":
+                gameButton.performClick();
+                break;
+            case "Group":
+                groupButton.performClick();
+                break;
+        }
         return v;
     }
+
 
     @Override
     public void onClick(View v) {
@@ -238,9 +249,9 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 selectedTab = "Person";
                 if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Person")){
                     searchImageView.performClick();
+                    oldSearchParameter = searchEditText.getText().toString();
                     firstClick.put("Person",false);
                 }
-
                 break;
 
             case R.id.fragment_find_movie_btn:
@@ -253,7 +264,6 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 GenreNamesAdapter adapter = new GenreNamesAdapter(getContext(), movieGenresList, selectedGenreList);
                 genreRecyclerView.setAdapter(adapter);
 
-
                 searchPersonRecyclerView.setVisibility(View.GONE);
                 searchMovieRecyclerView.setVisibility(View.VISIBLE);
                 searchGameRecyclerView.setVisibility(View.GONE);
@@ -264,9 +274,9 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 selectedTab = "Movie";
                 if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Movie")){
                     searchImageView.performClick();
+                    oldSearchParameter = searchEditText.getText().toString();
                     firstClick.put("Movie",false);
                 }
-
                 break;
 
             case R.id.fragment_find_game_btn:
@@ -282,22 +292,20 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 genreRecyclerView.setVisibility(View.VISIBLE);
                 modeRecyclerView.setVisibility(View.VISIBLE);
 
-
                 selectedGenreList.clear();
                 GenreNamesAdapter adapter2 = new GenreNamesAdapter(getContext(), gameGenreList, selectedGenreList);
                 genreRecyclerView.setAdapter(adapter2);
-
 
                 ModeNamesAdapter modeNamesAdapter = new ModeNamesAdapter(getContext(),gameModesList ,selectedModeList );
                 modeRecyclerView.setAdapter(modeNamesAdapter);
                 modeNamesAdapter.notifyDataSetChanged();
 
-                selectedTab = "Post";
-                if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Post")){
+                selectedTab = "Game";
+                if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Game")){
                     searchImageView.performClick();
-                    firstClick.put("Post",false);
+                    oldSearchParameter = searchEditText.getText().toString();
+                    firstClick.put("Game",false);
                 }
-
                 break;
 
             case R.id.fragment_find_group_btn:
@@ -313,13 +321,12 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                 genreRecyclerView.setVisibility(View.GONE);
                 modeRecyclerView.setVisibility(View.GONE);
 
-
                 selectedTab = "Group";
                 if(!oldSearchParameter.equals(searchEditText.getText().toString()) && firstClick.get("Group")){
                     searchImageView.performClick();
+                    oldSearchParameter = searchEditText.getText().toString();
                     firstClick.put("Group",false);
                 }
-
                 break;
 
             case R.id.fragment_find_search_iv:
@@ -332,75 +339,82 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                             sParam = sParam + "+" + split[j];
                         }
                     }
-                    if (!sParam.equals("")) {
-                        switch (selectedTab) {
-                            case "Person":
-                                //runnable
-                                Runnable searchRunnable = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus);
-                                    }
-                                };
-                                if(!progressDialog.isShowing()){
-                                    progressDialog.show();
-                                }
-                                searchTask = new FirebaseAsyncTask(searchRunnable, this);
-                                searchTask.execute();
-                                break;
-
-                            case "Movie":
-                                if(!progressDialog.isShowing()){
-                                    progressDialog.show();
-                                }
-                                tmDbAPI.searchMovie(sParam, movieModelArrayList, this);
-                                break;
-                            case "Post":
-
-                                if(!progressDialog.isShowing()){
-                                    progressDialog.show();
-                                }
-                                igDbAPI.searchGame(sParam, gameModelArrayList, this);
-
-                                break;
-                            case "Group":
-                                //runnable
-                                Runnable searchActivityRunnable = new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        firebaseDBHelper.searchActivity(searchParameter, activityArrayList);
-                                    }
-                                };
-                                if(!progressDialog.isShowing()){
-                                    progressDialog.show();
-                                }
-                                searchTask = new FirebaseAsyncTask(searchActivityRunnable,this);
-                                searchTask.execute();
-                                break;
-                        }
-                    } else if (sParam.equals("")){
+                    if (!sParam.equals("") && selectedGenreList.isEmpty() && selectedModeList.isEmpty()) {
                         switch (selectedTab){
                             case "Person":
-
+                                progressDialog.show();
+                                firebaseDBHelper.searchUser(sParam, userDataArrayList, requestStatus, new OnTaskCompletedListener() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                        findPersonAdapter.notifyDataSetChanged();
+                                        progressDialog.dismiss();
+                                    }
+                                });
+                                break;
+                            case "Movie":
+                                progressDialog.show();
+                                tmDbAPI.searchMovie(sParam, movieModelArrayList, new OnTaskCompletedListener() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                        findMovieAdapter.notifyDataSetChanged();
+                                        progressDialog.dismiss();
+                                    }
+                                });
+                                break;
+                            case "Game":
+                                progressDialog.show();
+                                igDbAPI.searchGame(sParam, gameModelArrayList, new OnTaskCompletedListener() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                        findGameAdapter.notifyDataSetChanged();
+                                        progressDialog.dismiss();
+                                    }
+                                });
+                                break;
+                            case "Group":
+                                progressDialog.show();
+                                firebaseDBHelper.searchActivity(searchParameter, activityArrayList, new OnTaskCompletedListener() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                        findActivityAdapter.notifyDataSetChanged();
+                                        progressDialog.dismiss();
+                                    }
+                                });
+                                break;
+                        }
+                    } else if (!selectedGenreList.isEmpty() || !selectedModeList.isEmpty()){
+                        switch (selectedTab){
+                            case "Person":
+                                //Filter person here
                                 break;
                             case "Movie":
                                 if (!selectedGenreList.isEmpty()){
                                     if(!progressDialog.isShowing()){
                                         progressDialog.show();
                                     }
-                                    tmDbAPI.searchMovieByGenre(selectedGenreList, movieModelArrayList,this );
+                                    tmDbAPI.searchMovieByGenre(selectedGenreList, movieModelArrayList, new OnTaskCompletedListener() {
+                                        @Override
+                                        public void onTaskCompleted() {
+                                            findMovieAdapter.notifyDataSetChanged();
+                                            progressDialog.dismiss();
+                                        }
+                                    } );
                                 }
                                 break;
-                            case "Post":
-                                if (!selectedGenreList.isEmpty() || !selectedModeList.isEmpty()){
+                            case "Game":
                                     if(!progressDialog.isShowing()){
                                         progressDialog.show();
                                     }
-                                    igDbAPI.searchByGenreAndModeName(selectedGenreList, selectedModeList, gameModelArrayList, this);
-                                }
+                                    igDbAPI.searchByGenreAndModeName(selectedGenreList, selectedModeList, gameModelArrayList, new OnTaskCompletedListener() {
+                                        @Override
+                                        public void onTaskCompleted() {
+                                            findGameAdapter.notifyDataSetChanged();
+                                            progressDialog.dismiss();
+                                        }
+                                    });
                                 break;
                             case "Group":
-
+                                //Filter activities here
                                 break;
                         }
 
@@ -419,72 +433,8 @@ public class FindFragment extends Fragment implements View.OnClickListener, OnTa
                     }
                     break;
                 } else {
-                    Toast.makeText(getContext(), "Check your internet connection", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
                 }
-        }
-    }
-
-    @Override
-    public void onTaskCompleted() {
-        switch (selectedTab){
-            case "Person":
-
-                if(searchTask.isTimeout()){
-                    Toast.makeText(getContext(), "Task Timeout", Toast.LENGTH_SHORT).show();
-                    searchTask.cancel(true);
-                    progressDialog.dismiss();
-                }
-                if(searchTask.isTaskComplete()){
-//                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            findPersonAdapter.notifyDataSetChanged();
-                            progressDialog.dismiss();
-                        }
-                    },1000);
-                }
-
-                break;
-            case "Movie":
-
-//                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
-                findMovieAdapter.notifyDataSetChanged();
-                if(progressDialog.isShowing()){
-                    progressDialog.dismiss();
-                }
-                break;
-            case "Game":
-//                Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
-                findGameAdapter.notifyDataSetChanged();
-                if(progressDialog.isShowing()){
-                    progressDialog.dismiss();
-                }
-
-                break;
-            case "Group":
-                if(searchTask.isTimeout()){
-                    Toast.makeText(getContext(), "Task Timeout", Toast.LENGTH_SHORT).show();
-                    searchTask.cancel(true);
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
-                    }
-                }
-                if(searchTask.isTaskComplete()) {
-//                    Toast.makeText(getContext(), "Task Completed", Toast.LENGTH_SHORT).show();
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            findActivityAdapter.notifyDataSetChanged();
-                            if(progressDialog.isShowing()){
-                                progressDialog.dismiss();
-                            }
-                        }
-                    }, 1000);
-                }
-                break;
         }
     }
 
