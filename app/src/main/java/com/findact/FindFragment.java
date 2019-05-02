@@ -77,9 +77,9 @@ public class FindFragment extends Fragment implements View.OnClickListener {
 
     ArrayList<String> selectedGenreList;
     ArrayList<String> selectedModeList;
-    ArrayList<String> gameModesList;
-    ArrayList<String> gameGenreList;
-    ArrayList<String> movieGenresList;
+//    ArrayList<String> gameModesList;
+//    ArrayList<String> gameGenreList;
+//    ArrayList<String> movieGenresList;
 
 
     @Override
@@ -100,9 +100,6 @@ public class FindFragment extends Fragment implements View.OnClickListener {
 
         selectedGenreList = new ArrayList<>();
         selectedModeList = new ArrayList<>();
-        gameModesList = new ArrayList<>();
-        movieGenresList = new ArrayList<>();
-        gameGenreList = new ArrayList<>();
 
         movieModelArrayList = new ArrayList<>();
         gameModelArrayList = new ArrayList<>();
@@ -113,13 +110,6 @@ public class FindFragment extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
         MainActivity.setDisplayingFragment(FindFragment.TAG);
-        if(MainActivity.isOnline){
-            tmDbAPI.getGenres(movieGenresList,null);
-            igDbAPI.getGenres(gameGenreList,gameModesList,null);
-        }
-        else {
-            Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
-        }
         ((AppCompatActivity) getActivity()).getSupportActionBar().show();
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         ActionBar actionBar = activity.getSupportActionBar();
@@ -261,7 +251,7 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                 groupButton.setTextColor(Color.BLACK);
 
                 selectedGenreList.clear();
-                GenreNamesAdapter adapter = new GenreNamesAdapter(getContext(), movieGenresList, selectedGenreList);
+                GenreNamesAdapter adapter = new GenreNamesAdapter(getContext(), MainActivity.movieGenreList, selectedGenreList);
                 genreRecyclerView.setAdapter(adapter);
 
                 searchPersonRecyclerView.setVisibility(View.GONE);
@@ -293,10 +283,10 @@ public class FindFragment extends Fragment implements View.OnClickListener {
                 modeRecyclerView.setVisibility(View.VISIBLE);
 
                 selectedGenreList.clear();
-                GenreNamesAdapter adapter2 = new GenreNamesAdapter(getContext(), gameGenreList, selectedGenreList);
+                GenreNamesAdapter adapter2 = new GenreNamesAdapter(getContext(), MainActivity.gameGenreList, selectedGenreList);
                 genreRecyclerView.setAdapter(adapter2);
 
-                ModeNamesAdapter modeNamesAdapter = new ModeNamesAdapter(getContext(),gameModesList ,selectedModeList );
+                ModeNamesAdapter modeNamesAdapter = new ModeNamesAdapter(getContext(),MainActivity.gameModeList ,selectedModeList );
                 modeRecyclerView.setAdapter(modeNamesAdapter);
                 modeNamesAdapter.notifyDataSetChanged();
 

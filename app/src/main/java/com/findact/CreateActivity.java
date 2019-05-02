@@ -39,6 +39,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.findact.APIs.ActivityModel;
+import com.findact.APIs.IGDbAPI;
+import com.findact.APIs.TMDbAPI;
 import com.findact.Firebase.EventLog;
 import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.Firebase.UserData;
@@ -78,8 +80,6 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
     private String[] categoriesList = {"Movie","Game","Music","Trip"};
     private ArrayList<String> selectedSubItemsArray;
-    private ArrayList<String> movieCategoriesList;
-    private ArrayList<String> gameCategoriesList;
     private ArrayList<String> musicCategoriesList;
     private ArrayList<String> tripCategoriesList;
 
@@ -99,10 +99,16 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
     private Bitmap imageBitmap;
 
+    TMDbAPI tmDbAPI;
+    IGDbAPI igdbAPI;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
+
+        tmDbAPI = new TMDbAPI();
+        igdbAPI = new IGDbAPI();
 
         followerAndFollowingArrayList = new ArrayList<>();
         invitedArrayList = new ArrayList<>();
@@ -144,23 +150,11 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categorySpinner.setAdapter(categoryAdapter);
 
-        movieCategoriesList = new ArrayList<>();
-        gameCategoriesList = new ArrayList<>();
         musicCategoriesList = new ArrayList<>();
         tripCategoriesList = new ArrayList<>();
         subCategoriesHashmap = new HashMap<>();
         selectedSubItemsArray = new ArrayList<>();
 
-        movieCategoriesList.add("Action");
-        movieCategoriesList.add("Comedy");
-        movieCategoriesList.add("Biography");
-        movieCategoriesList.add("War");
-        movieCategoriesList.add("Horror");
-
-        gameCategoriesList.add("Shooter");
-        gameCategoriesList.add("RPG");
-        gameCategoriesList.add("MultiPlayer");
-        gameCategoriesList.add("SinglePlayer");
 
         musicCategoriesList.add("Rock");
         musicCategoriesList.add("Pop");
@@ -172,8 +166,8 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         tripCategoriesList.add("Historic Trip");
         tripCategoriesList.add("Sea Trip");
 
-        subCategoriesHashmap.put("Movie",movieCategoriesList);
-        subCategoriesHashmap.put("Game",gameCategoriesList);
+        subCategoriesHashmap.put("Movie",MainActivity.movieGenreList);
+        subCategoriesHashmap.put("Game",MainActivity.gameGenreList);
         subCategoriesHashmap.put("Music",musicCategoriesList);
         subCategoriesHashmap.put("Trip",tripCategoriesList);
 
@@ -229,7 +223,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 descriptionEditText.getText().toString(),
                 FirebaseDBHelper.getInstance().getCurrentUser());
         dialog.show();
-        EventLog eventLog = new EventLog(activityId,Calendar.getInstance().getTime().toString(),EventLog.EVENT_TYPE_SHARE,EventLog.ACTIVITY_TYPE_ACTIVITY,activityModel);
+        EventLog eventLog = new EventLog(activityId,Calendar.getInstance().getTime().toString(),"0.0",EventLog.EVENT_TYPE_SHARE,EventLog.ACTIVITY_TYPE_ACTIVITY,activityModel);
         //FirebaseDBHelper.getInstance().addEventUserLog(eventLog);
         FirebaseDBHelper.getInstance().addGroupActivity(activityModel, eventLog, new OnTaskCompletedListener() {
             @Override

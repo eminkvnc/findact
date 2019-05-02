@@ -1,15 +1,15 @@
 package com.findact.Firebase;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+
 import com.findact.APIs.ActivityModel;
 import com.findact.APIs.GameModel;
 import com.findact.APIs.MovieModel;
@@ -17,10 +17,10 @@ import com.findact.APIs.PostModel;
 import com.findact.OnTaskCompletedListener;
 import com.findact.RoomDatabase.User;
 import com.findact.RoomDatabase.UserDatabase;
-import com.findact.RoomDatabase.Post;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -31,21 +31,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Picasso;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -80,6 +73,7 @@ public class FirebaseDBHelper {
     private StorageReference storageReference;
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
+    private FirebaseAnalytics firebaseAnalytics;
     public static FirebaseDBHelper getInstance(){
         return SingletonHolder.INSTANCE;
     }
@@ -92,6 +86,13 @@ public class FirebaseDBHelper {
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
         storageReference = FirebaseStorage.getInstance().getReference();
+
+    }
+
+    public FirebaseDBHelper(Context context){
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        storageReference = FirebaseStorage.getInstance().getReference();
+        firebaseAnalytics = FirebaseAnalytics.getInstance(context);
     }
 
 /////////////////////////////////////////USER DATA//////////////////////////////////////////////////
@@ -182,7 +183,7 @@ public class FirebaseDBHelper {
                                 reference.child("like").setValue(false);
                                 reference.child("dislike").setValue(false);
                             }else {
-                                addMovieModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getMovieModel() );
+                                addMovieModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getUserRate(), eventLog.getMovieModel() );
                                 reference.child("dislike").setValue(false);
                             }
                         }
@@ -198,14 +199,14 @@ public class FirebaseDBHelper {
                                 reference.child("like").setValue(false);
                                 reference.child("dislike").setValue(false);
                             }else {
-                                addMovieModelLog(reference, EventLog.EVENT_TYPE_DISLIKE, eventLog.getMovieModel() );
+                                addMovieModelLog(reference, EventLog.EVENT_TYPE_DISLIKE, eventLog.getUserRate(), eventLog.getMovieModel() );
                                 reference.child("like").setValue(false);
                             }
                         }
                     });
                 }
                 if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
-                    addMovieModelLog(reference, EventLog.EVENT_TYPE_SHARE, eventLog.getMovieModel() );
+                    addMovieModelLog(reference, EventLog.EVENT_TYPE_SHARE,eventLog.getUserRate(), eventLog.getMovieModel() );
                 }
 
                 break;
@@ -290,6 +291,64 @@ public class FirebaseDBHelper {
 
         }
 
+    }
+
+    public void isRated(final String firebaseId,final String[] userRate,final OnTaskCompletedListener listener){
+        final String path = FIREBASE_DB_CHILD_USERS+"/"+getCurrentUser()+"/"+FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+firebaseId+"/"+"user-rate";
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild(path)){
+                    userRate[0] = (String) dataSnapshot
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(getCurrentUser())
+                            .child(FIREBASE_DB_CHILD_USER_LOG)
+                            .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
+                            .child(firebaseId).child("user-rate").getValue();
+
+                }
+                else {
+                    userRate[0] = "0.0";
+                }
+                listener.onTaskCompleted();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void isShared(final String firebaseId, final Boolean[] eventTypeStatus, final OnTaskCompletedListener listener){
+        final String path = FIREBASE_DB_CHILD_USERS+"/"+getCurrentUser()+"/"+FIREBASE_DB_CHILD_USER_LOG+"/"+FIREBASE_DB_CHILD_USER_LOG_EVENT+"/"+firebaseId+"/"+"share";
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild(path)){
+                    if( dataSnapshot
+                            .child(FIREBASE_DB_CHILD_USERS)
+                            .child(getCurrentUser())
+                            .child(FIREBASE_DB_CHILD_USER_LOG)
+                            .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
+                            .child(firebaseId).child("like").getValue().equals(true)){
+                        eventTypeStatus[0] = true;
+                    }
+                    else {
+                        eventTypeStatus[0] = false;
+                    }
+                }
+                else {
+                    eventTypeStatus[0] = false;
+                }
+                listener.onTaskCompleted();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void isLiked(final String firebaseId, final Boolean[] eventTypeStatus, final OnTaskCompletedListener listener){
@@ -917,7 +976,7 @@ public class FirebaseDBHelper {
         return activityModel;
     }
 
-    private void addMovieModelLog(DatabaseReference reference, String eventType, MovieModel movieModel){
+    private void addMovieModelLog(DatabaseReference reference, String eventType, String userRate, MovieModel movieModel){
         String genres = "";
         for(int i = 0; i < movieModel.getGenre().size(); i++){
             genres+=movieModel.getGenre().get(i);
@@ -934,6 +993,8 @@ public class FirebaseDBHelper {
         reference.child("image-path").setValue(movieModel.getPoster_path());
         reference.child("language").setValue(movieModel.getLanguage());
         reference.child("overview").setValue(movieModel.getOverview());
+
+        reference.child("user-rate").setValue(userRate);
 
         if(eventType.equals(EventLog.EVENT_TYPE_LIKE)){
             reference.child("like").setValue(true);
@@ -1114,6 +1175,17 @@ public class FirebaseDBHelper {
         }else {
             Log.d(TAG, "mapPost: no post for user: "+userData.getUsername());
         }
+    }
+
+    public void addRateLog(String userId, int activityId, double rate, int activityType){
+
+        Bundle bundle = new Bundle();
+        bundle.putString("userId",userId);
+        bundle.putInt("contentId",activityId);
+        bundle.putDouble("rate",rate);
+        bundle.putInt("activityType",activityType);
+        firebaseAnalytics.logEvent("rate_event",bundle);
+
     }
 
 //////////////////////////////////////OTHER FUNCTIONS///////////////////////////////////////////////

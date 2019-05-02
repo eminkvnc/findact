@@ -65,8 +65,10 @@ public class IGDbAPI {
     public void getGenres(ArrayList<String> genreList, ArrayList<String> modeList, OnTaskCompletedListener onTaskCompletedListener){
         GetGenreList getGenreList = new GetGenreList(genreList, onTaskCompletedListener);
         getGenreList.execute(genreUrl);
-        GetGenreList getModeList = new GetGenreList(modeList, null);
-        getModeList.execute(modeUrl);
+        if (modeList != null){
+            GetGenreList getModeList = new GetGenreList(modeList, null);
+            getModeList.execute(modeUrl);
+        }
     }
 
     public void searchGame(String game_name, final ArrayList<GameModel> gameModelArrayList, final OnTaskCompletedListener listener) {

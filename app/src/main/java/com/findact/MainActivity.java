@@ -15,6 +15,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.findact.APIs.IGDbAPI;
+import com.findact.APIs.TMDbAPI;
 import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.Firebase.UserData;
 import com.findact.RoomDatabase.User;
@@ -45,6 +47,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public static NetworkStateBroadcastReciever reciever;
 
+    TMDbAPI tmDbAPI;
+    IGDbAPI igdbAPI;
+
+    public static ArrayList<String> movieGenreList;
+    public static ArrayList<String> gameGenreList;
+    public static ArrayList<String> gameModeList;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +64,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         findFragment = new FindFragment();
         exploreFragment = new ExploreFragment();
         profileFragment = new ProfileFragment();
+
+        gameGenreList = new ArrayList<>();
+        movieGenreList = new ArrayList<>();
+        gameModeList = new ArrayList<>();
+
+        igdbAPI = new IGDbAPI();
+        tmDbAPI = new TMDbAPI();
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.actionBarColor)));
@@ -122,6 +139,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     Toast.makeText(MainActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+
+            tmDbAPI.getGenres(movieGenreList,null );
+            igdbAPI.getGenres(gameGenreList,gameModeList ,null );
         } else {
             Toast.makeText(getApplicationContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
             progressDialog.dismiss();

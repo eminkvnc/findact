@@ -7,6 +7,7 @@
     android:layout_height="match_parent">
 
     <ScrollView
+        android:id="@+id/scrollView4"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:scrollbars="vertical"
@@ -160,8 +161,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/display_movie_trailer"
-                android:textStyle="bold"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@id/fragment_display_movie_vote_average"
                 app:layout_constraintTop_toBottomOf="@id/fragment_display_movie_vote_average_tv" />
 
@@ -210,6 +211,37 @@
         app:layout_constraintTop_toTopOf="@id/fragment_display_movie_dislike_iv"
         app:srcCompat="@drawable/share" />
 
+    <SeekBar
+        android:id="@+id/fragment_display_movie_rate_seekBar"
+        android:layout_width="75dp"
+        android:layout_height="14dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toEndOf="@+id/fragment_display_movie_dislike_iv"
+        app:layout_constraintTop_toTopOf="@+id/fragment_display_movie_dislike_iv" />
+
+    <TextView
+        android:id="@+id/fragment_display_movie_userVote_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="0.0"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/fragment_display_movie_rate_seekBar"
+        app:layout_constraintTop_toTopOf="@+id/fragment_display_movie_dislike_iv" />
+
+    <Button
+        android:id="@+id/fragment_display_movie_vote_btn"
+        android:layout_width="60dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="vote"
+        app:layout_constraintEnd_toStartOf="@+id/fragment_display_movie_share_iv"
+        app:layout_constraintStart_toEndOf="@+id/fragment_display_movie_userVote_tv"
+        app:layout_constraintTop_toTopOf="@+id/fragment_display_movie_dislike_iv" />
 
 
 </android.support.constraint.ConstraintLayout>

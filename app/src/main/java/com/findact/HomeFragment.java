@@ -17,10 +17,7 @@ import android.widget.Toast;
 import com.findact.APIs.PostModel;
 import com.findact.Adapters.PostListItemAdapter;
 import com.findact.Firebase.FirebaseDBHelper;
-import com.findact.APIs.PostModel;
 import com.findact.Adapters.OfflinePostListItemAdapter;
-import com.findact.Adapters.PostListItemAdapter;
-import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.RoomDatabase.Post;
 import com.findact.RoomDatabase.UserDatabase;
 
@@ -28,8 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class HomeFragment extends Fragment {
 
@@ -83,14 +78,14 @@ public class HomeFragment extends Fragment {
         // isOnline
         postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList,true);
         // isOffline
-        List<Post> postList = UserDatabase.getInstance(getContext()).getPostDao().getData();
-        postArrayList = new ArrayList<>(postList);
-        offlinePostListItemAdapter = new OfflinePostListItemAdapter(getContext(),postArrayList);
+
         if (MainActivity.isOnline){
             recyclerView.setAdapter(postListItemAdapter);
 
         } else {
-
+            List<Post> postList = UserDatabase.getInstance(getContext()).getPostDao().getData();
+            postArrayList = new ArrayList<>(postList);
+            offlinePostListItemAdapter = new OfflinePostListItemAdapter(getContext(),postArrayList);
             recyclerView.setAdapter(offlinePostListItemAdapter);
         }
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -116,7 +111,7 @@ public class HomeFragment extends Fragment {
                         Collections.sort(postModelArrayList, new Comparator<PostModel>() {
                             @Override
                             public int compare(PostModel postModel, PostModel t1) {
-                                return t1.getShareDate().intValue() - postModel.getShareDate().intValue();
+                                return t1.getShareDate().intValue()/1000 - postModel.getShareDate().intValue()/1000;
                             }
                         });
                         postListItemAdapter.notifyDataSetChanged();

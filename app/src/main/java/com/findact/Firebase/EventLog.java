@@ -20,26 +20,30 @@ public class EventLog extends UserLog {
     private ActivityModel activityModel;
     private String eventType;
     private String activityType;
+    private String userRate;
 
-    public EventLog(String id, String date, String eventType, String activityType, MovieModel movieModel) {
+    public EventLog(String id, String date, String userRate, String eventType, String activityType, MovieModel movieModel) {
         super(id,date);
         this.movieModel = movieModel;
         this.eventType = eventType;
         this.activityType = activityType;
+        this.userRate = userRate;
     }
 
-    public EventLog(String id, String date, String eventType, String activityType, GameModel gameModel) {
+    public EventLog(String id, String date, String userRate, String eventType, String activityType, GameModel gameModel) {
         super(id,date);
         this.gameModel = gameModel;
         this.eventType = eventType;
         this.activityType = activityType;
+        this.userRate = userRate;
     }
 
-    public EventLog(String id, String date, String eventType, String activityType, ActivityModel activityModel) {
+    public EventLog(String id, String date, String userRate, String eventType, String activityType, ActivityModel activityModel) {
         super(id,date);
         this.activityModel = activityModel;
         this.eventType = eventType;
         this.activityType = activityType;
+        this.userRate = userRate;
     }
 
 
@@ -61,5 +65,9 @@ public class EventLog extends UserLog {
 
     public String getActivityType() {
         return activityType;
+    }
+
+    public String getUserRate() {
+        return userRate;
     }
 }

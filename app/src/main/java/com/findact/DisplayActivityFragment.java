@@ -2,8 +2,10 @@ package com.findact;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,6 +36,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.collection.LLRBNode;
 import com.squareup.picasso.Picasso;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -42,7 +45,7 @@ import java.util.Calendar;
 public class DisplayActivityFragment extends Fragment {
 
     FirebaseDBHelper firebaseDBHelper = FirebaseDBHelper.getInstance();
-
+    FirebaseDBHelper firebaseDBHelper2 = new FirebaseDBHelper(getContext());
     public static final int INIT_MODE_MOVIE_ACTIVITY = 0;
     public static final int INIT_MODE_GAME_ACTIVITY = 1;
     public static final int INIT_MODE_GROUP_ACTIVITY = 2;
@@ -65,15 +68,21 @@ public class DisplayActivityFragment extends Fragment {
 
     ImageView gameLikeImageView;
     ImageView gameDislikeImageView;
-    ImageView gemeShareImageView;
+    ImageView gameShareImageView;
 
     ImageView activityLikeImageView;
     ImageView activityDislikeImageView;
     ImageView activityShareImageView;
 
-    TextView userRate;
-    SeekBar rateSeekBar;
-    float userVote;
+    TextView movieUserRate;
+    SeekBar movieRateSeekBar;
+    Button movieVoteButton;
+
+    TextView gameUserRate;
+    SeekBar gameRateSeekBar;
+    Button gameVoteButton;
+
+    double userVote;
 
     public  DisplayActivityFragment() {
     }
@@ -140,6 +149,7 @@ public class DisplayActivityFragment extends Fragment {
                 case R.id.fragment_display_movie_like_iv:
                     eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
+                            null,
                             EventLog.EVENT_TYPE_LIKE,
                             EventLog.ACTIVITY_TYPE_MOVIE,
                             movieModel);
@@ -162,6 +172,7 @@ public class DisplayActivityFragment extends Fragment {
                     movieLikeImageView.setImageResource(R.drawable.like);
                     eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
+                            null,
                             EventLog.EVENT_TYPE_DISLIKE,
                             EventLog.ACTIVITY_TYPE_MOVIE,
                             movieModel);
@@ -179,18 +190,32 @@ public class DisplayActivityFragment extends Fragment {
                     });
                     break;
                 case R.id.fragment_display_movie_share_iv:
+                    movieShareImageView.setImageResource(R.drawable.share_green);
                     eventLog = new EventLog(activityId,
                             Long.valueOf(time).toString(),
+                            null,
                             EventLog.EVENT_TYPE_SHARE,
                             EventLog.ACTIVITY_TYPE_MOVIE,
                             movieModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
+                    break;
+                case R.id.fragment_display_movie_vote_btn:
+                    movieVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
+                    eventLog = new EventLog(activityId,
+                            Long.valueOf(time).toString(),
+                            movieUserRate.getText().toString(),
+                            EventLog.EVENT_TYPE_SHARE,
+                            EventLog.ACTIVITY_TYPE_MOVIE,
+                            movieModel);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    firebaseDBHelper2.addRateLog(firebaseDBHelper.getCurrentUser(),movieModel.getMovieId() ,Double.valueOf(movieUserRate.getText().toString()) , INIT_MODE_MOVIE_ACTIVITY);
                     break;
                 case R.id.fragment_display_game_like_iv:
                     gameLikeImageView.setImageResource(R.drawable.like_green);
                     gameDislikeImageView.setImageResource(R.drawable.dislike);
                     eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
+                            null,
                             EventLog.EVENT_TYPE_LIKE,
                             EventLog.ACTIVITY_TYPE_GAME,
                             gameModel);
@@ -212,6 +237,7 @@ public class DisplayActivityFragment extends Fragment {
                     gameLikeImageView.setImageResource(R.drawable.like);
                     eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
+                            null,
                             EventLog.EVENT_TYPE_DISLIKE,
                             EventLog.ACTIVITY_TYPE_GAME,
                             gameModel);
@@ -229,18 +255,24 @@ public class DisplayActivityFragment extends Fragment {
                     });
                     break;
                 case R.id.fragment_display_game_share_iv:
+                    movieShareImageView.setImageResource(R.drawable.share_green);
                     eventLog = new EventLog(activityId,
                             Long.valueOf(time).toString(),
+                            null,
                             EventLog.EVENT_TYPE_SHARE,
                             EventLog.ACTIVITY_TYPE_GAME,
                             gameModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
                     break;
+                case R.id.fragment_display_game_vote_btn:
+
+
                 case R.id.fragment_display_group_like_iv:
                     activityLikeImageView.setImageResource(R.drawable.like_green);
                     activityDislikeImageView.setImageResource(R.drawable.dislike);
                     eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
+                            null,
                             EventLog.EVENT_TYPE_LIKE,
                             EventLog.ACTIVITY_TYPE_ACTIVITY,
                             activityModel); //Like ve dislike oranına göre rating belirlenecek.
@@ -262,6 +294,7 @@ public class DisplayActivityFragment extends Fragment {
                     activityLikeImageView.setImageResource(R.drawable.like);
                     eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
+                            null,
                             EventLog.EVENT_TYPE_DISLIKE,
                             EventLog.ACTIVITY_TYPE_ACTIVITY,
                             activityModel); //Like ve dislike oranına göre rating belirlenecek.
@@ -279,8 +312,10 @@ public class DisplayActivityFragment extends Fragment {
                     });
                     break;
                 case R.id.fragment_display_group_share_iv:
+                    movieShareImageView.setImageResource(R.drawable.share_green);
                     eventLog = new EventLog(activityId,
                             Long.valueOf(time).toString(),
+                            null,
                             EventLog.EVENT_TYPE_SHARE,
                             EventLog.ACTIVITY_TYPE_ACTIVITY,
                             activityModel); //Like ve dislike oranına göre rating belirlenecek.
@@ -302,8 +337,11 @@ public class DisplayActivityFragment extends Fragment {
         movieLikeImageView = v.findViewById(R.id.fragment_display_movie_like_iv);
         movieDislikeImageView = v.findViewById(R.id.fragment_display_movie_dislike_iv);
         movieShareImageView = v.findViewById(R.id.fragment_display_movie_share_iv);
-        rateSeekBar = v.findViewById(R.id.fragment_display_movie_rate_seekBar);
-        userRate = v.findViewById(R.id.fragment_display_movie_userVote_tv);
+
+        movieRateSeekBar = v.findViewById(R.id.fragment_display_movie_rate_seekBar);
+        movieUserRate = v.findViewById(R.id.fragment_display_movie_userVote_tv);
+        movieVoteButton = v.findViewById(R.id.fragment_display_movie_vote_btn);
+
         LinearLayout movieGenre = v.findViewById(R.id.fragment_display_movie_genre_ll);
 
         movieGenre.removeAllViews();
@@ -354,23 +392,50 @@ public class DisplayActivityFragment extends Fragment {
             }
         });
 
+        final Boolean[] isShared = new Boolean[1];
+        firebaseDBHelper.isShared(movieModel.getFirebaseId(), isShared, new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                if (isShared[0]){
+                    movieShareImageView.setImageResource(R.drawable.share_green);
+                } else {
+                    movieShareImageView.setImageResource(R.drawable.share);
+                }
+            }
+        });
+
+        final String[] isRated = new String[1];
+        firebaseDBHelper.isRated(String.valueOf(movieModel.getFirebaseId()), isRated, new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                if (Double.valueOf(isRated[0])> 0.0){
+                    movieUserRate.setText(String.valueOf(isRated[0]));
+                    movieRateSeekBar.setProgress((int)(Double.valueOf(isRated[0])*2));
+                    movieVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
+                } else {
+                    movieUserRate.setText("0.0");
+                    movieRateSeekBar.setProgress(0);
+                }
+            }
+        });
+
         EventLogOnClickListener listenerMovie = new EventLogOnClickListener(movieModel.getFirebaseId());
         movieLikeImageView.setOnClickListener(listenerMovie);
         movieDislikeImageView.setOnClickListener(listenerMovie);
         movieShareImageView.setOnClickListener(listenerMovie);
-
+        movieVoteButton.setOnClickListener(listenerMovie);
         movieTitle.setText(movieModel.getTitle());
         movieOverview.setText(movieModel.getOverview());
         movieRelease_date.setText(movieModel.getRelease_date());
         movieVote_average.setText(movieModel.getVote_average());
         movieLanguage.setText(movieModel.getLanguage());
 
-        rateSeekBar.setMax(10);
-        rateSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        movieRateSeekBar.setMax(10);
+        movieRateSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                userVote = (float) i / 2;
-                userRate.setText(String.valueOf(userVote));
+                userVote = (double) i / 2;
+                movieUserRate.setText(String.valueOf(userVote));
             }
 
             @Override
@@ -402,7 +467,30 @@ public class DisplayActivityFragment extends Fragment {
 
         gameLikeImageView = v.findViewById(R.id.fragment_display_game_like_iv);
         gameDislikeImageView = v.findViewById(R.id.fragment_display_game_dislike_iv);
-        gemeShareImageView = v.findViewById(R.id.fragment_display_game_share_iv);
+        gameShareImageView = v.findViewById(R.id.fragment_display_game_share_iv);
+
+        gameRateSeekBar = v.findViewById(R.id.fragment_display_game_rate_seekBar);
+        gameUserRate = v.findViewById(R.id.fragment_display_game_userVote_tv);
+        gameVoteButton = v.findViewById(R.id.fragment_display_game_vote_btn);
+
+        gameRateSeekBar.setMax(10);
+        gameRateSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                userVote = (double) i / 2;
+                gameUserRate.setText(String.valueOf(userVote));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
         if (gameModel.getImageId() != null){
             Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+gameModel.getImageId()+".jpg")).into(gamePoster);
@@ -455,10 +543,37 @@ public class DisplayActivityFragment extends Fragment {
             }
         });
 
+        final Boolean[] isShared = new Boolean[1];
+        firebaseDBHelper.isShared(gameModel.getFirebaseId(), isShared, new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                if (isShared[0]){
+                    gameShareImageView.setImageResource(R.drawable.share_green);
+                } else {
+                    gameShareImageView.setImageResource(R.drawable.share);
+                }
+            }
+        });
+
+        final String[] isRated = new String[1];
+        firebaseDBHelper.isRated(String.valueOf(gameModel.getFirebaseId()), isRated, new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                if (Double.valueOf(isRated[0])> 0.0){
+                    gameUserRate.setText(String.valueOf(isRated[0]));
+                    gameRateSeekBar.setProgress((int)(Double.valueOf(isRated[0])*2));
+                    gameVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
+                } else {
+                    gameUserRate.setText("0.0");
+                    gameRateSeekBar.setProgress(0);
+                }
+            }
+        });
+
         EventLogOnClickListener listenerGame = new EventLogOnClickListener(gameModel.getFirebaseId());
         gameLikeImageView.setOnClickListener(listenerGame);
         gameDislikeImageView.setOnClickListener(listenerGame);
-        gemeShareImageView.setOnClickListener(listenerGame);
+        gameShareImageView.setOnClickListener(listenerGame);
 
         gameGenre.removeAllViews();
         for (int i = 0; i < gameModel.getGenre().size(); i++){
