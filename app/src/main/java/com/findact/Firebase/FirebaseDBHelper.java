@@ -183,7 +183,7 @@ public class FirebaseDBHelper {
                                 reference.child("like").setValue(false);
                                 reference.child("dislike").setValue(false);
                             }else {
-                                addMovieModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getUserRate(), eventLog.getMovieModel() );
+                                addMovieModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getUserRate(),eventLog.getMovieModel() );
                                 reference.child("dislike").setValue(false);
                             }
                         }
@@ -199,14 +199,14 @@ public class FirebaseDBHelper {
                                 reference.child("like").setValue(false);
                                 reference.child("dislike").setValue(false);
                             }else {
-                                addMovieModelLog(reference, EventLog.EVENT_TYPE_DISLIKE, eventLog.getUserRate(), eventLog.getMovieModel() );
+                                addMovieModelLog(reference, EventLog.EVENT_TYPE_DISLIKE,eventLog.getUserRate(), eventLog.getMovieModel() );
                                 reference.child("like").setValue(false);
                             }
                         }
                     });
                 }
                 if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
-                    addMovieModelLog(reference, EventLog.EVENT_TYPE_SHARE,eventLog.getUserRate(), eventLog.getMovieModel() );
+                    addMovieModelLog(reference, EventLog.EVENT_TYPE_SHARE, eventLog.getUserRate(),eventLog.getMovieModel() );
                 }
 
                 break;
@@ -222,7 +222,7 @@ public class FirebaseDBHelper {
                                 reference.child("like").setValue(false);
                                 reference.child("dislike").setValue(false);
                             }else {
-                                addGameModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getGameModel() );
+                                addGameModelLog(reference, EventLog.EVENT_TYPE_LIKE, eventLog.getUserRate(),eventLog.getGameModel() );
                                 reference.child("dislike").setValue(false);
                             }
                         }
@@ -238,14 +238,14 @@ public class FirebaseDBHelper {
                                 reference.child("like").setValue(false);
                                 reference.child("dislike").setValue(false);
                             }else {
-                                addGameModelLog(reference, EventLog.EVENT_TYPE_DISLIKE, eventLog.getGameModel() );
+                                addGameModelLog(reference, EventLog.EVENT_TYPE_DISLIKE, eventLog.getUserRate(),eventLog.getGameModel() );
                                 reference.child("like").setValue(false);
                             }
                         }
                     });
                 }
                 if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
-                    addGameModelLog(reference, EventLog.EVENT_TYPE_SHARE, eventLog.getGameModel() );
+                    addGameModelLog(reference, EventLog.EVENT_TYPE_SHARE, eventLog.getUserRate(),eventLog.getGameModel() );
                 }
 
                 break;
@@ -331,7 +331,7 @@ public class FirebaseDBHelper {
                             .child(getCurrentUser())
                             .child(FIREBASE_DB_CHILD_USER_LOG)
                             .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
-                            .child(firebaseId).child("like").getValue().equals(true)){
+                            .child(firebaseId).child("share").getValue().equals(true)){
                         eventTypeStatus[0] = true;
                     }
                     else {
@@ -1009,7 +1009,7 @@ public class FirebaseDBHelper {
         reference.child("activity-type").setValue(EventLog.ACTIVITY_TYPE_MOVIE);
     }
 
-    private void addGameModelLog(DatabaseReference reference, String eventType, GameModel gameModel){
+    private void addGameModelLog(DatabaseReference reference, String eventType,String userRate, GameModel gameModel){
         String genres = "";
         for(int i = 0; i < gameModel.getGenre().size(); i++){
             genres+=gameModel.getGenre().get(i);
@@ -1043,6 +1043,8 @@ public class FirebaseDBHelper {
         reference.child("video-id").setValue(gameModel.getVideoId());
         reference.child("popularity").setValue(gameModel.getPopularity());
         reference.child("overview").setValue(gameModel.getSummary());
+
+        reference.child("user-rate").setValue(userRate);
 
         if(eventType.equals(EventLog.EVENT_TYPE_LIKE)){
             reference.child("like").setValue(true);
@@ -1177,15 +1179,24 @@ public class FirebaseDBHelper {
         }
     }
 
-    public void addRateLog(String userId, int activityId, double rate, int activityType){
+    public void addRateLog(String userId, String activityId, String rate, String activityType){
 
         Bundle bundle = new Bundle();
         bundle.putString("userId",userId);
-        bundle.putInt("contentId",activityId);
-        bundle.putDouble("rate",rate);
-        bundle.putInt("activityType",activityType);
-        firebaseAnalytics.logEvent("rate_event",bundle);
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID,activityId);
+        bundle.putString("rate",rate);
+        bundle.putString(FirebaseAnalytics.Param.ITEM_CATEGORY,activityType);
+        firebaseAnalytics.logEvent("movie_rate_event",bundle);
+    }
 
+    public void addGameRateLog(String userId, String activityId, String rate, String activityType){
+
+        Bundle bundle = new Bundle();
+        bundle.putString("userId",userId);
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID,activityId);
+        bundle.putString("rate",rate);
+        bundle.putString(FirebaseAnalytics.Param.ITEM_CATEGORY,activityType);
+        firebaseAnalytics.logEvent("game_rate_event",bundle);
     }
 
 //////////////////////////////////////OTHER FUNCTIONS///////////////////////////////////////////////

@@ -204,11 +204,14 @@ public class DisplayActivityFragment extends Fragment {
                     eventLog = new EventLog(activityId,
                             Long.valueOf(time).toString(),
                             movieUserRate.getText().toString(),
-                            EventLog.EVENT_TYPE_SHARE,
+                            "Vote",
                             EventLog.ACTIVITY_TYPE_MOVIE,
                             movieModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper2.addRateLog(firebaseDBHelper.getCurrentUser(),movieModel.getMovieId() ,Double.valueOf(movieUserRate.getText().toString()) , INIT_MODE_MOVIE_ACTIVITY);
+                    firebaseDBHelper2.addRateLog(firebaseDBHelper.getCurrentUser(),
+                            String.valueOf(movieModel.getMovieId()),
+                            movieUserRate.getText().toString(),
+                            EventLog.ACTIVITY_TYPE_MOVIE);
                     break;
                 case R.id.fragment_display_game_like_iv:
                     gameLikeImageView.setImageResource(R.drawable.like_green);
@@ -265,7 +268,18 @@ public class DisplayActivityFragment extends Fragment {
                     firebaseDBHelper.addEventUserLog(eventLog);
                     break;
                 case R.id.fragment_display_game_vote_btn:
-
+                    movieVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
+                    eventLog = new EventLog(activityId,
+                            Long.valueOf(time).toString(),
+                            gameUserRate.getText().toString(),
+                            "Vote",
+                            EventLog.ACTIVITY_TYPE_GAME,
+                            gameModel);
+                    firebaseDBHelper.addEventUserLog(eventLog);
+                    firebaseDBHelper2.addGameRateLog(firebaseDBHelper2.getCurrentUser(),
+                            String.valueOf(gameModel.getGameId()) ,
+                            gameUserRate.getText().toString() ,
+                            EventLog.ACTIVITY_TYPE_GAME );
 
                 case R.id.fragment_display_group_like_iv:
                     activityLikeImageView.setImageResource(R.drawable.like_green);
@@ -408,7 +422,7 @@ public class DisplayActivityFragment extends Fragment {
         firebaseDBHelper.isRated(String.valueOf(movieModel.getFirebaseId()), isRated, new OnTaskCompletedListener() {
             @Override
             public void onTaskCompleted() {
-                if (Double.valueOf(isRated[0])> 0.0){
+                if (Double.valueOf(isRated[0])> 0.0 || isRated[0] != null){
                     movieUserRate.setText(String.valueOf(isRated[0]));
                     movieRateSeekBar.setProgress((int)(Double.valueOf(isRated[0])*2));
                     movieVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
