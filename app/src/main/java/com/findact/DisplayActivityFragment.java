@@ -200,6 +200,7 @@ public class DisplayActivityFragment extends Fragment {
                     firebaseDBHelper.addEventUserLog(eventLog);
                     break;
                 case R.id.fragment_display_movie_vote_btn:
+                    final int id[] = new int[1];
                     movieVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
                     eventLog = new EventLog(activityId,
                             Long.valueOf(time).toString(),
@@ -208,10 +209,16 @@ public class DisplayActivityFragment extends Fragment {
                             EventLog.ACTIVITY_TYPE_MOVIE,
                             movieModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper2.addRateLog(firebaseDBHelper.getCurrentUser(),
-                            String.valueOf(movieModel.getMovieId()),
-                            movieUserRate.getText().toString(),
-                            EventLog.ACTIVITY_TYPE_MOVIE);
+                    firebaseDBHelper.getCurrentUserIntId(id, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            firebaseDBHelper2.addRateLog(id[0],
+                                    String.valueOf(movieModel.getMovieId()),
+                                    movieUserRate.getText().toString(),
+                                    EventLog.ACTIVITY_TYPE_MOVIE);
+                        }
+                    });
+
                     break;
                 case R.id.fragment_display_game_like_iv:
                     gameLikeImageView.setImageResource(R.drawable.like_green);
@@ -268,7 +275,7 @@ public class DisplayActivityFragment extends Fragment {
                     firebaseDBHelper.addEventUserLog(eventLog);
                     break;
                 case R.id.fragment_display_game_vote_btn:
-                    movieVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
+                    //movieVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
                     eventLog = new EventLog(activityId,
                             Long.valueOf(time).toString(),
                             gameUserRate.getText().toString(),

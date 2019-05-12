@@ -111,7 +111,7 @@ public class HomeFragment extends Fragment {
                         Collections.sort(postModelArrayList, new Comparator<PostModel>() {
                             @Override
                             public int compare(PostModel postModel, PostModel t1) {
-                                return t1.getShareDate().intValue()/1000 - postModel.getShareDate().intValue()/1000;
+                                return t1.getShareDate().compareTo(postModel.getShareDate());
                             }
                         });
                         postListItemAdapter.notifyDataSetChanged();
