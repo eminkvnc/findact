@@ -60,9 +60,6 @@ public class FirebaseDBHelper {
     public static final String FIREBASE_DB_CHILD_USER_LOG = "Logs";
     public static final String FIREBASE_DB_CHILD_USER_LOG_INITIAL = "Initial";
     public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT = "Event";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_SHARE = "share";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_LIKE = "like";
-    public static final String FIREBASE_DB_CHILD_USER_LOG_EVENT_DISLIKE = "dislike";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWS = "Follows";
     public static final String FIREBASE_DB_CHILD_USER_REQUESTS = "Requests";
     public static final String FIREBASE_DB_CHILD_USER_FOLLOWERS = "Followers";
@@ -103,39 +100,15 @@ public class FirebaseDBHelper {
         final Date date = new Date();
         String imageName = "images/profilePicture.jpg";
 
-        Log.d("addUserDetail", "addUserDetail: "+ userData.getProfilePictureUri());
         final StorageReference mStorageReference = storageReference.child(getCurrentUser()).child(imageName);
 
-        final int id[] = new int[1];
-
-        getLastId(id, new OnTaskCompletedListener() {
-            @Override
-            public void onTaskCompleted() {
-                databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").setValue(userData.getFirstname());
-                databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").setValue(userData.getLastname());
-                databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").setValue(userData.getBirthdate());
-                databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("city").setValue(userData.getCity());
-                databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("username").setValue(userData.getUsername());
-                databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("notification").setValue(userData.getNotification());
-                databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").setValue(userData.getUuidString());
-
-                databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if (!dataSnapshot.hasChild("uuid-int")){
-                            databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-int").setValue(id[0]+1);
-                            databaseReference.child("last-id").setValue(id[0]+1);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-            }
-        });
-
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").setValue(userData.getFirstname());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").setValue(userData.getLastname());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("birth-date").setValue(userData.getBirthdate());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("city").setValue(userData.getCity());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("username").setValue(userData.getUsername());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("notification").setValue(userData.getNotification());
+        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-string").setValue(userData.getUuidString());
 
         if(isImageUpdated) {
             mStorageReference.putFile(userData.getProfilePictureUri()).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -146,14 +119,12 @@ public class FirebaseDBHelper {
                         public void onSuccess(Uri uri) {
                             String downloadUrl = uri.toString();
                             databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("profile-picture").setValue(downloadUrl);
-                            Log.d("onSuccess", "onSuccess: " + downloadUrl);
                         }
                     });
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Log.d("onFailure", "onFailure: " + e);
                 }
             });
         }
@@ -203,6 +174,24 @@ public class FirebaseDBHelper {
 
     }
 
+    public void getInitialUserLog(final String gameGenres[], final String movieGenres[], final OnTaskCompletedListener listener){
+        DatabaseReference reference = databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_LOG).child(FIREBASE_DB_CHILD_USER_LOG_INITIAL);
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                gameGenres[0] = dataSnapshot.child("gameGenres").getValue().toString();
+                movieGenres[0] = dataSnapshot.child("movieGenres").getValue().toString();
+                listener.onTaskCompleted();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
     public void addEventUserLog(final EventLog eventLog){
 
         final DatabaseReference reference = databaseReference
@@ -211,6 +200,8 @@ public class FirebaseDBHelper {
                 .child(FIREBASE_DB_CHILD_USER_LOG)
                 .child(FIREBASE_DB_CHILD_USER_LOG_EVENT)
                 .child(eventLog.getId());
+
+
 
         switch (eventLog.getActivityType()){
 
@@ -253,6 +244,27 @@ public class FirebaseDBHelper {
 
                 if (eventLog.getEventType().equals("Vote")){
                     addMovieModelLog(reference,"Vote" , eventLog.getUserRate(),eventLog.getMovieModel());
+                    databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (!dataSnapshot.hasChild("uuid-int")){
+                                final int id[] = new int[1];
+                                getLastId(id, new OnTaskCompletedListener() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-int").setValue(id[0]+1);
+                                        databaseReference.child("last-id").setValue(id[0]+1);
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 }
 
                 break;
@@ -294,6 +306,31 @@ public class FirebaseDBHelper {
                 }
                 if(eventLog.getEventType().equals(EventLog.EVENT_TYPE_SHARE)){
                     addGameModelLog(reference, EventLog.EVENT_TYPE_SHARE, eventLog.getUserRate(),eventLog.getGameModel() );
+                }
+
+                if (eventLog.getEventType().equals("Vote")){
+                    addGameModelLog(reference,"Vote" , eventLog.getUserRate(),eventLog.getGameModel());
+                    databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (!dataSnapshot.hasChild("uuid-int")){
+                                final int id[] = new int[1];
+                                getLastId(id, new OnTaskCompletedListener() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                        databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-int").setValue(id[0]+1);
+                                        databaseReference.child("last-id").setValue(id[0]+1);
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 }
 
                 break;
@@ -492,14 +529,10 @@ public class FirebaseDBHelper {
                                     for(DataSnapshot ds :dataSnapshot.child(userData.getUuidString()).child(FIREBASE_DB_CHILD_USER_LOG).child(FIREBASE_DB_CHILD_USER_LOG_EVENT).getChildren()){
                                         if(ds.hasChild("share")) {
                                             mapPost(ds, userData, requestStatus, postModelArrayList);
-                                        }else{
-                                            Log.d(TAG, "onDataChange: if1");
                                         }
                                     }
                                 }
-                                else{
-                                    Log.d(TAG, "onDataChange: if2");
-                                }
+
                                 check[0] += 1;
                                 if(check[0] == userDataArrayList.size()){
                                     listener.onTaskCompleted();
@@ -655,9 +688,7 @@ public class FirebaseDBHelper {
                         ds.child(FIREBASE_DB_CHILD_USER_DATA).child("firstname").getValue().toString().contains(parameter) ||
                         ds.child(FIREBASE_DB_CHILD_USER_DATA).child("lastname").getValue().toString().contains(parameter)) {
                         userDataArrayList.add(mapUserData(ds));
-                        Log.d(TAG, "onDataChange: "+FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser());
                         if(ds.hasChild(FIREBASE_DB_CHILD_USER_FOLLOWS+"/"+FIREBASE_DB_CHILD_USER_REQUESTS+"/"+getCurrentUser())){
-                            Log.d(TAG, "onDataChange: has request child");
                             Integer status = Integer.parseInt(ds
                                     .child(FIREBASE_DB_CHILD_USER_FOLLOWS)
                                     .child(FIREBASE_DB_CHILD_USER_REQUESTS)
@@ -1239,14 +1270,14 @@ public class FirebaseDBHelper {
         firebaseAnalytics.logEvent("movie_event",bundle);
     }
 
-    public void addGameRateLog(String userId, String activityId, String rate, String activityType){
+    public void addGameRateLog(int userId, String activityId, String rate, String activityType){
 
         Bundle bundle = new Bundle();
-        bundle.putString("userId",userId);
+        bundle.putInt("userId",userId);
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID,activityId);
         bundle.putString("rate",rate);
         bundle.putString(FirebaseAnalytics.Param.ITEM_CATEGORY,activityType);
-        //firebaseAnalytics.logEvent("g_rate_event",bundle);
+        firebaseAnalytics.logEvent("game_event",bundle);
     }
 
 //////////////////////////////////////OTHER FUNCTIONS///////////////////////////////////////////////
@@ -1256,8 +1287,22 @@ public class FirebaseDBHelper {
         databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                id[0] = Integer.parseInt(dataSnapshot.child("uuid-int").getValue().toString());
-                listener.onTaskCompleted();
+                if (!dataSnapshot.hasChild("uuid-int")){
+                    final int id[] = new int[1];
+                    getLastId(id, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+//                            databaseReference.child(FIREBASE_DB_CHILD_USERS).child(getCurrentUser()).child(FIREBASE_DB_CHILD_USER_DATA).child("uuid-int").setValue(id[0]+1);
+//                            databaseReference.child("last-id").setValue(id[0]+1);
+                            id[0] = 0;
+                            listener.onTaskCompleted();
+                        }
+                    });
+                } else {
+                    id[0] = Integer.parseInt(dataSnapshot.child("uuid-int").getValue().toString());
+                    listener.onTaskCompleted();
+                }
+
             }
 
             @Override

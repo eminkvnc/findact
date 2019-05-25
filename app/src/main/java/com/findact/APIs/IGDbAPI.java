@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -32,12 +33,12 @@ public class IGDbAPI {
     private static String whereGenres = "where genres = "; // request atarken where Stringleri birleştirilerek kullanılacak
     private static String whereMode = " game_modes = ";
     private static String limit_offset = "limit 50;offset "; // request atarken ; koymayı unutma
-    private static String order = "sort popularity desc;";
+    private static String order = "sort total_rating desc;";
 
     private static String whereId = "where id = "; // request atarken sonuna ; koy
 
     private static String user_key = "user-key";
-    private static String key = "2bd597197d5320a9a882cac6123f52eb";
+    private static String key = "895203f888486119a9ddda041116fa35";
     private static String content_type = "Content-Type";
     private static String dataFormat = "application/json; charset=UTF-8";
 
@@ -46,13 +47,13 @@ public class IGDbAPI {
     private static ArrayList<String> platform_list;
 
     // request atarken genre ve mode id'leri kullanılıyor
-    private static HashMap<String,Integer> genreHashMap = new HashMap<String, Integer>(){{
+    public static HashMap<String,Integer> genreHashMap = new HashMap<String, Integer>(){{
         put("Simulator", 13);put("Indie", 32);
         put("Tactical", 24);put("Quiz/Trivia", 26);
         put("Fighting", 4);put("Strategy", 15);
         put("Adventure", 31);put("Role-playing (RPG)", 12);
         put("Shooter", 5);put("Music", 7);  }};
-    private static HashMap<String,Integer> modeHashMap = new HashMap<String,Integer>(){{
+    public static HashMap<String,Integer> modeHashMap = new HashMap<String,Integer>(){{
         put("Co-operative", 3);
         put("Single player", 1  );
         put("Multiplayer", 2);
@@ -80,8 +81,8 @@ public class IGDbAPI {
 
     }
 
-    public void getGamesById(ArrayList<Integer> idList, final ArrayList<GameModel> gameModelArrayList, final OnTaskCompletedListener listener){
-        gameModelArrayList.clear();
+    public void getGamesById(ArrayList<Integer> idList, final ArrayList<ExploreModel> exploreModelArrayList, final OnTaskCompletedListener listener){
+        exploreModelArrayList.clear();
         String ids = "";
         if (idList.size() < 50){
             for (int i = 0; i < idList.size(); i++){
@@ -91,8 +92,25 @@ public class IGDbAPI {
                 }
             }
         }
-        String params = fields + whereId + "("+ids+");"+ limit_offset + "0";
-        DownloadData downloadData = new DownloadData(gameModelArrayList, listener, params);
+        String params = fields + whereId + "("+ids+");";
+        DownloadRecData downloadRecData = new DownloadRecData(exploreModelArrayList,params ,listener );
+        downloadRecData.execute(gameUrl);
+    }
+
+    public void searchByGenreForExplore(ArrayList<String> selectedGenres, ArrayList<ExploreModel> exploreModelArrayList, OnTaskCompletedListener listener){
+        String params = null;
+        String genres = "";
+        for (int i = 0; i < selectedGenres.size(); i++){
+            genres +=genreHashMap.get(selectedGenres.get(i));
+            if(i != selectedGenres.size()-1){
+                genres += ",";
+            }
+        }
+
+        params = fields+whereGenres+"("+genres+");";
+
+        String newParams = params + limit_offset + "0;" + order;
+        DownloadRecData downloadData = new DownloadRecData(exploreModelArrayList,newParams,listener );
         downloadData.execute(gameUrl);
     }
 
@@ -223,6 +241,92 @@ public class IGDbAPI {
 
         }
 
+    }
+
+    public static class DownloadRecData extends AsyncTask<String,Void,String>{
+
+        private ArrayList<ExploreModel> exploreModelArrayList;
+        private OnTaskCompletedListener listener;
+        String params;
+
+        DownloadRecData(ArrayList<ExploreModel> exploreModelArrayList,String params, OnTaskCompletedListener listener) {
+            this.exploreModelArrayList = exploreModelArrayList;
+            this.params = params;
+            this.listener = listener;
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            StringBuilder result = new StringBuilder();
+            URL url;
+            HttpsURLConnection connection = null;
+            try {
+
+
+                url = new URL(strings[0]);
+                connection = (HttpsURLConnection) url.openConnection();
+                connection.setRequestProperty(user_key, key);
+                connection.setRequestProperty(content_type, dataFormat);
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setInstanceFollowRedirects(false);
+
+                OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(),"UTF-8");
+                writer.write(params);
+                writer.close();
+
+                InputStream inputStream;
+
+                if (connection.getResponseCode() == HttpsURLConnection.HTTP_OK){
+                    inputStream = connection.getInputStream();
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+                    String data = bufferedReader.readLine();
+
+                    while (data != null){
+
+                        result.append(data);
+                        data = bufferedReader.readLine();
+                    }
+                    return result.toString();
+                }else{
+                    return null;
+                }
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return null;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }finally {
+                assert connection != null;
+                connection.disconnect();
+            }
+        }
+
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            try {
+                if (s != null) {
+                    JSONArray jsonArray = new JSONArray(s);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        GameModel gameModel = parseJSonToGameModel(jsonArray.getJSONObject(i));
+                        if(!gameModel.getImageId().equals("NaN") && gameModel.getImageId() != null){
+                            exploreModelArrayList.add(new ExploreModel(gameModel,null , "Game"));
+                        }
+                    }
+
+                    listener.onTaskCompleted();
+
+                }
+            } catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
     }
 
     public class GetGenreList extends AsyncTask<String,Void,String>{

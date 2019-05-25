@@ -1,6 +1,7 @@
 package com.findact.APIs;
 
 import android.os.AsyncTask;
+import android.util.EventLog;
 import android.util.Log;
 import com.findact.OnTaskCompletedListener;
 import org.json.JSONArray;
@@ -11,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class TMDbAPI {
         put(9648,"Mystery" );put(10749,"Romance" );put(878,"Sci-Fi");
         put(10770,"TV-Movie" );put(53,"Thriller");put(10752,"War" );put(37,"Western");}};
 
-    private static HashMap<String,Integer> genreIDList = new HashMap<String,Integer >(){{put("Action",28);put("Adventure",12);
+    public static HashMap<String,Integer> genreIDList = new HashMap<String,Integer >(){{put("Action",28);put("Adventure",12);
         put("Animation",16);put("Comedy",35 );put("Crime",80);
         put("Documentary",99);put("Drama",18 );put("Family",10751 );
         put("Fantasy",14 );put("History",36 );put("Horror",27 );put("Music",10402 );
@@ -75,13 +77,28 @@ public class TMDbAPI {
         }
     }
 
-    public void searchMovieByID(ArrayList<Integer> movieIds, ArrayList<MovieModel> movieModelArrayList, OnTaskCompletedListener listener ){
-        movieModelArrayList.clear();
+    public void searchMovieByGenreForExplore(ArrayList<String> selectedMovieIds, ArrayList<ExploreModel> exploreModelArrayList, OnTaskCompletedListener listener){
 
+        requestCount = 0;
+        String ids;
+        ids = String.valueOf(genreIDList.get(selectedMovieIds.get(0)));
+        for (int i = 1; i< selectedMovieIds.size(); i++){
+            ids = ids+"%2C"+String.valueOf(genreIDList.get(selectedMovieIds.get(i)));
+        }
+        for (int i = 1; i <= 5; i++){
+            DownloadRecData downloadRecData = new DownloadRecData(listener, "byGenre",exploreModelArrayList );
+            String searchUrl = "https://api.themoviedb.org/3/discover/movie?api_key=fd50bae5852bf6c2e149317a6e885416&sort_by=popularity.desc&page="+i+"&with_genres=";
+            downloadRecData.execute(searchUrl+ids);
+        }
+    }
+
+    public void searchMovieByID(ArrayList<Integer> movieIds,ArrayList<ExploreModel> exploreModelArrayList, OnTaskCompletedListener listener ){
+        exploreModelArrayList.clear();
+        requestCount = 0;
         for(int i = 0; i < movieIds.size(); i++){
-            DownloadData downloadData = new DownloadData(movieModelArrayList,listener );
+            DownloadRecData downloadRecData = new DownloadRecData(listener,"byId",exploreModelArrayList );
             String searchUrl ="https://api.themoviedb.org/3/movie/"+movieIds.get(i)+"?api_key=fd50bae5852bf6c2e149317a6e885416";
-            downloadData.execute(searchUrl);
+            downloadRecData.execute(searchUrl);
         }
     }
 
@@ -258,4 +275,169 @@ public class TMDbAPI {
             }
         }
     }
+
+    private static class DownloadRecData extends AsyncTask<String,Void,String> {
+
+        private ArrayList<ExploreModel> exploreModelArrayList;
+        private OnTaskCompletedListener listener;
+        private String searchType;
+
+        DownloadRecData(OnTaskCompletedListener listener, String searchType, ArrayList<ExploreModel> exploreModelArrayList) {
+
+            this.listener = listener;
+            this.searchType = searchType;
+            this.exploreModelArrayList = exploreModelArrayList;
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            String result = "";
+            URL url;
+            HttpURLConnection connection;
+
+            try {
+                url = new URL(strings[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                if (connection.getResponseCode() == 200) {
+
+                    InputStream inputStream = connection.getInputStream();
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+                    String data = bufferedReader.readLine();
+                    while (data != null) {
+                        result += data;
+                        data = bufferedReader.readLine();
+                    }
+                }
+                return result;
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return null;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            int movieId;
+            String title;
+            String release_date;
+            String popularity;
+            String poster_path;
+            String language;
+            String genreIds;
+            String overview;
+            Double vote_average;
+            ArrayList<String> genre = new ArrayList<>();
+            requestCount++;
+
+            try {
+
+                if (!s.contains("status_code")) {
+
+                    JSONObject jsonObject = new JSONObject(s);
+
+                    String results = jsonObject.getString("results");
+
+                    JSONArray jsonArray = new JSONArray(results);
+
+                    if (searchType.equals("byGenre")) {
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject count = (JSONObject) jsonArray.get(i);
+
+                            language = count.getString("original_language");
+
+                            if (language.contains("tr") || language.contains("en")) {
+
+                                movieId = count.getInt("id");
+                                title = count.getString("original_title");
+                                release_date = count.getString("release_date");
+                                poster_path = count.getString("poster_path");
+                                vote_average = count.getDouble("vote_average");
+                                overview = count.getString("overview");
+                                genreIds = count.getString("genre_ids");
+                                popularity = count.getString("popularity");
+
+                                JSONArray jsonArray1 = new JSONArray(genreIds);
+                                genre.clear();
+                                if (jsonArray1.length() == 0) {
+                                    genre.add("NaN");
+                                } else {
+                                    for (int j = 0; j < jsonArray1.length(); j++) {
+                                        int count2 = (int) jsonArray1.get(j);
+                                        genre.add(genre_list.get(count2));
+                                    }
+                                }
+
+                                if (release_date.equals("")) {
+                                    release_date = "NaN";
+                                } else {
+                                    String[] date = release_date.split("-");
+                                    release_date = date[2] + "." + date[1] + "." + date[0];
+                                }
+                                MovieModel movieModel = new MovieModel("movie" + movieId, movieId, title, release_date, genre, vote_average.toString(), popularity, poster_path, overview, language);
+                                exploreModelArrayList.add(new ExploreModel(null, movieModel, "Movie"));
+                            }
+
+                        }
+
+                    } else {
+
+                        language = jsonObject.getString("original_language");
+
+                        if (language.contains("tr") || language.contains("en")) {
+
+                            movieId = jsonObject.getInt("id");
+                            title = jsonObject.getString("original_title");
+                            release_date = jsonObject.getString("release_date");
+                            poster_path = jsonObject.getString("poster_path");
+                            vote_average = jsonObject.getDouble("vote_average");
+                            overview = jsonObject.getString("overview");
+                            genreIds = jsonObject.getString("genres");
+
+                            popularity = jsonObject.getString("popularity");
+
+                            JSONArray jsonArray1 = new JSONArray(genreIds);
+
+                            if (jsonArray1.length() == 0) {
+                                genre.add("NaN");
+                            } else {
+                                for (int j = 0; j < jsonArray1.length(); j++) {
+                                    JSONObject object = (JSONObject) jsonArray1.get(j);
+                                    int id = object.getInt("id");
+                                    genre.add(genre_list.get(id));
+                                }
+                            }
+
+                            if (release_date.equals("")) {
+                                release_date = "NaN";
+                            } else {
+                                String[] date = release_date.split("-");
+                                release_date = date[2] + "." + date[1] + "." + date[0];
+                            }
+
+                            MovieModel movieModel = new MovieModel("movie" + movieId, movieId, title, release_date, genre, vote_average.toString(), popularity, poster_path, overview, language);
+                            exploreModelArrayList.add(new ExploreModel(null, movieModel, "Movie"));
+                        }
+                    }
+                    if (requestCount == 5){
+                        listener.onTaskCompleted();
+                    }
+
+                }
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
 }

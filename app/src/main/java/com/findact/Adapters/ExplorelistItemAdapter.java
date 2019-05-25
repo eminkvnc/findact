@@ -16,6 +16,7 @@ import android.widget.ImageView;
 
 import com.findact.APIs.ExploreModel;
 import com.findact.DisplayActivityFragment;
+import com.findact.Firebase.EventLog;
 import com.findact.R;
 import com.squareup.picasso.Picasso;
 
@@ -44,22 +45,27 @@ public class ExplorelistItemAdapter extends RecyclerView.Adapter<ExplorelistItem
         CustomListener customListener = new CustomListener(exploreModel, i);
         explorelistItemViewHolder.cardView.setOnClickListener(customListener);
         //
-        if(exploreModel.modelName.equals("movie")){
-            if (!exploreModel.movieModel.get(i).getPoster_path().equals("null") && exploreModel.movieModel.get(i).getPoster_path() != null){
-                Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+exploreModel.movieModel.get(i).getPoster_path())).into(explorelistItemViewHolder.imaqeView);
-            } else {
-                explorelistItemViewHolder.imaqeView.setImageResource(R.drawable.default_movie);
-            }
-        } else {
-            if (exploreModel.gameModel.get(i).getImageId() != null && ! exploreModel.gameModel.get(i).getImageId().equals("null")){
-                Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+exploreModel.gameModel.get(i).getImageId()+".jpg")).into(explorelistItemViewHolder.imaqeView);
-            } else {
-                explorelistItemViewHolder.imaqeView.setImageResource(R.drawable.default_game);
-            }
+        switch (exploreModel.getModelName()){
+            case EventLog.ACTIVITY_TYPE_MOVIE:
+                if (!exploreModel.getMovieModel().getPoster_path().equals("null") && exploreModel.getMovieModel().getPoster_path() != null){
+                    Picasso.get().load(Uri.parse("http://image.tmdb.org/t/p/w185/"+exploreModel.getMovieModel().getPoster_path())).into(explorelistItemViewHolder.imaqeView);
+                } else {
+                    explorelistItemViewHolder.imaqeView.setImageResource(R.drawable.default_movie);
+                }
+                break;
+            case EventLog.ACTIVITY_TYPE_GAME:
+                if (exploreModel.getGameModel().getImageId() != null && ! exploreModel.getGameModel().getImageId().equals("null") && !exploreModel.getGameModel().getImageId().equals("NaN")){
+                    Picasso.get().load(Uri.parse("https://images.igdb.com/igdb/image/upload/t_cover_big/"+exploreModel.getGameModel().getImageId()+".jpg")).into(explorelistItemViewHolder.imaqeView);
+                } else {
+                    //explorelistItemViewHolder.imaqeView.setImageResource(R.drawable.default_game);
+                    Picasso.get().load(R.drawable.default_game).into(explorelistItemViewHolder.imaqeView);
+                }
+                break;
         }
 
 
     }
+
 
     @Override
     public int getItemCount() {
@@ -95,12 +101,13 @@ public class ExplorelistItemAdapter extends RecyclerView.Adapter<ExplorelistItem
                 displayActivityFragment = new DisplayActivityFragment();
 
                 Bundle bundle = new Bundle();
-                if (exploreModel.modelName.equals("movie")){
-                    bundle.putBundle("MovieData", exploreModel.movieModel.get(position).MovieDataToBundle());
+
+                if (exploreModel.getModelName().equals(EventLog.ACTIVITY_TYPE_MOVIE)){
+                    bundle.putBundle("MovieData", exploreModel.getMovieModel().MovieDataToBundle());
                     displayActivityFragment.setArguments(bundle);
                     displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_MOVIE_ACTIVITY);
                 } else {
-                    bundle.putBundle("MovieData", exploreModel.gameModel.get(position).GameDataToBundle());
+                    bundle.putBundle("GameData", exploreModel.getGameModel().GameDataToBundle());
                     displayActivityFragment.setArguments(bundle);
                     displayActivityFragment.setInitMode(DisplayActivityFragment.INIT_MODE_GAME_ACTIVITY);
                 }

@@ -68,16 +68,6 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
     ArrayList<String> gameGenreList = new ArrayList<>();
     ArrayList<String> movieGenreList = new ArrayList<>();
 
-    private String[] gameGenresList = {"FPS","MOBA","SINGLE PLAYER","MULTIPLAYER","BATTLEROYAL","VR"};
-
-    private String[] movieGenresList = {"Action","Adventure","Animation",
-            "Comedy","Crime","Documentary",
-            "Drama","Family","Fantasy","History",
-            "Horror","Music","Mystery","Romance",
-            "Sci-Fi","TV-Movie",
-            "Thriller","War","Western"};
-
-
     private ArrayAdapter<String> cityAdapter;
     private String[] citiesList = { "Select City","Adana", "Adıyaman","Afyon","Ağrı","Amasya","Ankara","Antalya","Artvin","Aydın","Balıkesir","Bilecik",
             "Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli","Diyarbakır","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir",
@@ -273,10 +263,11 @@ public class GetUserDetailActivity extends AppCompatActivity implements View.OnC
 
         if(!selectedGameGenres.isEmpty()) {
             gameGenres = selectedGameGenres.get(0);
-            for (int i = 1; i < selectedGameGenres.size(); i++) {
+            for (int i = 0; i < selectedGameGenres.size(); i++) {
                 gameGenres = gameGenres + "," + selectedGameGenres.get(i);
             }
         }
+
         if(!selectedMovieGenres.isEmpty()) {
             movieGenres = selectedMovieGenres.get(0);
             for (int i = 1; i < selectedMovieGenres.size(); i++) {

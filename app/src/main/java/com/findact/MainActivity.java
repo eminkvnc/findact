@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static ArrayList<String> movieGenreList;
     public static ArrayList<String> gameGenreList;
     public static ArrayList<String> gameModeList;
+    public static int id[];
 
 
     @Override
@@ -71,6 +72,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         igdbAPI = new IGDbAPI();
         tmDbAPI = new TMDbAPI();
+
+        id = new int[1];
+        firebaseDBHelper = FirebaseDBHelper.getInstance();
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.actionBarColor)));
@@ -107,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         Intent intent = new Intent(getApplicationContext(), GetUserDetailActivity.class);
                         startActivity(intent);
                     }else{
-                        firebaseDBHelper = FirebaseDBHelper.getInstance();
+
                         user = UserDatabase.getInstance(getApplicationContext()).getUserDao().getDatas(firebaseDBHelper.getCurrentUser());
 
                         final ArrayList<UserData> userDatas = new ArrayList<>();
@@ -142,6 +146,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
             tmDbAPI.getGenres(movieGenreList,null );
             igdbAPI.getGenres(gameGenreList,gameModeList ,null );
+            firebaseDBHelper.getCurrentUserIntId(id, new OnTaskCompletedListener() {
+                @Override
+                public void onTaskCompleted() {
+
+                }
+            });
         } else {
             Toast.makeText(getApplicationContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
             progressDialog.dismiss();

@@ -4,21 +4,21 @@ import java.util.ArrayList;
 
 public class ExploreModel {
 
-    public ArrayList<GameModel> gameModel;
-    public ArrayList<MovieModel> movieModel;
+    public GameModel gameModel;
+    public MovieModel movieModel;
     public String modelName;
 
-    public ExploreModel(ArrayList<GameModel> gameModel, ArrayList<MovieModel> movieModel, String modelName) {
+    public ExploreModel(GameModel gameModel,MovieModel movieModel, String modelName) {
         this.gameModel = gameModel;
         this.movieModel = movieModel;
         this.modelName = modelName;
     }
 
-    public ArrayList<GameModel> getGameModel() {
+    public GameModel getGameModel() {
         return gameModel;
     }
 
-    public ArrayList<MovieModel> getMovieModel() {
+    public MovieModel getMovieModel() {
         return movieModel;
     }
 

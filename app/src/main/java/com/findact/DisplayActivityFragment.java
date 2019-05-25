@@ -146,6 +146,8 @@ public class DisplayActivityFragment extends Fragment {
             EventLog eventLog;
             long time = Calendar.getInstance().getTimeInMillis() + (3600*3*1000);
             switch (v.getId()){
+
+                // MOVIE
                 case R.id.fragment_display_movie_like_iv:
                     eventLog = new EventLog(activityId,
                             Calendar.getInstance().getTime().toString(),
@@ -220,6 +222,8 @@ public class DisplayActivityFragment extends Fragment {
                     });
 
                     break;
+
+                    // GAME
                 case R.id.fragment_display_game_like_iv:
                     gameLikeImageView.setImageResource(R.drawable.like_green);
                     gameDislikeImageView.setImageResource(R.drawable.dislike);
@@ -265,7 +269,7 @@ public class DisplayActivityFragment extends Fragment {
                     });
                     break;
                 case R.id.fragment_display_game_share_iv:
-                    movieShareImageView.setImageResource(R.drawable.share_green);
+                    gameShareImageView.setImageResource(R.drawable.share_green);
                     eventLog = new EventLog(activityId,
                             Long.valueOf(time).toString(),
                             null,
@@ -275,7 +279,8 @@ public class DisplayActivityFragment extends Fragment {
                     firebaseDBHelper.addEventUserLog(eventLog);
                     break;
                 case R.id.fragment_display_game_vote_btn:
-                    //movieVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
+                    final int g_id[] = new int[1];
+                    gameVoteButton.setBackgroundColor(Color.rgb(0,133 ,119 ));
                     eventLog = new EventLog(activityId,
                             Long.valueOf(time).toString(),
                             gameUserRate.getText().toString(),
@@ -283,11 +288,17 @@ public class DisplayActivityFragment extends Fragment {
                             EventLog.ACTIVITY_TYPE_GAME,
                             gameModel);
                     firebaseDBHelper.addEventUserLog(eventLog);
-                    firebaseDBHelper2.addGameRateLog(firebaseDBHelper2.getCurrentUser(),
-                            String.valueOf(gameModel.getGameId()) ,
-                            gameUserRate.getText().toString() ,
-                            EventLog.ACTIVITY_TYPE_GAME );
-
+                    firebaseDBHelper.getCurrentUserIntId(g_id, new OnTaskCompletedListener() {
+                        @Override
+                        public void onTaskCompleted() {
+                            firebaseDBHelper2.addGameRateLog(g_id[0],
+                                    String.valueOf(gameModel.getGameId()),
+                                    gameUserRate.getText().toString(),
+                                    EventLog.ACTIVITY_TYPE_GAME);
+                        }
+                    });
+                    break;
+                    ///// ACTIVITY
                 case R.id.fragment_display_group_like_iv:
                     activityLikeImageView.setImageResource(R.drawable.like_green);
                     activityDislikeImageView.setImageResource(R.drawable.dislike);
@@ -595,6 +606,7 @@ public class DisplayActivityFragment extends Fragment {
         gameLikeImageView.setOnClickListener(listenerGame);
         gameDislikeImageView.setOnClickListener(listenerGame);
         gameShareImageView.setOnClickListener(listenerGame);
+        gameVoteButton.setOnClickListener(listenerGame);
 
         gameGenre.removeAllViews();
         for (int i = 0; i < gameModel.getGenre().size(); i++){
