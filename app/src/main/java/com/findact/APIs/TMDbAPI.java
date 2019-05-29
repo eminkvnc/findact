@@ -29,15 +29,15 @@ public class TMDbAPI {
         put(16,"Animation");put(35,"Comedy" );put(80,"Crime");
         put(99, "Documentary");put(18,"Drama" );put(10751,"Family" );
         put(14,"Fantasy" );put(36,"History" );put(27,"Horror" );put(10402,"Music" );
-        put(9648,"Mystery" );put(10749,"Romance" );put(878,"Sci-Fi");
-        put(10770,"TV-Movie" );put(53,"Thriller");put(10752,"War" );put(37,"Western");}};
+        put(9648,"Mystery" );put(10749,"Romance" );put(878,"Science Fiction");
+        put(10770,"TV Movie" );put(53,"Thriller");put(10752,"War" );put(37,"Western");}};
 
     public static HashMap<String,Integer> genreIDList = new HashMap<String,Integer >(){{put("Action",28);put("Adventure",12);
         put("Animation",16);put("Comedy",35 );put("Crime",80);
         put("Documentary",99);put("Drama",18 );put("Family",10751 );
         put("Fantasy",14 );put("History",36 );put("Horror",27 );put("Music",10402 );
-        put("Mystery",9648 );put("Romance",10749 );put("Sci-Fi",878);
-        put("TV-Movie",10770 );put("Thriller",53);put("War",10752 );put("Western",37);}};
+        put("Mystery",9648 );put("Romance",10749 );put("Science Fiction",878);
+        put("TV Movie",10770 );put("Thriller",53);put("War",10752 );put("Western",37);}};
 
 
 
@@ -66,7 +66,7 @@ public class TMDbAPI {
         String ids;
         ids = String.valueOf(genreIDList.get(selectedMovieIds.get(0)));
         for (int i = 1; i< selectedMovieIds.size(); i++){
-            ids = ids+"%2C"+String.valueOf(genreIDList.get(selectedMovieIds.get(i)));
+            ids = ids+","+String.valueOf(genreIDList.get(selectedMovieIds.get(i)));
         }
          requestCount = 0;
         movieModelArrayList.clear();
@@ -93,7 +93,6 @@ public class TMDbAPI {
     }
 
     public void searchMovieByID(ArrayList<Integer> movieIds,ArrayList<ExploreModel> exploreModelArrayList, OnTaskCompletedListener listener ){
-        exploreModelArrayList.clear();
         requestCount = 0;
         for(int i = 0; i < movieIds.size(); i++){
             DownloadRecData downloadRecData = new DownloadRecData(listener,"byId",exploreModelArrayList );
@@ -339,79 +338,38 @@ public class TMDbAPI {
 
             try {
 
-                if (!s.contains("status_code")) {
+                JSONObject jsonObject = new JSONObject(s);
 
-                    JSONObject jsonObject = new JSONObject(s);
+                if (searchType.equals("byGenre")) {
 
                     String results = jsonObject.getString("results");
 
                     JSONArray jsonArray = new JSONArray(results);
 
-                    if (searchType.equals("byGenre")) {
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject count = (JSONObject) jsonArray.get(i);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject count = (JSONObject) jsonArray.get(i);
 
-                            language = count.getString("original_language");
-
-                            if (language.contains("tr") || language.contains("en")) {
-
-                                movieId = count.getInt("id");
-                                title = count.getString("original_title");
-                                release_date = count.getString("release_date");
-                                poster_path = count.getString("poster_path");
-                                vote_average = count.getDouble("vote_average");
-                                overview = count.getString("overview");
-                                genreIds = count.getString("genre_ids");
-                                popularity = count.getString("popularity");
-
-                                JSONArray jsonArray1 = new JSONArray(genreIds);
-                                genre.clear();
-                                if (jsonArray1.length() == 0) {
-                                    genre.add("NaN");
-                                } else {
-                                    for (int j = 0; j < jsonArray1.length(); j++) {
-                                        int count2 = (int) jsonArray1.get(j);
-                                        genre.add(genre_list.get(count2));
-                                    }
-                                }
-
-                                if (release_date.equals("")) {
-                                    release_date = "NaN";
-                                } else {
-                                    String[] date = release_date.split("-");
-                                    release_date = date[2] + "." + date[1] + "." + date[0];
-                                }
-                                MovieModel movieModel = new MovieModel("movie" + movieId, movieId, title, release_date, genre, vote_average.toString(), popularity, poster_path, overview, language);
-                                exploreModelArrayList.add(new ExploreModel(null, movieModel, "Movie"));
-                            }
-
-                        }
-
-                    } else {
-
-                        language = jsonObject.getString("original_language");
+                        language = count.getString("original_language");
 
                         if (language.contains("tr") || language.contains("en")) {
 
-                            movieId = jsonObject.getInt("id");
-                            title = jsonObject.getString("original_title");
-                            release_date = jsonObject.getString("release_date");
-                            poster_path = jsonObject.getString("poster_path");
-                            vote_average = jsonObject.getDouble("vote_average");
-                            overview = jsonObject.getString("overview");
-                            genreIds = jsonObject.getString("genres");
-
-                            popularity = jsonObject.getString("popularity");
+                            movieId = count.getInt("id");
+                            title = count.getString("original_title");
+                            release_date = count.getString("release_date");
+                            poster_path = count.getString("poster_path");
+                            vote_average = count.getDouble("vote_average");
+                            overview = count.getString("overview");
+                            genreIds = count.getString("genre_ids");
+                            popularity = count.getString("popularity");
 
                             JSONArray jsonArray1 = new JSONArray(genreIds);
-
+                            genre.clear();
                             if (jsonArray1.length() == 0) {
                                 genre.add("NaN");
                             } else {
                                 for (int j = 0; j < jsonArray1.length(); j++) {
-                                    JSONObject object = (JSONObject) jsonArray1.get(j);
-                                    int id = object.getInt("id");
-                                    genre.add(genre_list.get(id));
+                                    int count2 = (int) jsonArray1.get(j);
+                                    genre.add(genre_list.get(count2));
                                 }
                             }
 
@@ -421,17 +379,54 @@ public class TMDbAPI {
                                 String[] date = release_date.split("-");
                                 release_date = date[2] + "." + date[1] + "." + date[0];
                             }
-
                             MovieModel movieModel = new MovieModel("movie" + movieId, movieId, title, release_date, genre, vote_average.toString(), popularity, poster_path, overview, language);
                             exploreModelArrayList.add(new ExploreModel(null, movieModel, "Movie"));
                         }
-                    }
-                    if (requestCount == 5){
-                        listener.onTaskCompleted();
+
                     }
 
+                } else {
+
+                    language = jsonObject.getString("original_language");
+
+                    if (language.contains("tr") || language.contains("en")) {
+
+                        movieId = jsonObject.getInt("id");
+                        title = jsonObject.getString("original_title");
+                        release_date = jsonObject.getString("release_date");
+                        poster_path = jsonObject.getString("poster_path");
+                        vote_average = jsonObject.getDouble("vote_average");
+                        overview = jsonObject.getString("overview");
+                        genreIds = jsonObject.getString("genres");
+
+                        popularity = jsonObject.getString("popularity");
+
+                        JSONArray jsonArray1 = new JSONArray(genreIds);
+
+                        if (jsonArray1.length() == 0) {
+                            genre.add("NaN");
+                        } else {
+                            for (int j = 0; j < jsonArray1.length(); j++) {
+                                JSONObject object = (JSONObject) jsonArray1.get(j);
+                                int id = object.getInt("id");
+                                genre.add(genre_list.get(id));
+                            }
+                        }
+
+                        if (release_date.equals("")) {
+                            release_date = "NaN";
+                        } else {
+                            String[] date = release_date.split("-");
+                            release_date = date[2] + "." + date[1] + "." + date[0];
+                        }
+
+                        MovieModel movieModel = new MovieModel("movie" + movieId, movieId, title, release_date, genre, vote_average.toString(), popularity, poster_path, overview, language);
+                        exploreModelArrayList.add(new ExploreModel(null, movieModel, "Movie"));
+                    }
                 }
-
+                if (requestCount == 5){
+                    listener.onTaskCompleted();
+                }
 
             } catch (JSONException e) {
                 e.printStackTrace();

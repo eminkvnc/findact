@@ -19,6 +19,9 @@ public interface PostDao {
     @Query("SELECT * FROM post_detail")
     List<Post> getData();
 
+    @Query("SELECT * FROM post_detail WHERE uuid=:uuid")
+    List<Post> getOwnData(String uuid);
+
     @Query("SELECT EXISTS(SELECT senderName FROM post_detail WHERE senderName=:senderName)")
     boolean getSenderName(String senderName);
 

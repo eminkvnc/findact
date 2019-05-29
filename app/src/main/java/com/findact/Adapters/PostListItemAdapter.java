@@ -32,7 +32,7 @@ public class PostListItemAdapter extends RecyclerView.Adapter<PostListItemAdapte
     private Context context;
     private ArrayList<PostModel> postModelArrayList;
     private Boolean showUserCard;
-//    private ArrayList<GameModel> gameModelArrayList;
+    //    private ArrayList<GameModel> gameModelArrayList;
 //    private ArrayList<MovieModel> movieModelArrayList;
 //    private ArrayList<ActivityModel> activityModelArrayList;
 //    private ArrayList<UserData> userModelArrayList;

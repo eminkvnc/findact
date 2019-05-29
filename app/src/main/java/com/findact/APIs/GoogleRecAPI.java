@@ -18,17 +18,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import javax.net.ssl.HttpsURLConnection;
-
 public class GoogleRecAPI {
 
     private String recUrl = "https://findact-12b19.appspot.com/recommendation?userId=";
-    private String numRec = "&numRecs=100";
-    private String modelTypeMovie = "&modelType=";
+    private String numRec = "&numRecs=";
+    private String modelType = "&modelType=";
 
     public void getRecommendations(int uuid_int, ArrayList<Integer> idArrayList, String type, OnTaskCompletedListener listener){
+        String url;
 
-        String url = recUrl+uuid_int+numRec+modelTypeMovie+type;
+        if (type.equals("movie")){
+            url = recUrl+uuid_int+numRec+"70"+modelType+type;
+        }else {
+            url = recUrl+uuid_int+numRec+"30"+modelType+type;
+        }
         DownloadIds downloadIds = new DownloadIds(idArrayList,type,listener);
         downloadIds.execute(url);
 
@@ -96,8 +99,6 @@ public class GoogleRecAPI {
                         idArrayList.add(Integer.parseInt((String) jsonArray.get(i)));
                     }
                 }
-
-
                 listener.onTaskCompleted();
 
             } catch (JSONException e) {

@@ -37,9 +37,8 @@ public class ExploreFragment extends Fragment {
     private View v;
     public static String TAG = "ExploreFragment";
     private ArrayList<ExploreModel> exploreModelArrayList;
-    private ArrayList<Integer> recIdsArrayList;
-    private ArrayList<MovieModel> movieModelArrayList;
-    private ArrayList<GameModel> gameModelArrayList;
+    private ArrayList<Integer> recMovieIdsArrayList;
+    private ArrayList<Integer> recGameIdsArrayList;
     private RecyclerView recyclerView;
     private ProgressDialog progressDialog;
     private ExplorelistItemAdapter explorelistItemAdapter;
@@ -65,12 +64,11 @@ public class ExploreFragment extends Fragment {
         setHasOptionsMenu(true);
         progressDialog = new ProgressDialog(getContext());
         exploreModelArrayList = new ArrayList<>();
-        movieModelArrayList = new ArrayList<>();
-        gameModelArrayList = new ArrayList<>();
         igDbAPI = new IGDbAPI();
         tmDbAPI = new TMDbAPI();
         googleRecAPI = new GoogleRecAPI();
-        recIdsArrayList = new ArrayList<>();
+        recMovieIdsArrayList = new ArrayList<>();
+        recGameIdsArrayList = new ArrayList<>();
         firebaseDBHelper = new FirebaseDBHelper();
         id = new int[1];
         movieGenres = new String[1];
@@ -81,27 +79,31 @@ public class ExploreFragment extends Fragment {
         if (MainActivity.isOnline){
 
             if (MainActivity.id[0] == 0){
-                firebaseDBHelper.getInitialUserLog(gameGenres, movieGenres, new OnTaskCompletedListener() {
-                    @Override
-                    public void onTaskCompleted() {
-                        String splitGameGenre[] = gameGenres[0].split(",");
-                        gameGenreList.addAll(Arrays.asList(splitGameGenre));
-                        String splitMovieGenre[] = movieGenres[0].split(",");
-                        movieGenreList.addAll(Arrays.asList(splitMovieGenre));
-                        hasNoVote(gameGenreList,movieGenreList);
-                    }
-                });
+                getInitialLog();
+//                firebaseDBHelper.getInitialUserLog(gameGenres, movieGenres, new OnTaskCompletedListener() {
+//                    @Override
+//                    public void onTaskCompleted() {
+//                        String splitGameGenre[] = gameGenres[0].split(",");
+//                        gameGenreList.addAll(Arrays.asList(splitGameGenre));
+//                        String splitMovieGenre[] = movieGenres[0].split(",");
+//                        movieGenreList.addAll(Arrays.asList(splitMovieGenre));
+//                        hasNoVote(gameGenreList,movieGenreList);
+//                    }
+//                });
             } else {
-                recIdsArrayList.clear();
+                recMovieIdsArrayList.clear();
+                recGameIdsArrayList.clear();
                 progressDialog.show();
-                googleRecAPI.getRecommendations(MainActivity.id[0], recIdsArrayList,"movie", new OnTaskCompletedListener() {
+                googleRecAPI.getRecommendations(MainActivity.id[0], recMovieIdsArrayList,"movie", new OnTaskCompletedListener() {
                     @Override
                     public void onTaskCompleted() {
-                        googleRecAPI.getRecommendations(MainActivity.id[0], recIdsArrayList, "game", new OnTaskCompletedListener() {
+                        googleRecAPI.getRecommendations(MainActivity.id[0], recGameIdsArrayList, "game", new OnTaskCompletedListener() {
                             @Override
                             public void onTaskCompleted() {
-                                if (!recIdsArrayList.isEmpty()) {
-                                    refreshData(recIdsArrayList);
+                                if (!recMovieIdsArrayList.isEmpty() || !recGameIdsArrayList.isEmpty()) {
+                                    refreshData(recMovieIdsArrayList,recGameIdsArrayList);
+                                } else {
+                                    getInitialLog();
                                 }
                             }
                         });
@@ -146,21 +148,36 @@ public class ExploreFragment extends Fragment {
         return v;
     }
 
-    private void refreshData(ArrayList<Integer> recIdsArrayList){
+    private void getInitialLog(){
+        firebaseDBHelper.getInitialUserLog(gameGenres, movieGenres, new OnTaskCompletedListener() {
+            @Override
+            public void onTaskCompleted() {
+                String splitGameGenre[] = gameGenres[0].split(",");
+                gameGenreList.addAll(Arrays.asList(splitGameGenre));
+                String splitMovieGenre[] = movieGenres[0].split(",");
+                movieGenreList.addAll(Arrays.asList(splitMovieGenre));
+                hasNoVote(gameGenreList,movieGenreList);
+            }
+        });
+    }
+
+    private void refreshData(ArrayList<Integer> recMovieIdsArrayList, ArrayList<Integer> recGameIdsArrayList){
         if(MainActivity.isOnline){
             if (!progressDialog.isShowing()){
                 progressDialog.show();
             }
-            tmDbAPI.searchMovieByID(recIdsArrayList,exploreModelArrayList, new OnTaskCompletedListener() {
+            exploreModelArrayList.clear();
+            tmDbAPI.searchMovieByID(recMovieIdsArrayList,exploreModelArrayList, new OnTaskCompletedListener() {
                 @Override
                 public void onTaskCompleted() {
                     explorelistItemAdapter.notifyDataSetChanged();
 
                 }
             });
-            igDbAPI.getGamesById(recIdsArrayList, exploreModelArrayList, new OnTaskCompletedListener() {
+            igDbAPI.getGamesById(recGameIdsArrayList, exploreModelArrayList, new OnTaskCompletedListener() {
                 @Override
                 public void onTaskCompleted() {
+                    Collections.shuffle(exploreModelArrayList);
                     explorelistItemAdapter.notifyDataSetChanged();
                 }
             });

@@ -24,11 +24,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.findact.APIs.PostModel;
 import com.findact.Adapters.PostListItemAdapter;
 import com.findact.Firebase.FirebaseDBHelper;
 import com.findact.Firebase.UserData;
+import com.findact.RoomDatabase.Post;
 import com.findact.RoomDatabase.User;
 import com.findact.RoomDatabase.UserDatabase;
 import com.squareup.picasso.Picasso;
@@ -38,6 +40,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class ProfileFragment extends Fragment implements View.OnClickListener {
 
@@ -61,6 +64,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     private PostListItemAdapter postListItemAdapter;
     private ArrayList<PostModel> postModelArrayList;
+
+    private ArrayList<Post> postArrayList;
 
     private SettingsFragment settingsFragment;
     User user;
@@ -137,32 +142,41 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         activitiesSwipeRefreshLayout = v.findViewById(R.id.fragment_profile_activities_srl);
 
         activitiesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList,false);
-        activitiesRecyclerView.setAdapter(postListItemAdapter);
 
-        activitiesSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshData();
-                activitiesSwipeRefreshLayout.setRefreshing(false);
+
+
+        if (MainActivity.isOnline){
+            postListItemAdapter = new PostListItemAdapter(getContext(),postModelArrayList,false);
+            activitiesRecyclerView.setAdapter(postListItemAdapter);
+            activitiesSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    refreshData();
+                    activitiesSwipeRefreshLayout.setRefreshing(false);
+                }
+            });
+
+            addFriendImageView.setOnClickListener(this);
+            requestsImageView.setOnClickListener(this);
+            followersTextView.setOnClickListener(this);
+            followingTextView.setOnClickListener(this);
+
+            switch (initMode){
+                case INIT_MODE_MY_PROFILE_PAGE:
+                    initMyProfile();
+                    break;
+                case INIT_MODE_DEFAULT_PROFILE_PAGE:
+                    initDefaultProfile();
+                    break;
             }
-        });
 
-        addFriendImageView.setOnClickListener(this);
-        requestsImageView.setOnClickListener(this);
-        followersTextView.setOnClickListener(this);
-        followingTextView.setOnClickListener(this);
+            refreshData();
+        } else {
+            progressDialog.dismiss();
+            Toast.makeText(getContext(), getResources().getText(R.string.toast_check_internet_connection), Toast.LENGTH_SHORT).show();
+        }
 
-        switch (initMode){
-            case INIT_MODE_MY_PROFILE_PAGE:
-                initMyProfile();
-                break;
-           case INIT_MODE_DEFAULT_PROFILE_PAGE:
-               initDefaultProfile();
-               break;
-       }
 
-       refreshData();
         return v;
     }
 

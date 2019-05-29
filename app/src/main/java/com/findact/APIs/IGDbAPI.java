@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -82,19 +83,42 @@ public class IGDbAPI {
     }
 
     public void getGamesById(ArrayList<Integer> idList, final ArrayList<ExploreModel> exploreModelArrayList, final OnTaskCompletedListener listener){
-        exploreModelArrayList.clear();
-        String ids = "";
-        if (idList.size() < 50){
-            for (int i = 0; i < idList.size(); i++){
-                ids += idList.get(i);
-                if (idList.size()-1 != i){
-                    ids += ",";
-                }
+        String id1 = "";
+        String id2 = "";
+        String id3 = "";
+
+        List<Integer> part1 = idList.subList(0,10 );
+        List<Integer> part2 = idList.subList(10,20 );
+        List<Integer> part3 = idList.subList(20,30 );
+
+        for(int i = 0; i < part1.size(); i++){
+            id1 += part1.get(i).toString();
+            if (i != part1.size()-1){
+                id1 += ",";
             }
         }
-        String params = fields + whereId + "("+ids+");";
-        DownloadRecData downloadRecData = new DownloadRecData(exploreModelArrayList,params ,listener );
-        downloadRecData.execute(gameUrl);
+        for(int i = 0; i < part2.size(); i++){
+            id2 += part2.get(i).toString();
+            if (i != part2.size()-1){
+                id2 += ",";
+            }
+        }
+        for(int i = 0; i < part3.size(); i++){
+            id3 += part3.get(i).toString();
+            if (i != part3.size()-1){
+                id3 += ",";
+            }
+        }
+
+        String params1 = fields + whereId + "("+id1+");";
+        String params2 = fields + whereId + "("+id2+");";
+        String params3 = fields + whereId + "("+id3+");";
+        DownloadRecData downloadRecData1 = new DownloadRecData(exploreModelArrayList,params1 ,listener );
+        DownloadRecData downloadRecData2 = new DownloadRecData(exploreModelArrayList,params2 ,listener );
+        DownloadRecData downloadRecData3 = new DownloadRecData(exploreModelArrayList,params3 ,listener );
+        downloadRecData1.execute(gameUrl);
+        downloadRecData2.execute(gameUrl);
+        downloadRecData3.execute(gameUrl);
     }
 
     public void searchByGenreForExplore(ArrayList<String> selectedGenres, ArrayList<ExploreModel> exploreModelArrayList, OnTaskCompletedListener listener){
