@@ -39,7 +39,7 @@ public class IGDbAPI {
     private static String whereId = "where id = "; // request atarken sonuna ; koy
 
     private static String user_key = "user-key";
-    private static String key = "895203f888486119a9ddda041116fa35";
+    private static String key = "IGDB_API_KEY_HERE";
     private static String content_type = "Content-Type";
     private static String dataFormat = "application/json; charset=UTF-8";
 
