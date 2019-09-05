@@ -1,3 +1,3 @@
-# Findact Google Play
+# Findact
 
 https://play.google.com/store/apps/details?id=com.findact
